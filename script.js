@@ -1,164 +1,112 @@
-const fileInputV1 = document.getElementById('fileInputV1');
-const fileInputV2 = document.getElementById('fileInputV2');
-const playerV1 = document.getElementById('playerV1');
-const playerV2 = document.getElementById('playerV2');
-const dragHint = document.getElementById('dragHint');
-const trackV1 = document.getElementById('trackV1');
-const trackV2 = document.getElementById('trackV2');
+const fileInput = document.getElementById('fileInput');
+const projectBin = document.getElementById('projectBin');
+const mainPlayer = document.getElementById('mainPlayer');
+const overlayPlayer = document.getElementById('overlayPlayer');
+const placeholderText = document.getElementById('placeholderText');
 const playPauseBtn = document.getElementById('playPauseBtn');
+const timecodeDisplay = document.getElementById('timecodeDisplay');
+
+const laneV1 = document.getElementById('laneV1');
+const laneV2 = document.getElementById('laneV2');
 
 const brightnessRange = document.getElementById('brightnessRange');
 const opacityRange = document.getElementById('opacityRange');
-const textInput = document.getElementById('textInput');
-const textOverlay = document.getElementById('textOverlay');
-const fontSelector = document.getElementById('fontSelector');
-const textColor = document.getElementById('textColor');
-const shadowColor = document.getElementById('shadowColor');
+const customTextInput = document.getElementById('customTextInput');
 
-let blobUrlV1 = null;
-let blobUrlV2 = null;
+let mediaFiles = [];
 
-function loadTrackFile(file, trackId) {
-    if (!file) return;
-
-    const fileURL = URL.createObjectURL(file);
-
-    if (trackId === 'V1') {
-        if (blobUrlV1) URL.revokeObjectURL(blobUrlV1);
-        blobUrlV1 = fileURL;
-        playerV1.src = fileURL;
-        playerV1.style.display = 'block';
-        playerV1.load();
-        trackV1.innerHTML = `<span>${file.name}</span> <button onclick="clearTrack('V1')" style="background: #172554; border: none; padding: 2px 6px; font-size: 10px; cursor: pointer; color:#fff;">حذف</button>`;
-    } else {
-        if (blobUrlV2) URL.revokeObjectURL(blobUrlV2);
-        blobUrlV2 = fileURL;
-        playerV2.src = fileURL;
-        playerV2.style.display = 'block';
-        playerV2.load();
-        trackV2.innerHTML = `<span>${file.name}</span> <button onclick="clearTrack('V2')" style="background: #501026; border: none; padding: 2px 6px; font-size: 10px; cursor: pointer; color:#fff;">حذف</button>`;
-    }
-
-    dragHint.style.display = 'none';
-}
-
-fileInputV1.addEventListener('change', (e) => {
-    if (e.target.files && e.target.files[0]) loadTrackFile(e.target.files[0], 'V1');
+// استيراد الملفات
+fileInput.addEventListener('change', (e) => {
+    const files = Array.from(e.target.files);
+    files.forEach(file => {
+        const url = URL.createObjectURL(file);
+        mediaFiles.push({ name: file.name, url: url, type: file.type });
+        
+        // إضافة العنصر إلى لوحة المشروع (Project Bin)
+        const thumb = document.createElement('div');
+        thumb.className = 'media-thumb';
+        thumb.innerHTML = `
+            <div style="background:#111; height:45px; display:flex; align-items:center; justify-content:center; color:#777; font-size:8px;">${file.type.includes('video') ? 'VIDEO' : 'IMAGE'}</div>
+            <span>${file.name}</span>
+        `;
+        
+        // سحب وافلات العنصر للتايملاين أو النقر لتسكينه تلقائياً
+        thumb.onclick = () => assignToTimeline(file.name, url);
+        projectBin.appendChild(thumb);
+    });
 });
 
-fileInputV2.addEventListener('change', (e) => {
-    if (e.target.files && e.target.files[0]) loadTrackFile(e.target.files[0], 'V2');
-});
+// تعيين الملفات لمسارات التايملاين (V1 و V2) وعرضها
+function assignToTimeline(name, url) {
+    placeholderText.style.display = 'none';
 
-window.addEventListener('dragover', (e) => e.preventDefault());
-window.addEventListener('drop', (e) => e.preventDefault());
-
-const dropZone = document.getElementById('dropZone');
-dropZone.addEventListener('drop', (e) => {
-    e.preventDefault();
-    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-        if (!playerV1.src || playerV1.src === window.location.href) {
-            loadTrackFile(e.dataTransfer.files[0], 'V1');
-        } else {
-            loadTrackFile(e.dataTransfer.files[0], 'V2');
-        }
-    }
-});
-
-// التحكم بالتشغيل
-function togglePlayPause() {
-    if (playerV1.src && playerV1.src !== window.location.href) {
-        if (playerV1.paused) {
-            playerV1.play();
-            if (playerV2.src && playerV2.src !== window.location.href) playerV2.play();
-            playPauseBtn.textContent = "إيقاف مؤقت";
-        } else {
-            playerV1.pause();
-            if (playerV2.src && playerV2.src !== window.location.href) playerV2.pause();
-            playPauseBtn.textContent = "تشغيل";
-        }
+    if (!mainPlayer.src || mainPlayer.src === window.location.href) {
+        mainPlayer.src = url;
+        mainPlayer.style.display = 'block';
+        mainPlayer.load();
+        
+        laneV1.innerHTML = `<div class="clip-item" style="width: 100%;"><span>${name}</span></div>`;
     } else {
-        alert('الرجاء استيراد ملف فيديو في V1 أولاً.');
+        overlayPlayer.src = url;
+        overlayPlayer.style.display = 'block';
+        overlayPlayer.load();
+        
+        laneV2.innerHTML = `<div class="clip-item clip-v2" style="width: 100%;"><span>${name}</span></div>`;
     }
 }
 
-function stepVideo(amount) {
-    if (playerV1.src) {
-        playerV1.currentTime = Math.max(0, playerV1.currentTime + amount);
-        if (playerV2.src) playerV2.currentTime = playerV1.currentTime;
-    }
-}
-
-// تفريغ المسارات
-function clearTrack(trackId) {
-    if (trackId === 'V1') {
-        if (blobUrlV1) URL.revokeObjectURL(blobUrlV1);
-        playerV1.src = "";
-        playerV1.style.display = 'none';
-        trackV1.innerHTML = '<span>لم يتم إدراج ملف في V1...</span>';
-        blobUrlV1 = null;
+// تشغيل وإيقاف الميديا
+function togglePlayPlayback() {
+    if (mainPlayer.paused) {
+        mainPlayer.play();
+        if (overlayPlayer.src) overlayPlayer.play();
+        playPauseBtn.textContent = "إيقاف مؤقت";
     } else {
-        if (blobUrlV2) URL.revokeObjectURL(blobUrlV2);
-        playerV2.src = "";
-        playerV2.style.display = 'none';
-        trackV2.innerHTML = '<span>لم يتم إدراج ملف في V2...</span>';
-        blobUrlV2 = null;
-    }
-
-    if ((!playerV1.src || playerV1.src === window.location.href) && (!playerV2.src || playerV2.src === window.location.href)) {
-        dragHint.style.display = 'block';
+        mainPlayer.pause();
+        if (overlayPlayer.src) overlayPlayer.pause();
+        playPauseBtn.textContent = "تشغيل / إيقاف";
     }
 }
 
-function clearAllTracks() {
-    clearTrack('V1');
-    clearTrack('V2');
+// التقديم والتأخير إطار بإطار
+function stepFrame(frames) {
+    if (mainPlayer.src) {
+        mainPlayer.currentTime += frames * 0.04;
+        if (overlayPlayer.src) overlayPlayer.currentTime = mainPlayer.currentTime;
+    }
 }
 
-// تحديث العداد الزمني
-playerV1.addEventListener('timeupdate', () => {
-    if (!isNaN(playerV1.currentTime)) {
-        const currentTime = Math.floor(playerV1.currentTime);
-        const mins = String(Math.floor(currentTime / 60)).padStart(2, '0');
-        const secs = String(currentTime % 60).padStart(2, '0');
-        document.getElementById('timecode').textContent = `التوقيت: 00:${mins}:${secs}`;
+// تحديث العداد الزمني (Timecode)
+mainPlayer.addEventListener('timeupdate', () => {
+    if (!isNaN(mainPlayer.currentTime)) {
+        const t = mainPlayer.currentTime;
+        const hrs = String(Math.floor(t / 3600)).padStart(2, '0');
+        const mins = String(Math.floor((t % 3600) / 60)).padStart(2, '0');
+        const secs = String(Math.floor(t % 60)).padStart(2, '0');
+        const frames = String(Math.floor((t % 1) * 25)).padStart(2, '0');
+        timecodeDisplay.textContent = `${hrs}:${mins}:${secs}:${frames}`;
     }
 });
 
 // تأثيرات السطوع والشفافية
 brightnessRange.addEventListener('input', (e) => {
-    const val = e.target.value;
-    document.getElementById('brightVal').textContent = val;
-    playerV1.style.filter = `brightness(${val}%)`;
-    playerV2.style.filter = `brightness(${val}%)`;
+    document.getElementById('brightVal').textContent = e.target.value;
+    mainPlayer.style.filter = `brightness(${e.target.value}%)`;
+    overlayPlayer.style.filter = `brightness(${e.target.value}%)`;
 });
 
 opacityRange.addEventListener('input', (e) => {
-    const val = e.target.value;
-    document.getElementById('opacityVal').textContent = val;
-    playerV2.style.opacity = val / 100;
+    document.getElementById('opacityVal').textContent = e.target.value;
+    overlayPlayer.style.opacity = e.target.value / 100;
 });
 
-// إدارة النصوص وتخصيصها
-textInput.addEventListener('input', (e) => {
-    const val = e.target.value;
-    if (val.trim() !== "") {
-        textOverlay.textContent = val;
-        textOverlay.style.display = 'block';
-    } else {
-        textOverlay.style.display = 'none';
-    }
-});
-
-fontSelector.addEventListener('change', (e) => {
-    textOverlay.style.fontFamily = e.target.value;
-});
-
-textColor.addEventListener('input', (e) => {
-    textOverlay.style.color = e.target.value;
-});
-
-shadowColor.addEventListener('input', (e) => {
-    const col = e.target.value;
-    textOverlay.style.textShadow = `2px 2px 6px ${col}`;
-});
+// تفريغ التايملاين
+function clearTimeline() {
+    mainPlayer.src = "";
+    mainPlayer.style.display = 'none';
+    overlayPlayer.src = "";
+    overlayPlayer.style.display = 'none';
+    laneV1.innerHTML = "";
+    laneV2.innerHTML = "";
+    placeholderText.style.display = 'block';
+}
