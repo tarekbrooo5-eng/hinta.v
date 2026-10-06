@@ -7,6 +7,14 @@ const trackV1 = document.getElementById('trackV1');
 const trackV2 = document.getElementById('trackV2');
 const playPauseBtn = document.getElementById('playPauseBtn');
 
+const brightnessRange = document.getElementById('brightnessRange');
+const opacityRange = document.getElementById('opacityRange');
+const textInput = document.getElementById('textInput');
+const textOverlay = document.getElementById('textOverlay');
+const fontSelector = document.getElementById('fontSelector');
+const textColor = document.getElementById('textColor');
+const shadowColor = document.getElementById('shadowColor');
+
 let blobUrlV1 = null;
 let blobUrlV2 = null;
 
@@ -42,7 +50,6 @@ fileInputV2.addEventListener('change', (e) => {
     if (e.target.files && e.target.files[0]) loadTrackFile(e.target.files[0], 'V2');
 });
 
-// دعم السحب والإفلات عبر المتصفح السحابي
 window.addEventListener('dragover', (e) => e.preventDefault());
 window.addEventListener('drop', (e) => e.preventDefault());
 
@@ -58,6 +65,7 @@ dropZone.addEventListener('drop', (e) => {
     }
 });
 
+// التحكم بالتشغيل
 function togglePlayPause() {
     if (playerV1.src && playerV1.src !== window.location.href) {
         if (playerV1.paused) {
@@ -81,6 +89,7 @@ function stepVideo(amount) {
     }
 }
 
+// تفريغ المسارات
 function clearTrack(trackId) {
     if (trackId === 'V1') {
         if (blobUrlV1) URL.revokeObjectURL(blobUrlV1);
@@ -106,6 +115,7 @@ function clearAllTracks() {
     clearTrack('V2');
 }
 
+// تحديث العداد الزمني
 playerV1.addEventListener('timeupdate', () => {
     if (!isNaN(playerV1.currentTime)) {
         const currentTime = Math.floor(playerV1.currentTime);
@@ -113,4 +123,42 @@ playerV1.addEventListener('timeupdate', () => {
         const secs = String(currentTime % 60).padStart(2, '0');
         document.getElementById('timecode').textContent = `التوقيت: 00:${mins}:${secs}`;
     }
+});
+
+// تأثيرات السطوع والشفافية
+brightnessRange.addEventListener('input', (e) => {
+    const val = e.target.value;
+    document.getElementById('brightVal').textContent = val;
+    playerV1.style.filter = `brightness(${val}%)`;
+    playerV2.style.filter = `brightness(${val}%)`;
+});
+
+opacityRange.addEventListener('input', (e) => {
+    const val = e.target.value;
+    document.getElementById('opacityVal').textContent = val;
+    playerV2.style.opacity = val / 100;
+});
+
+// إدارة النصوص وتخصيصها
+textInput.addEventListener('input', (e) => {
+    const val = e.target.value;
+    if (val.trim() !== "") {
+        textOverlay.textContent = val;
+        textOverlay.style.display = 'block';
+    } else {
+        textOverlay.style.display = 'none';
+    }
+});
+
+fontSelector.addEventListener('change', (e) => {
+    textOverlay.style.fontFamily = e.target.value;
+});
+
+textColor.addEventListener('input', (e) => {
+    textOverlay.style.color = e.target.value;
+});
+
+shadowColor.addEventListener('input', (e) => {
+    const col = e.target.value;
+    textOverlay.style.textShadow = `2px 2px 6px ${col}`;
 });
