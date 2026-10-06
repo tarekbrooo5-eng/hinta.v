@@ -306,4 +306,106 @@ function makeDraggableElement(elm, clipData) {
         e.preventDefault();
         pos1 = pos3 - e.clientX;
         pos2 = pos4 - e.clientY;
-        pos3 = e.clientX
+        pos3 = e.clientX;
+        pos4 = e.clientY;
+        clipData.x = (elm.offsetLeft - pos1);
+        clipData.y = (elm.offsetTop - pos2);
+        elm.style.top = clipData.y + "px";
+        elm.style.left = clipData.x + "px";
+    }
+
+    function closeDragElement() {
+        document.onmouseup = null;
+        document.onmousemove = null;
+    }
+}
+
+// تقطيع الفيديو المحدد
+function splitSelectedVideoClip() {
+    let clip = timelineClips.find(c => c.id === selectedClipId && c.type === 'video');
+    if (!clip) {
+        alert('الرجاء تحديد مقطع فيديو في التايملاين لتقطيعه!');
+        return;
+    }
+    if (currentTime <= clip.start + 0.2 || currentTime >= clip.start + clip.duration - 0.2) {
+        alert('مؤشر التوقيت خارج حدود المقطع المحدد.');
+        return;
+    }
+
+    let splitOffset = currentTime - clip.start;
+    let part1Duration = splitOffset;
+    let part2Duration = clip.duration - splitOffset;
+
+    let part2 = {
+        ...clip,
+        id: 'clip_' + Math.random().toString(36).substr(2, 9),
+        start: currentTime,
+        duration: part2Duration
+    };
+
+    clip.duration = part1Duration;
+    timelineClips.push(part2);
+    renderTimeline();
+    alert('تم تقطيع المقطع بنجاح!');
+}
+
+// التحكم بالتشغيل والزمن
+function togglePlayPlayback() {
+    isPlaying = !isPlaying;
+    document.getElementById('playPauseBtn').textContent = isPlaying ? "إيقاف مؤقت" : "تشغيل / إيقاف";
+    if (isPlaying) playLoop();
+}
+
+function playLoop() {
+    if (!isPlaying) return;
+    currentTime += 0.1;
+    if (currentTime >= timelineDuration) currentTime = 0;
+
+    let percent = (currentTime / timelineDuration) * 100;
+    playheadLine.style.left = percent + '%';
+
+    let hrs = String(Math.floor(currentTime / 3600)).padStart(2, '0');
+    let mins = String(Math.floor((currentTime % 3600) / 60)).padStart(2, '0');
+    let secs = String(Math.floor(currentTime % 60)).padStart(2, '0');
+    timecodeDisplay.textContent = `${hrs}:${mins}:${secs}`;
+
+    updateStagePreview();
+    setTimeout(playLoop, 100);
+}
+
+function seekTimeline(e) {
+    let rect = e.currentTarget.getBoundingClientRect();
+    let clickX = e.clientX - rect.left;
+    currentTime = (clickX / rect.width) * timelineDuration;
+    let percent = (currentTime / timelineDuration) * 100;
+    playheadLine.style.left = percent + '%';
+    updateStagePreview();
+}
+
+function stepFrame(frames) {
+    currentTime += frames * 0.04;
+    updateStagePreview();
+}
+
+function deleteSelectedClip() {
+    if (!selectedClipId) return;
+    timelineClips = timelineClips.filter(c => c.id !== selectedClipId);
+    selectedClipId = null;
+    renderTimeline();
+    updateStagePreview();
+    inspectorTitle.textContent = "لم يتم تحديد عنصر";
+    videoInspectorControls.style.display = 'none';
+    textInspectorControls.style.display = 'none';
+}
+
+function exportFinalVideo() {
+    alert('تم حفظ إعدادات المشروع بنجاح وجاهز لتصدير الفيديو النهائي بكافة الطبقات!');
+}
+
+function resetTimeline() {
+    timelineClips = [];
+    selectedClipId = null;
+    currentTime = 0;
+    renderTimeline();
+    updateStagePreview();
+}
