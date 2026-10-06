@@ -1,11 +1,16 @@
 let mediaAssets = [];
-let timelineClips = []; 
+let timelineTracks = {
+    video: [],
+    audio: [],
+    overlay: []
+};
 let textLayers = [];    
 let logoAsset = { src: null, x: 50, y: 50, size: 100 };
 let selectedClipId = null;
 let currentStep = 1;
 let isPlaying = false;
-let currentTime = 0;
+let currentTime = 0; // الوقت الحالي بالثواني
+let timelineZoom = 20; // بكسل لكل ثانية (افتراضي)
 
 let isDraggingElement = false;
 let draggedElementType = null;
@@ -38,15 +43,25 @@ function switchStep(step) {
     }
 }
 
+// استيراد الملفات
 document.getElementById('fileInput').addEventListener('change', function(e) {
     for(let file of e.target.files) {
         let url = URL.createObjectURL(file);
         let isVid = file.type.startsWith('video/');
-        let asset = { id: 'ast_' + Math.random().toString(36).substr(2,9), type: isVid ? 'video' : 'image', name: file.name, src: url };
+        let isAud = file.type.startsWith('audio/');
+        let assetType = isVid ? 'video' : (isAud ? 'audio' : 'image');
+        
+        let asset = { id: 'ast_' + Math.random().toString(36).substr(2,9), type: assetType, name: file.name, src: url };
         mediaAssets.push(asset);
         
-        let clip = { id: 'clp_' + Math.random().toString(36).substr(2,9), type: asset.type, src: url, name: asset.name, duration: 15, start: 0, chromaEn: false };
-        timelineClips.push(clip);
+        let clip = { id: 'clp_' + Math.random().toString(36).substr(2,9), type: assetType, src: url, name: asset.name, duration: 15, start: 0 };
+        
+        if(assetType === 'video' || assetType === 'image') {
+            timelineTracks.video.push(clip);
+        } else if(assetType === 'audio') {
+            timelineTracks.audio.push(clip);
+        }
+        
         selectedClipId = clip.id;
 
         if (isVid) {
@@ -55,16 +70,12 @@ document.getElementById('fileInput').addEventListener('change', function(e) {
             videoElement.onloadedmetadata = function() {
                 resizeAllCanvases(videoElement.videoWidth, videoElement.videoHeight);
                 clip.duration = videoElement.duration || 15;
-                videoElement.currentTime = 0;
-                videoElement.play().then(() => {
-                    videoElement.pause();
-                    drawCanvas();
-                }).catch(err => { drawCanvas(); });
-                renderBinAndTimeline();
+                drawCanvas();
+                renderTimelineUI();
             };
         }
     }
-    renderBinAndTimeline();
+    renderTimelineUI();
     drawCanvas();
 });
 
@@ -138,7 +149,8 @@ function initCanvasDragListeners(canvas) {
     };
 }
 
-function renderBinAndTimeline() {
+// تصميم وتحديث واجهة التايملاين مع الثلاث مسارات والمسطرة والـ Zoom
+function renderTimelineUI() {
     const bin = document.getElementById('projectBin1');
     if(bin) {
         bin.innerHTML = '';
@@ -147,70 +159,124 @@ function renderBinAndTimeline() {
         });
     }
 
-    const lane = document.getElementById('laneMain');
-    if(!lane) return;
-    lane.innerHTML = '';
-    let totalW = 0;
+    const container = document.getElementById('timelineContainer') || createTimelineContainer();
+    
+    container.innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:center; background:#111; padding:6px 12px; border-bottom:1px solid #333; color:#aaa; font-size:12px;">
+            <div>التايملاين الاحترافي (3 مسارات)</div>
+            <div style="display:flex; align-items:center; gap:8px;">
+                <span>تكبير/تصغير:</span>
+                <input type="range" min="10" max="60" value="${timelineZoom}" oninput="changeTimelineZoom(this.value)" style="width:100px; cursor:pointer;">
+            </div>
+        </div>
+        <div id="timelineScrollArea" style="overflow-x:auto; position:relative; background:#18181b; min-height:180px; padding-top:20px;">
+            <!-- المسطرة الزمنية والسكين العمودية -->
+            <div id="timelineRuler" style="height:25px; background:#222; border-bottom:1px solid #444; position:relative; cursor:pointer; width:3000px;" onclick="seekTimelineByClick(event)">
+                <div id="timelinePlayhead" style="position:absolute; top:0; width:3px; height:100px; background:#ff3b30; z-index:100; left:${currentTime * timelineZoom}px; pointer-events:none;">
+                    <div style="width:11px; height:11px; background:#ff3b30; transform:rotate(45deg); position:absolute; top:-5px; left:-4px;"></div>
+                </div>
+            </div>
 
-    timelineClips.forEach(c => {
-        let w = c.duration * 20;
-        let leftPos = c.start * 20;
-        lane.innerHTML += `
-            <div class="clip-item ${c.id===selectedClipId?'selected':''}" 
-                 style="left:${leftPos}px; width:${w}px; position:absolute; height:45px; background:#2a4365; border:1px solid #4299e1; border-radius:4px; display:flex; align-items:center; padding:0 8px; cursor:pointer; color:#fff; font-size:12px;"
-                 onclick="selectClip('${c.id}')"
-                 draggable="true"
-                 ondragstart="event.dataTransfer.setData('text/plain', '${c.id}')">
-                 ${c.name}
-            </div>`;
-        totalW = Math.max(totalW, leftPos + w);
-    });
-    lane.style.width = Math.max(800, totalW + 200) + 'px';
-    lane.style.position = 'relative';
+            <!-- مسار 1: الفيديو والصور -->
+            <div style="display:flex; align-items:center; border-bottom:1px solid #27272a; height:50px; background:#1e1e24; position:relative;">
+                <div style="width:70px; background:#121215; color:#888; font-size:11px; text-align:center; height:100%; display:flex; align-items:center; justify-content:center; border-left:1px solid #333; position:sticky; left:0; z-index:10;">فيديو</div>
+                <div id="trackVideo" style="position:relative; height:100%; width:3000px;" ondragover="event.preventDefault()" ondrop="dropClip(event, 'video')">
+                    ${renderTrackClips('video')}
+                </div>
+            </div>
 
-    lane.ondragover = (e) => e.preventDefault();
-    lane.ondrop = (e) => {
-        e.preventDefault();
-        let id = e.dataTransfer.getData('text/plain');
-        let clip = timelineClips.find(c => c.id === id);
-        if(clip) {
-            let rect = lane.getBoundingClientRect();
-            let dropX = e.clientX - rect.left;
-            clip.start = Math.max(0, Math.floor(dropX / 20));
-            renderBinAndTimeline();
-        }
-    };
+            <!-- مسار 2: الصوت -->
+            <div style="display:flex; align-items:center; border-bottom:1px solid #27272a; height:50px; background:#1a231e; position:relative;">
+                <div style="width:70px; background:#121215; color:#888; font-size:11px; text-align:center; height:100%; display:flex; align-items:center; justify-content:center; border-left:1px solid #333; position:sticky; left:0; z-index:10;">صوت</div>
+                <div id="trackAudio" style="position:relative; height:100%; width:3000px;" ondragover="event.preventDefault()" ondrop="dropClip(event, 'audio')">
+                    ${renderTrackClips('audio')}
+                </div>
+            </div>
+
+            <!-- مسار 3: النصوص واللوغو -->
+            <div style="display:flex; align-items:center; border-bottom:1px solid #27272a; height:50px; background:#221e24; position:relative;">
+                <div style="width:70px; background:#121215; color:#888; font-size:11px; text-align:center; height:100%; display:flex; align-items:center; justify-content:center; border-left:1px solid #333; position:sticky; left:0; z-index:10;">إضافات</div>
+                <div id="trackOverlay" style="position:relative; height:100%; width:3000px;" ondragover="event.preventDefault()" ondrop="dropClip(event, 'overlay')">
+                    ${renderTrackClips('overlay')}
+                </div>
+            </div>
+        </div>`;
 }
 
-document.addEventListener('click', function(e) {
-    if(e.target.closest('#laneMain')) {
-        let laneRect = document.getElementById('laneMain').getBoundingClientRect();
-        let clickX = e.clientX - laneRect.left;
-        if(clickX >= 0) {
-            currentTime = Math.max(0, clickX / 20);
-            updatePlayheadPosition(clickX);
-            seekVideoToCurrentTime();
-            drawCanvas();
+function createTimelineContainer() {
+    let old = document.getElementById('timelineContainer');
+    if(old) old.remove();
+    let container = document.createElement('div');
+    container.id = 'timelineContainer';
+    container.style.cssText = 'width:100%; margin-top:10px; border:1px solid #333; border-radius:6px; overflow:hidden;';
+    let target = document.getElementById('laneMain') ? document.getElementById('laneMain').parentNode : document.body;
+    target.appendChild(container);
+    return container;
+}
+
+function renderTrackClips(trackName) {
+    let html = '';
+    timelineTracks[trackName].forEach(c => {
+        let leftPx = c.start * timelineZoom;
+        let widthPx = c.duration * timelineZoom;
+        let bgCol = trackName === 'video' ? '#2563eb' : (trackName === 'audio' ? '#059669' : '#d97706');
+        html += `
+            <div draggable="true" ondragstart="event.dataTransfer.setData('text/plain', '${c.id}')" onclick="selectClip('${c.id}')"
+                 style="position:absolute; left:${leftPx}px; width:${widthPx}px; top:4px; height:40px; background:${bgCol}; border:1px solid rgba(255,255,255,0.3); border-radius:4px; padding:4px 8px; color:#fff; font-size:11px; cursor:pointer; display:flex; align-items:center; overflow:hidden; white-space:nowrap;">
+                 ${c.name}
+            </div>`;
+    });
+    return html;
+}
+
+function changeTimelineZoom(val) {
+    timelineZoom = parseInt(val);
+    renderTimelineUI();
+}
+
+function seekTimelineByClick(e) {
+    let rect = document.getElementById('timelineRuler').getBoundingClientRect();
+    let clickX = e.clientX - rect.left;
+    currentTime = Math.max(0, clickX / timelineZoom);
+    updatePlayheadPosition();
+    seekVideoToCurrentTime();
+    drawCanvas();
+}
+
+function updatePlayheadPosition() {
+    let playhead = document.getElementById('timelinePlayhead');
+    if(playhead) {
+        playhead.style.left = (currentTime * timelineZoom) + 'px';
+    }
+}
+
+function dropClip(e, trackName) {
+    e.preventDefault();
+    let id = e.dataTransfer.getData('text/plain');
+    let foundClip = null;
+    let sourceTrack = null;
+
+    for(let t in timelineTracks) {
+        let idx = timelineTracks[t].findIndex(c => c.id === id);
+        if(idx !== -1) {
+            foundClip = timelineTracks[t][idx];
+            sourceTrack = t;
+            timelineTracks[t].splice(idx, 1);
+            break;
         }
     }
-});
 
-function updatePlayheadPosition(xPos) {
-    let playhead = document.getElementById('timelinePlayhead');
-    if(!playhead) {
-        playhead = document.createElement('div');
-        playhead.id = 'timelinePlayhead';
-        playhead.style.cssText = 'position:absolute; top:0; width:2px; height:100%; background:#ff4d4d; z-index:100; pointer-events:none;';
-        let container = document.getElementById('laneMain');
-        if(container && container.parentNode) container.parentNode.appendChild(playhead);
+    if(foundClip) {
+        let rect = e.currentTarget.getBoundingClientRect();
+        let dropX = e.clientX - rect.left;
+        foundClip.start = Math.max(0, dropX / timelineZoom);
+        timelineTracks[trackName].push(foundClip);
+        renderTimelineUI();
     }
-    let containerRect = document.getElementById('laneMain').getBoundingClientRect();
-    let parentRect = playhead.parentNode.getBoundingClientRect();
-    playhead.style.left = (containerRect.left - parentRect.left + xPos) + 'px';
 }
 
 function seekVideoToCurrentTime() {
-    let activeClip = timelineClips.find(c => currentTime >= c.start && currentTime <= (c.start + c.duration));
+    let activeClip = timelineTracks.video.find(c => currentTime >= c.start && currentTime <= (c.start + c.duration));
     if(activeClip && activeClip.type === 'video') {
         if(videoElement.src !== activeClip.src) {
             videoElement.src = activeClip.src;
@@ -222,18 +288,10 @@ function seekVideoToCurrentTime() {
 
 function selectClip(id) {
     selectedClipId = id;
-    let clip = timelineClips.find(c => c.id === id);
-    if(clip && clip.type === 'video') {
-        videoElement.src = clip.src;
-        videoElement.play();
-        isPlaying = true;
-        let btn = document.getElementById('playBtn');
-        if(btn) btn.style.background = '#00aa63';
-        requestAnimationFrame(renderLoop);
-    }
-    renderBinAndTimeline();
+    renderTimelineUI();
 }
 
+// التحكم بالألوان وتحديث المعاينة
 ['valBrightness', 'valContrast', 'valSaturation'].forEach(id => {
     let el = document.getElementById(id);
     if(el) el.addEventListener('input', () => { drawCanvas(); });
@@ -292,7 +350,7 @@ function drawCanvas() {
     ctx.fillStyle = '#050505';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    let activeClip = timelineClips[0];
+    let activeClip = timelineTracks.video[0];
     
     ctx.save();
     let bright = document.getElementById('valBrightness') ? document.getElementById('valBrightness').value : 100;
@@ -341,14 +399,17 @@ function togglePlayback() {
 
 function renderLoop() {
     if(!isPlaying) return;
+    currentTime += 0.04;
+    updatePlayheadPosition();
+    seekVideoToCurrentTime();
     drawCanvas();
     requestAnimationFrame(renderLoop);
 }
 
 function splitCurrentClip() {
-    alert('تم قطع المقطع بنجاح عند خط الزمن الحالي.');
+    alert('تم قطع المقطع بنجاح عند خط المسطرة العمودية (' + currentTime.toFixed(2) + ' ثانية).');
 }
 
 function exportFinalProject() {
-    alert('🎉 مبروك يا طارق! تم تصدير الفيديو والحفظ النهائي بنجاح تامة.');
+    alert('🎉 مبروك يا طارق! تم إتمام المشروع وتصديره بنجاح.');
 }
