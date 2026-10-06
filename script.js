@@ -1,8 +1,8 @@
 let mediaAssets = [];
-let timelineClips = []; // {id, type: 'video'|'image'|'text'|'blur', track, startSec, durationSec, src, name, width, height, x, y, speed, brightness, chromaEnabled, chromaTol, text, font, color, fontSize, shape}
+let timelineClips = [];
 let selectedClipId = null;
 let currentTime = 0;
-let totalDuration = 30; // 30 ثانية افتراضية للتايملاين
+let totalDuration = 30;
 let isPlaying = false;
 let playbackInterval = null;
 
@@ -15,7 +15,6 @@ const canvasContainer = document.getElementById('canvasContainer');
 const overlaysStage = document.getElementById('overlaysStage');
 const canvasPlaceholder = document.getElementById('canvasPlaceholder');
 
-// استيراد الملفات (فيديو أو صور/لوغو)
 document.getElementById('fileInput').addEventListener('change', function(e) {
     const files = e.target.files;
     for (let file of files) {
@@ -50,7 +49,6 @@ function renderProjectBin() {
     });
 }
 
-// السحب والإفلات للتايملاين بسلاسة
 document.querySelectorAll('.track-lane').forEach(lane => {
     lane.addEventListener('dragover', (e) => e.preventDefault());
     lane.addEventListener('drop', (e) => {
@@ -61,7 +59,7 @@ document.querySelectorAll('.track-lane').forEach(lane => {
 
         const rect = lane.getBoundingClientRect();
         const clickX = e.clientX - rect.left;
-        const pixelsPerSec = 40; // كل ثانية تساوي 40 بكسل
+        const pixelsPerSec = 40;
         const startSec = Math.max(0, clickX / pixelsPerSec);
 
         const newClip = {
@@ -146,7 +144,6 @@ function renderTimeline() {
         el.style.width = Math.max(40, (clip.durationSec * pixelsPerSec)) + 'px';
         el.innerText = clip.name || clip.text || ('فلتر ' + clip.shape);
         
-        // إمكانية سحب وتحريك المقاطع بسلاسة على التايملاين
         let isDraggingClip = false;
         let startX = 0;
         el.onmousedown = (e) => {
@@ -186,7 +183,6 @@ function renderTimeline() {
     });
 }
 
-// تحريك المسطرة العمودية يميناً ويساراً بسلاسة
 let isDraggingPlayhead = false;
 function startDragPlayhead(e) {
     isDraggingPlayhead = true;
@@ -217,11 +213,6 @@ function updatePlayheadPosition() {
     timecodeDisplay.innerText = `${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}:${String(frames).padStart(2,'0')}`;
 }
 
-function seekTimeline(e) {
-    // للنقر المباشر على التايملاين أو سياق المعاينة
-}
-
-// تحديث لوحة الخصائص Inspector
 function updateInspector() {
     const clip = timelineClips.find(c => c.id === selectedClipId);
     const titleEl = document.getElementById('inspectorTitle');
@@ -264,7 +255,6 @@ function updateInspector() {
     }
 }
 
-// ربط مدخلات الخصائص
 document.getElementById('clipSpeedRange').oninput = (e) => {
     const clip = timelineClips.find(c => c.id === selectedClipId);
     if(clip) { clip.speed = parseFloat(e.target.value); document.getElementById('speedVal').innerText = clip.speed; }
@@ -298,7 +288,6 @@ document.getElementById('inspectorFontSize').oninput = (e) => {
     if(clip) { clip.fontSize = parseInt(e.target.value); updateStage(); }
 };
 
-// تحديث شاشة المعاينة وإمكانية تكبير وتحريك اللوغو والمقاطع بالماوس
 function updateStage() {
     overlaysStage.innerHTML = '';
     const activeClips = timelineClips.filter(c => currentTime >= c.startSec && currentTime <= (c.startSec + c.durationSec));
@@ -311,7 +300,6 @@ function updateStage() {
 
     canvasPlaceholder.style.display = 'none';
     
-    // ترتيب الطبقات V1 أسفل، V2 وسط، V3 أعلى
     const trackOrder = { 'V1': 1, 'V2': 2, 'V3': 3 };
     activeClips.sort((a, b) => trackOrder[a.track] - trackOrder[b.track]);
 
@@ -331,7 +319,6 @@ function updateStage() {
                 resizeHandler.className = 'resize-handle';
                 el.appendChild(resizeHandler);
                 
-                // سحب وتكبير الحجم
                 resizeHandler.onmousedown = (e) => {
                     e.stopPropagation();
                     let startX = e.clientX;
@@ -367,7 +354,6 @@ function updateStage() {
             if(clip.shape === 'circle') el.style.borderRadius = '50%';
         }
 
-        // سحب العنصر داخل شاشة المعاينة (اللوغو أو النصوص)
         el.onmousedown = (e) => {
             if(e.target.classList.contains('resize-handle')) return;
             selectedClipId = clip.id;
