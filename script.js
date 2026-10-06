@@ -19,9 +19,9 @@ const textOverlay = document.getElementById('textOverlay');
 const selectedTrackName = document.getElementById('selectedTrackName');
 
 let currentActiveTrack = 'V1';
-let clipsData = { V1: null, V2: null, V3: null };
+let timelineClips = { V1: null, V2: null, V3: null };
 
-// اختيار المسار النشط حالياً للتعديل والتقطيع
+// اختيار المسار النشط للتحكم والقص
 function selectActiveTrack(trackId) {
     currentActiveTrack = trackId;
     selectedTrackName.textContent = trackId;
@@ -29,7 +29,7 @@ function selectActiveTrack(trackId) {
     event.currentTarget.classList.add('active');
 }
 
-// استيراد الملفات وإضافتها لـ Project Bin
+// استيراد الملفات
 fileInput.addEventListener('change', (e) => {
     const files = Array.from(e.target.files);
     files.forEach(file => {
@@ -37,25 +37,25 @@ fileInput.addEventListener('change', (e) => {
         const thumb = document.createElement('div');
         thumb.className = 'media-thumb';
         thumb.innerHTML = `
-            <div style="background:#111; height:45px; display:flex; align-items:center; justify-content:center; color:#777; font-size:8px;">${file.type.includes('video') ? 'VIDEO' : 'IMAGE'}</div>
+            <div style="background:#111; height:45px; display:flex; align-items:center; justify-content:center; color:#777; font-size:8px;">${file.type.includes('video') ? 'VID' : 'IMG'}</div>
             <span>${file.name}</span>
         `;
-        // النقر لإسقاط الملف فوراً في المسار النشط المحدد
-        thumb.onclick = () => assignMediaToActiveTrack(file.name, url, file.type);
+        // عند النقر على الملف يتم إسقاطه مباشرة في المسار النشط الحالي
+        thumb.onclick = () => loadClipToTrack(file.name, url, currentActiveTrack);
         projectBin.appendChild(thumb);
     });
 });
 
-function assignMediaToActiveTrack(name, url, type) {
+function loadClipToTrack(name, url, trackId) {
     placeholderText.style.display = 'none';
-    clipsData[currentActiveTrack] = { name, url, type, cutTime: 0 };
+    timelineClips[trackId] = { name: name, url: url, inPoint: 0 };
 
-    let targetLane = currentActiveTrack === 'V1' ? laneV1 : (currentActiveTrack === 'V2' ? laneV2 : laneV3);
-    let clipClass = currentActiveTrack === 'V1' ? 'clip-item' : 'clip-item clip-v2';
+    let targetLane = trackId === 'V1' ? laneV1 : (trackId === 'V2' ? laneV2 : laneV3);
+    let clipClass = trackId === 'V1' ? 'clip-item' : 'clip-item clip-v2';
 
     targetLane.innerHTML = `<div class="${clipClass}" style="width: 100%;"><span>${name}</span></div>`;
 
-    if (currentActiveTrack === 'V1') {
+    if (trackId === 'V1') {
         mainPlayer.src = url;
         mainPlayer.style.display = 'block';
         mainPlayer.load();
@@ -66,7 +66,7 @@ function assignMediaToActiveTrack(name, url, type) {
     }
 }
 
-// التشغيل والايقاف الشامل
+// زر التشغيل والإيقاف الموحد
 function togglePlayPlayback() {
     if (mainPlayer.paused) {
         mainPlayer.play();
@@ -79,7 +79,7 @@ function togglePlayPlayback() {
     }
 }
 
-// التقديم والتأخير إطار بإطار دقيق
+// التقديم والترجيع إطار بإطار (Frame by Frame)
 function stepFrame(frames) {
     if (mainPlayer.src) {
         mainPlayer.currentTime += frames * 0.04;
@@ -87,25 +87,25 @@ function stepFrame(frames) {
     }
 }
 
-// تقطيع الفيديو عند التوقيت الحالي
-function splitSelectedClip() {
-    if (clipsData[currentActiveTrack]) {
-        let currentTime = mainPlayer.currentTime;
-        clipsData[currentActiveTrack].cutTime = currentTime;
-        alert(`تم تقطيع مسار ${currentActiveTrack} عند التوقيت: ${currentTime.toFixed(2)} ثانية`);
+// خاصية التقطيع (Split Clip عند الوقت الحالي)
+function splitCurrentClip() {
+    if (timelineClips[currentActiveTrack]) {
+        let t = mainPlayer.currentTime;
+        timelineClips[currentActiveTrack].inPoint = t;
+        alert(`تم قص مقطع المسار [${currentActiveTrack}] بنجاح عند الثانية: ${t.toFixed(2)}`);
     } else {
-        alert('لا يوجد ملف في المسار النشط للتقطيع!');
+        alert('لا يوجد ملف نشط في هذا المسار لتقطيعه!');
     }
 }
 
-// تحديث العداد الزمني بدقة Timecode
+// العداد الزمني الدقيق (Timecode)
 mainPlayer.addEventListener('timeupdate', () => {
     if (!isNaN(mainPlayer.currentTime)) {
-        const t = mainPlayer.currentTime;
-        const hrs = String(Math.floor(t / 3600)).padStart(2, '0');
-        const mins = String(Math.floor((t % 3600) / 60)).padStart(2, '0');
-        const secs = String(Math.floor(t % 60)).padStart(2, '0');
-        const frames = String(Math.floor((t % 1) * 25)).padStart(2, '0');
+        let t = mainPlayer.currentTime;
+        let hrs = String(Math.floor(t / 3600)).padStart(2, '0');
+        let mins = String(Math.floor((t % 3600) / 60)).padStart(2, '0');
+        let secs = String(Math.floor(t % 60)).padStart(2, '0');
+        let frames = String(Math.floor((t % 1) * 25)).padStart(2, '0');
         timecodeDisplay.textContent = `${hrs}:${mins}:${secs}:${frames}`;
     }
 });
@@ -123,20 +123,15 @@ opacityRange.addEventListener('input', (e) => {
     target.style.opacity = e.target.value / 100;
 });
 
-// محاكاة إزالة الكروما (الخضراء / الزرقاء)
 chromaKeySelect.addEventListener('change', (e) => {
     let val = e.target.value;
     let target = currentActiveTrack === 'V1' ? mainPlayer : overlayPlayer;
-    if (val === 'green') {
-        target.style.filter += ' hue-rotate(90deg) contrast(120%)';
-    } else if (val === 'blue') {
-        target.style.filter += ' hue-rotate(180deg) contrast(120%)';
-    } else {
-        target.style.filter = 'none';
-    }
+    if (val === 'green') target.style.filter += ' hue-rotate(90deg) contrast(130%)';
+    else if (val === 'blue') target.style.filter += ' hue-rotate(180deg) contrast(130%)';
+    else target.style.filter = 'none';
 });
 
-// إدارة النص وتكبيره وتصميمه
+// إدارة النصوص وتكبيرها
 customTextInput.addEventListener('input', (e) => {
     let val = e.target.value;
     if (val.trim() !== "") {
@@ -153,7 +148,7 @@ fontSizeRange.addEventListener('input', (e) => {
     textOverlay.style.fontSize = size + 'px';
 });
 
-// تفريغ التايملاين بالكامل
+// تفريغ المشروع بالكامل
 function clearTimeline() {
     mainPlayer.src = "";
     mainPlayer.style.display = 'none';
@@ -162,6 +157,6 @@ function clearTimeline() {
     laneV1.innerHTML = "";
     laneV2.innerHTML = "";
     laneV3.innerHTML = "";
-    clipsData = { V1: null, V2: null, V3: null };
+    timelineClips = { V1: null, V2: null, V3: null };
     placeholderText.style.display = 'block';
 }
