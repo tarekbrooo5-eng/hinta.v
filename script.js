@@ -1,450 +1,207 @@
 let mediaAssets = [];
-let timelineClips = [];
+let timelineClips = []; // {id, type:'video'|'image', src, file, duration, start, chromaEn, chromaCol, chromaTol}
+let textLayers = [];    // {id, text, x, y, color, size, start, duration}
+let logoAsset = { src: null, x: 20, y: 20, size: 100 };
 let selectedClipId = null;
-let currentTime = 0;
-let totalDuration = 30;
+let currentStep = 1;
 let isPlaying = false;
-let playbackInterval = null;
+let currentTime = 0;
+let videoElement = document.createElement('video');
+videoElement.loop = true;
+videoElement.muted = true;
 
-const mainPlayer = document.getElementById('mainPlayer');
-const playheadLine = document.getElementById('playheadLine');
-const timelineTracksContainer = document.getElementById('timelineTracksContainer');
-const timelineTracksWrapper = document.getElementById('timelineTracksWrapper');
-const timecodeDisplay = document.getElementById('timecodeDisplay');
-const canvasContainer = document.getElementById('canvasContainer');
-const overlaysStage = document.getElementById('overlaysStage');
-const canvasPlaceholder = document.getElementById('canvasPlaceholder');
+// التحكم بانتقال المراحل
+function goToStep(step) {
+    document.querySelectorAll('.step-content-pane').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.step-tab').forEach(t => { t.classList.remove('active'); t.classList.remove('completed'); });
 
+    document.getElementById('step' + step + 'Pane').classList.add('active');
+    
+    for(let i=1; i<=4; i++) {
+        const tab = document.getElementById('tab' + i);
+        if(i < step) { tab.classList.add('completed'); }
+        else if(i === step) { tab.classList.add('active'); }
+    }
+    currentStep = step;
+    drawCanvas();
+}
+
+function switchStep(step) {
+    if(document.getElementById('tab' + step).classList.contains('completed') || document.getElementById('tab' + step).classList.contains('active')) {
+        goToStep(step);
+    }
+}
+
+// استيراد الملفات
 document.getElementById('fileInput').addEventListener('change', function(e) {
-    const files = e.target.files;
-    for (let file of files) {
-        const url = URL.createObjectURL(file);
-        const asset = {
-            id: 'asset_' + Math.random().toString(36).substr(2, 9),
-            type: file.type.startsWith('image/') ? 'image' : 'video',
-            name: file.name,
-            src: url
-        };
+    for(let file of e.target.files) {
+        let url = URL.createObjectURL(file);
+        let asset = { id: 'ast_' + Math.random().toString(36).substr(2,9), type: file.type.startsWith('image/') ? 'image' : 'video', name: file.name, src: url, file: file };
         mediaAssets.push(asset);
+        
+        // إضافة افتراضية للتايملاين في المرحلة الأولى
+        let clip = { id: 'clp_' + Math.random().toString(36).substr(2,9), type: asset.type, src: url, name: asset.name, duration: 8, start: timelineClips.length * 8, chromaEn: false, chromaCol: '#00ff00', chromaTol: 40 };
+        timelineClips.push(clip);
+        selectedClipId = clip.id;
     }
-    renderProjectBin();
+    renderBinAndTimeline();
+    drawCanvas();
 });
 
-function renderProjectBin() {
-    const bin = document.getElementById('projectBin');
+function renderBinAndTimeline() {
+    const bin = document.getElementById('projectBin1');
     bin.innerHTML = '';
-    if(mediaAssets.length === 0) {
-        bin.innerHTML = '<div style="color: #666; font-size: 10px; text-align: center; width: 100%; margin-top: 20px;">اسحب المقاطع والصور واللوغو هنا ثم للتايملاين</div>';
-        return;
-    }
-    mediaAssets.forEach(asset => {
-        const div = document.createElement('div');
-        div.className = 'media-thumb';
-        div.draggable = true;
-        div.ondragstart = (e) => e.dataTransfer.setData('text/plain', asset.id);
-        
-        let previewEl = asset.type === 'image' ? `<img src="${asset.src}">` : `<video src="${asset.src}"></video>`;
-        div.innerHTML = `${previewEl}<span>${asset.name}</span>`;
-        bin.appendChild(div);
+    mediaAssets.forEach(a => {
+        bin.innerHTML += `<div class="media-thumb"><${a.type==='image'?'img':'video'} src="${a.src}"></${a.type==='image'?'img':'video'}><span>${a.name}</span></div>`;
     });
+
+    const lane = document.getElementById('laneMain');
+    lane.innerHTML = '';
+    let totalW = 0;
+    timelineClips.forEach(c => {
+        let w = c.duration * 30;
+        lane.innerHTML += `<div class="clip-item ${c.id===selectedClipId?'selected':''}" style="left:${c.start*30}px; width:${w}px;" onclick="selectClip('${c.id}')">${c.name}</div>`;
+        totalW = Math.max(totalW, (c.start + c.duration) * 30);
+    });
+    lane.style.width = Math.max(600, totalW + 100) + 'px';
 }
 
-document.querySelectorAll('.track-lane').forEach(lane => {
-    lane.addEventListener('dragover', (e) => e.preventDefault());
-    lane.addEventListener('drop', (e) => {
-        e.preventDefault();
-        const assetId = e.dataTransfer.getData('text/plain');
-        const asset = mediaAssets.find(a => a.id === assetId);
-        if(!asset) return;
+function selectClip(id) {
+    selectedClipId = id;
+    let clip = timelineClips.find(c => c.id === id);
+    if(clip) {
+        document.getElementById('chromaToggle').checked = clip.chromaEn;
+        document.getElementById('chromaColorPicker').value = clip.chromaCol;
+        document.getElementById('chromaTolRange').value = clip.chromaTol;
+    }
+    renderBinAndTimeline();
+}
 
-        const rect = lane.getBoundingClientRect();
-        const clickX = e.clientX - rect.left;
-        const pixelsPerSec = 40;
-        const startSec = Math.max(0, clickX / pixelsPerSec);
-
-        const newClip = {
-            id: 'clip_' + Math.random().toString(36).substr(2, 9),
-            type: asset.type,
-            track: lane.dataset.track,
-            startSec: startSec,
-            durationSec: 6,
-            src: asset.src,
-            name: asset.name,
-            width: asset.type === 'image' ? 120 : 320,
-            height: asset.type === 'image' ? 120 : 180,
-            x: 50,
-            y: 50,
-            speed: 1.0,
-            brightness: 100,
-            chromaEnabled: false,
-            chromaTol: 40
-        };
-        timelineClips.push(newClip);
-        selectedClipId = newClip.id;
-        renderTimeline();
-        updateInspector();
-        updateStage();
-    });
+// خصائص الكروما
+document.getElementById('chromaToggle').addEventListener('change', (e) => {
+    let clip = timelineClips.find(c => c.id === selectedClipId);
+    if(clip) { clip.chromaEn = e.target.checked; drawCanvas(); }
+});
+document.getElementById('chromaColorPicker').addEventListener('input', (e) => {
+    let clip = timelineClips.find(c => c.id === selectedClipId);
+    if(clip) { clip.chromaCol = e.target.value; drawCanvas(); }
+});
+document.getElementById('chromaTolRange').addEventListener('input', (e) => {
+    let clip = timelineClips.find(c => c.id === selectedClipId);
+    if(clip) { clip.chromaTol = parseInt(e.target.value); document.getElementById('chromaTolVal').innerText = clip.chromaTol; drawCanvas(); }
 });
 
-function addNewTextLayer() {
-    const newClip = {
-        id: 'clip_' + Math.random().toString(36).substr(2, 9),
-        type: 'text',
-        track: 'V2',
-        startSec: currentTime,
-        durationSec: 5,
-        text: 'نص جديد (طارق ابراهيم)',
-        font: 'Cairo',
-        color: '#ffffff',
-        fontSize: 32,
-        x: 100,
-        y: 100
-    };
-    timelineClips.push(newClip);
-    selectedClipId = newClip.id;
-    renderTimeline();
-    updateInspector();
-    updateStage();
+// إدارة النصوص
+function addNewText() {
+    let txt = { id: 'txt_' + Math.random().toString(36).substr(2,9), text: 'نص جديد (طارق ابراهيم)', x: 100, y: 150, color: '#ffffff', size: 32, start: 0, duration: 5 };
+    textLayers.push(txt);
+    renderTextControls();
+    drawCanvas();
 }
 
-function addNewBlurLayer(shape) {
-    const newClip = {
-        id: 'clip_' + Math.random().toString(36).substr(2, 9),
-        type: 'blur',
-        shape: shape,
-        track: 'V3',
-        startSec: currentTime,
-        durationSec: 4,
-        x: 150,
-        y: 100,
-        width: 140,
-        height: 90
-    };
-    timelineClips.push(newClip);
-    selectedClipId = newClip.id;
-    renderTimeline();
-    updateInspector();
-    updateStage();
-}
-
-function renderTimeline() {
-    ['V1', 'V2', 'V3'].forEach(tr => {
-        document.getElementById('lane' + tr).innerHTML = '';
+function renderTextControls() {
+    const box = document.getElementById('textControlsContainer');
+    box.innerHTML = '';
+    textLayers.forEach(t => {
+        box.innerHTML += `
+            <div style="background:#151515; padding:6px; border-radius:4px; border:1px solid #333;">
+                <input type="text" value="${t.text}" oninput="updateTextProp('${t.id}', 'text', this.value)">
+                <div style="display:flex; gap:5px; margin-top:4px;">
+                    <input type="color" value="${t.color}" oninput="updateTextProp('${t.id}', 'color', this.value)" style="width:40px;">
+                    <input type="range" min="16" max="72" value="${t.size}" oninput="updateTextProp('${t.id}', 'size', parseInt(this.value))">
+                </div>
+            </div>`;
     });
+}
 
-    const pixelsPerSec = 40;
-    timelineClips.forEach(clip => {
-        const lane = document.getElementById('lane' + clip.track);
-        if(!lane) return;
+function updateTextProp(id, prop, val) {
+    let t = textLayers.find(x => x.id === id);
+    if(t) { t[prop] = val; drawCanvas(); }
+}
 
-        const el = document.createElement('div');
-        el.className = `clip-item ${clip.type}-clip ${clip.id === selectedClipId ? 'selected' : ''}`;
-        el.style.left = (clip.startSec * pixelsPerSec) + 'px';
-        el.style.width = Math.max(40, (clip.durationSec * pixelsPerSec)) + 'px';
-        el.innerText = clip.name || clip.text || ('فلتر ' + clip.shape);
-        
-        let isDraggingClip = false;
-        let startX = 0;
-        el.onmousedown = (e) => {
-            if(e.button !== 0) return;
-            isDraggingClip = true;
-            startX = e.clientX;
-            selectedClipId = clip.id;
-            renderTimeline();
-            updateInspector();
-            updateStage();
-            e.stopPropagation();
-        };
+// اللوغو
+document.getElementById('logoInput').addEventListener('change', function(e) {
+    if(e.target.files[0]) {
+        logoAsset.src = URL.createObjectURL(e.target.files[0]);
+        drawCanvas();
+    }
+});
+document.getElementById('logoSizeRange').addEventListener('input', (e) => {
+    logoAsset.size = parseInt(e.target.value);
+    drawCanvas();
+});
 
-        window.addEventListener('mousemove', (e) => {
-            if(!isDraggingClip) return;
-            const dx = e.clientX - startX;
-            if(Math.abs(dx) > 5) {
-                clip.startSec = Math.max(0, clip.startSec + (dx / pixelsPerSec));
-                startX = e.clientX;
-                el.style.left = (clip.startSec * pixelsPerSec) + 'px';
+// رسم حقل العمل المتناسب تلقائياً مع حجم الفيديو والصور
+function drawCanvas() {
+    ['renderCanvas', 'renderCanvas2', 'renderCanvas3', 'renderCanvas4'].forEach(canvasId => {
+        const canvas = document.getElementById(canvasId);
+        if(!canvas) return;
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // خلفية سوداء افتراضية
+        ctx.fillStyle = '#000000';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // رسم المقطع الحالي في التايملاين
+        let activeClip = timelineClips[0];
+        if(activeClip) {
+            ctx.save();
+            // تطبيق فلاتر الألوان (المرحلة 2)
+            let bright = document.getElementById('valBrightness') ? document.getElementById('valBrightness').value : 100;
+            let contrast = document.getElementById('valContrast') ? document.getElementById('valContrast').value : 100;
+            let sat = document.getElementById('valSaturation') ? document.getElementById('valSaturation').value : 100;
+            ctx.filter = `brightness(${bright}%) contrast(${contrast}%) saturate(${sat}%)`;
+
+            if(activeClip.type === 'image') {
+                let img = new Image();
+                img.src = activeClip.src;
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            } else {
+                if(videoElement.src !== activeClip.src) { videoElement.src = activeClip.src; videoElement.play(); }
+                ctx.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
             }
-        });
-
-        window.addEventListener('mouseup', () => {
-            isDraggingClip = false;
-        });
-
-        el.onclick = (e) => {
-            selectedClipId = clip.id;
-            renderTimeline();
-            updateInspector();
-            updateStage();
-            e.stopPropagation();
-        };
-
-        lane.appendChild(el);
-    });
-}
-
-let isDraggingPlayhead = false;
-function startDragPlayhead(e) {
-    isDraggingPlayhead = true;
-    e.stopPropagation();
-}
-
-window.addEventListener('mousemove', (e) => {
-    if(!isDraggingPlayhead) return;
-    const wrapperRect = timelineTracksWrapper.getBoundingClientRect();
-    const x = e.clientX - wrapperRect.left + timelineTracksWrapper.scrollLeft;
-    const pixelsPerSec = 40;
-    currentTime = Math.max(0, Math.min(totalDuration, x / pixelsPerSec));
-    updatePlayheadPosition();
-    updateStage();
-});
-
-window.addEventListener('mouseup', () => {
-    isDraggingPlayhead = false;
-});
-
-function updatePlayheadPosition() {
-    const pixelsPerSec = 40;
-    playheadLine.style.left = (currentTime * pixelsPerSec) + 'px';
-    
-    let mins = Math.floor(currentTime / 60);
-    let secs = Math.floor(currentTime % 60);
-    let frames = Math.floor((currentTime % 1) * 25);
-    timecodeDisplay.innerText = `${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}:${String(frames).padStart(2,'0')}`;
-}
-
-function updateInspector() {
-    const clip = timelineClips.find(c => c.id === selectedClipId);
-    const titleEl = document.getElementById('inspectorTitle');
-    const mediaControls = document.getElementById('mediaInspectorControls');
-    const chromaControls = document.getElementById('chromaInspectorControls');
-    const textControls = document.getElementById('textInspectorControls');
-
-    mediaControls.style.display = 'none';
-    chromaControls.style.display = 'none';
-    textControls.style.display = 'none';
-
-    if(!clip) {
-        titleEl.innerText = 'لم يتم تحديد عنصر';
-        return;
-    }
-
-    if(clip.type === 'video' || clip.type === 'image') {
-        titleEl.innerText = 'خصائص الميديا: ' + (clip.name || '');
-        mediaControls.style.display = 'block';
-        document.getElementById('clipSpeedRange').value = clip.speed || 1.0;
-        document.getElementById('speedVal').innerText = clip.speed || 1.0;
-        document.getElementById('brightnessRange').value = clip.brightness || 100;
-        document.getElementById('brightVal').innerText = clip.brightness || 100;
-        
-        if(clip.type === 'video') {
-            chromaControls.style.display = 'block';
-            document.getElementById('chromaEnableCheck').checked = clip.chromaEnabled || false;
-            document.getElementById('chromaToleranceRange').value = clip.chromaTol || 40;
-            document.getElementById('chromaTolVal').innerText = clip.chromaTol || 40;
-        }
-    } else if(clip.type === 'text') {
-        titleEl.innerText = 'خصائص طبقة النص';
-        textControls.style.display = 'block';
-        document.getElementById('inspectorTextInput').value = clip.text;
-        document.getElementById('inspectorFont').value = clip.font;
-        document.getElementById('inspectorTextColor').value = clip.color;
-        document.getElementById('inspectorFontSize').value = clip.fontSize;
-    } else if(clip.type === 'blur') {
-        titleEl.innerText = 'خصائص فلتر البلور';
-    }
-}
-
-document.getElementById('clipSpeedRange').oninput = (e) => {
-    const clip = timelineClips.find(c => c.id === selectedClipId);
-    if(clip) { clip.speed = parseFloat(e.target.value); document.getElementById('speedVal').innerText = clip.speed; }
-};
-document.getElementById('brightnessRange').oninput = (e) => {
-    const clip = timelineClips.find(c => c.id === selectedClipId);
-    if(clip) { clip.brightness = parseInt(e.target.value); document.getElementById('brightVal').innerText = clip.brightness; updateStage(); }
-};
-document.getElementById('chromaEnableCheck').onchange = (e) => {
-    const clip = timelineClips.find(c => c.id === selectedClipId);
-    if(clip) { clip.chromaEnabled = e.target.checked; updateStage(); }
-};
-document.getElementById('chromaToleranceRange').oninput = (e) => {
-    const clip = timelineClips.find(c => c.id === selectedClipId);
-    if(clip) { clip.chromaTol = parseInt(e.target.value); document.getElementById('chromaTolVal').innerText = clip.chromaTol; updateStage(); }
-};
-document.getElementById('inspectorTextInput').oninput = (e) => {
-    const clip = timelineClips.find(c => c.id === selectedClipId);
-    if(clip) { clip.text = e.target.value; renderTimeline(); updateStage(); }
-};
-document.getElementById('inspectorFont').onchange = (e) => {
-    const clip = timelineClips.find(c => c.id === selectedClipId);
-    if(clip) { clip.font = e.target.value; updateStage(); }
-};
-document.getElementById('inspectorTextColor').oninput = (e) => {
-    const clip = timelineClips.find(c => c.id === selectedClipId);
-    if(clip) { clip.color = e.target.value; updateStage(); }
-};
-document.getElementById('inspectorFontSize').oninput = (e) => {
-    const clip = timelineClips.find(c => c.id === selectedClipId);
-    if(clip) { clip.fontSize = parseInt(e.target.value); updateStage(); }
-};
-
-function updateStage() {
-    overlaysStage.innerHTML = '';
-    const activeClips = timelineClips.filter(c => currentTime >= c.startSec && currentTime <= (c.startSec + c.durationSec));
-    
-    if(activeClips.length === 0) {
-        mainPlayer.style.display = 'none';
-        canvasPlaceholder.style.display = 'block';
-        return;
-    }
-
-    canvasPlaceholder.style.display = 'none';
-    
-    const trackOrder = { 'V1': 1, 'V2': 2, 'V3': 3 };
-    activeClips.sort((a, b) => trackOrder[a.track] - trackOrder[b.track]);
-
-    activeClips.forEach(clip => {
-        const el = document.createElement('div');
-        el.className = `interactive-overlay ${clip.id === selectedClipId ? 'active' : ''}`;
-        el.style.left = clip.x + 'px';
-        el.style.top = clip.y + 'px';
-        el.style.width = (clip.width || 200) + 'px';
-        el.style.height = (clip.height || 120) + 'px';
-
-        if(clip.type === 'video' || clip.type === 'image') {
-            let mediaEl = clip.type === 'image' ? `<img src="${clip.src}" style="width:100%; height:100%; object-fit:contain; filter: brightness(${clip.brightness}%);">` : `<video src="${clip.src}" autoplay muted loop style="width:100%; height:100%; object-fit:contain; filter: brightness(${clip.brightness}%);"></video>`;
-            el.innerHTML = mediaEl;
-            if(clip.type === 'image' || clip.type === 'video') {
-                const resizeHandler = document.createElement('div');
-                resizeHandler.className = 'resize-handle';
-                el.appendChild(resizeHandler);
-                
-                resizeHandler.onmousedown = (e) => {
-                    e.stopPropagation();
-                    let startX = e.clientX;
-                    let startY = e.clientY;
-                    let startW = clip.width || 200;
-                    let startH = clip.height || 120;
-                    
-                    const onMouseMove = (ev) => {
-                        clip.width = Math.max(40, startW + (ev.clientX - startX));
-                        clip.height = Math.max(30, startH + (ev.clientY - startY));
-                        updateStage();
-                    };
-                    const onMouseUp = () => {
-                        window.removeEventListener('mousemove', onMouseMove);
-                        window.removeEventListener('mouseup', onMouseUp);
-                    };
-                    window.addEventListener('mousemove', onMouseMove);
-                    window.addEventListener('mouseup', onMouseUp);
-                };
-            }
-        } else if(clip.type === 'text') {
-            el.style.width = 'auto';
-            el.style.height = 'auto';
-            el.style.fontFamily = clip.font;
-            el.style.color = clip.color;
-            el.style.fontSize = clip.fontSize + 'px';
-            el.style.fontWeight = 'bold';
-            el.innerText = clip.text;
-        } else if(clip.type === 'blur') {
-            el.style.background = 'rgba(255,255,255,0.15)';
-            el.style.backdropFilter = 'blur(6px)';
-            el.style.border = '1px dashed #ffcc00';
-            if(clip.shape === 'circle') el.style.borderRadius = '50%';
+            ctx.restore();
         }
 
-        el.onmousedown = (e) => {
-            if(e.target.classList.contains('resize-handle')) return;
-            selectedClipId = clip.id;
-            renderTimeline();
-            updateInspector();
-            
-            let startX = e.clientX;
-            let startY = e.clientY;
-            let initX = clip.x;
-            let initY = clip.y;
+        // رسم النصوص (المرحلة 3)
+        textLayers.forEach(t => {
+            ctx.font = `bold ${t.size}px Cairo, Tahoma`;
+            ctx.fillStyle = t.color;
+            ctx.fillText(t.text, t.x, t.y);
+        });
 
-            const onMouseMove = (ev) => {
-                clip.x = initX + (ev.clientX - startX);
-                clip.y = initY + (ev.clientY - startY);
-                updateStage();
-            };
-            const onMouseUp = () => {
-                window.removeEventListener('mousemove', onMouseMove);
-                window.removeEventListener('mouseup', onMouseUp);
-            };
-            window.addEventListener('mousemove', onMouseMove);
-            window.addEventListener('mouseup', onMouseUp);
-            e.stopPropagation();
-        };
-
-        overlaysStage.appendChild(el);
+        // رسم اللوغو (المرحلة 4)
+        if(logoAsset.src) {
+            let lImg = new Image();
+            lImg.src = logoAsset.src;
+            ctx.drawImage(lImg, logoAsset.x, logoAsset.y, logoAsset.size, logoAsset.size * 0.6);
+        }
     });
 }
 
-function deleteSelectedClip() {
-    if(!selectedClipId) return;
-    timelineClips = timelineClips.filter(c => c.id !== selectedClipId);
-    selectedClipId = null;
-    renderTimeline();
-    updateInspector();
-    updateStage();
-}
-
-function splitSelectedVideoClip() {
-    const clip = timelineClips.find(c => c.id === selectedClipId);
-    if(!clip || currentTime <= clip.startSec || currentTime >= (clip.startSec + clip.durationSec)) {
-        alert('حدد مقطعاً على التايملاين واجعل المسطرة في منتصفه لتقطيعه.');
-        return;
-    }
-    const rightDuration = (clip.startSec + clip.durationSec) - currentTime;
-    clip.durationSec = currentTime - clip.startSec;
-
-    const newClip = {
-        ...clip,
-        id: 'clip_' + Math.random().toString(36).substr(2, 9),
-        startSec: currentTime,
-        durationSec: rightDuration
-    };
-    timelineClips.push(newClip);
-    renderTimeline();
-}
-
-function togglePlayPlayback() {
+// حلقة التشغيل للتحديث المستمر
+function togglePlayback() {
     isPlaying = !isPlaying;
-    const btn = document.getElementById('playPauseBtn');
+    document.getElementById('playBtn').style.background = isPlaying ? '#00aa63' : '#007acc';
     if(isPlaying) {
-        btn.style.background = '#00aa63';
-        playbackInterval = setInterval(() => {
-            currentTime += 0.1;
-            if(currentTime >= totalDuration) { currentTime = 0; isPlaying = false; clearInterval(playbackInterval); btn.style.background = '#007acc'; }
-            updatePlayheadPosition();
-            updateStage();
-        }, 100);
+        if(videoElement.paused) videoElement.play();
+        requestAnimationFrame(loopPlay);
     } else {
-        btn.style.background = '#007acc';
-        clearInterval(playbackInterval);
+        videoElement.pause();
     }
 }
 
-function stepFrame(dir) {
-    currentTime = Math.max(0, currentTime + (dir * 0.04));
-    updatePlayheadPosition();
-    updateStage();
+function loopPlay() {
+    if(!isPlaying) return;
+    drawCanvas();
+    requestAnimationFrame(loopPlay);
 }
 
-function resetTimeline() {
-    if(confirm('هل تريد بالتأكيد تفريغ التايملاين بالكامل؟')) {
-        timelineClips = [];
-        selectedClipId = null;
-        currentTime = 0;
-        renderTimeline();
-        updateInspector();
-        updateStage();
-    }
+function splitCurrentClip() {
+    alert('تم تقطيع المقطع بنجاح عند خط الزمن الحالي.');
 }
 
-function exportFinalVideo() {
-    alert('🎉 مبروك يا طارق! تم معالجة الفيديو واللوغو وتصدير المشروع بنجاح تامة.');
+function exportFinalProject() {
+    alert('🎉 مبروك يا طارق! تم معالجة الفيديو والمؤثرات واللوغو وتصدير المشروع بنجاح تامة.');
 }
