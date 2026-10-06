@@ -1,384 +1,493 @@
-/* ================== الحالة العامة ================== */
-let mediaAssets = [];
-let timelineTracks = { video: [], audio: [], overlay: [] };
-let textLayers = [];
-let logoAsset = { src: null, x: 50, y: 50, size: 100 };
-let selectedClipId = null;
-let currentStep = 1;
-let isPlaying = false;
-let currentTime = 0;
-let timelineZoom = 20;
-let lastFrameTime = 0;
+/* ================= STATE ================= */
+const TRACKS = ['V2','V1','A1','A2'];
+const TRACK_INFO = {
+  V2:{type:'video',label:'V2'}, V1:{type:'video',label:'V1'},
+  A1:{type:'audio',label:'A1'}, A2:{type:'audio',label:'A2'}
+};
 
-let isDraggingElement = false, draggedElementType = null,
-    draggedElementId = null, dragStartX = 0, dragStartY = 0;
+const state = {
+  project: [],                 // media assets
+  tracks: { V2:[], V1:[], A1:[], A2:[] },
+  playhead: 0,
+  zoom: 60,
+  duration: 60,
+  selection: null,             // clip id
+  selectedAsset: null,         // asset id
+  tool: 'select',
+  playing: false,
+  locked: { V2:false, V1:false, A1:false, A2:false },
+  visible:{ V2:true, V1:true, A1:true, A2:true },
+  muted:  { A1:false, A2:false },
+  solo:   { A1:false, A2:false },
+  chroma: { on:false, color:'#00ff00', tol:40 },
+  logo:   { img:null, x:60, y:60, size:100 },
+  effects:{ opacity:100, brightness:100, contrast:100, saturation:100 }
+};
 
-const videoElement = document.createElement('video');
-videoElement.playsInline = true;
-videoElement.muted = false;
+const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
 
-const chromaCanvas = document.createElement('canvas');
-const chromaCtx = chromaCanvas.getContext('2d', { willReadFrequently: true });
-
-const canvasIds = ['renderCanvas', 'renderCanvas2', 'renderCanvas3', 'renderCanvas4'];
-const getActiveCanvas = () => document.getElementById('renderCanvas' + (currentStep === 1 ? '' : currentStep));
-
-/* ================== التنقل بين المراحل ================== */
-function goToStep(step) {
-  document.querySelectorAll('.step-content-pane').forEach(p => p.classList.remove('active'));
-  document.getElementById('step' + step + 'Pane').classList.add('active');
-  for (let i = 1; i <= 4; i++) {
-    const tab = document.getElementById('tab' + i);
-    tab.classList.toggle('active', i === step);
-    tab.classList.toggle('completed', i < step);
+/* ================= VIDEO ELEMENT POOL ================= */
+const videoPool = {};
+function getVideo(src){
+  if(!videoPool[src]){
+    const v = document.createElement('video');
+    v.src = src; v.preload = 'auto'; v.muted = true; v.playsInline = true;
+    videoPool[src] = v;
   }
-  currentStep = step;
-  drawCanvas();
-}
-function switchStep(s) {
-  const t = document.getElementById('tab' + s);
-  if (t.classList.contains('completed') || t.classList.contains('active')) goToStep(s);
+  return videoPool[src];
 }
 
-/* ================== استيراد الملفات ================== */
-document.getElementById('fileInput').addEventListener('change', e => {
-  for (const file of e.target.files) {
-    const url = URL.createObjectURL(file);
-    const isVid = file.type.startsWith('video/');
-    const isAud = file.type.startsWith('audio/');
-    const type = isVid ? 'video' : isAud ? 'audio' : 'image';
-    const asset = { id: 'ast_' + Math.random().toString(36).slice(2, 11), type, name: file.name, src: url };
-    mediaAssets.push(asset);
+/* ================= TIMECODE ================= */
+function tc(sec){
+  sec = Math.max(0, sec);
+  const h = Math.floor(sec/3600);
+  const m = Math.floor((sec%3600)/60);
+  const s = Math.floor(sec%60);
+  const f = Math.floor((sec%1)*30);
+  return `${pad2(h)}:${pad2(m)}:${pad2(s)}:${pad2(f)}`;
+}
+const pad2 = n => String(n).padStart(2,'0');
 
-    if (isVid) {
-      // نستخرج المدة والقياس قبل الإضافة
-      const probe = document.createElement('video');
-      probe.src = url;
-      probe.onloadedmetadata = () => {
-        resizeAllCanvases(probe.videoWidth, probe.videoHeight);
-        addClipToTrack(asset, probe.duration || 15);
-        renderTimelineUI();
-        drawCanvas();
-      };
+/* ================= IMPORT ================= */
+$('#importBtn').onclick = () => $('#fileInput').click();
+$('#fileInput').onchange = async e => {
+  const files = [...e.target.files];
+  for(const f of files){
+    const src = URL.createObjectURL(f);
+    const kind = f.type.startsWith('video/') ? 'video'
+              : f.type.startsWith('audio/') ? 'audio' : 'image';
+    const asset = { id:'a_'+Math.random().toString(36).slice(2,9),
+      name:f.name, src, kind, duration:0, thumb:null };
+
+    if(kind === 'image'){
+      asset.duration = 5;
+      asset.thumb = src;
+    } else if(kind === 'video'){
+      await new Promise(res => {
+        const v = document.createElement('video');
+        v.src = src; v.muted = true;
+        v.onloadedmetadata = () => {
+          asset.duration = v.duration;
+          v.currentTime = Math.min(0.5, v.duration/2);
+        };
+        v.onseeked = () => {
+          const c = document.createElement('canvas');
+          c.width = 80; c.height = 45;
+          c.getContext('2d').drawImage(v, 0, 0, 80, 45);
+          asset.thumb = c.toDataURL();
+          res();
+        };
+        v.onerror = res;
+      });
     } else {
-      addClipToTrack(asset, 5);
-      renderTimelineUI();
-      drawCanvas();
+      await new Promise(res => {
+        const a = document.createElement('audio');
+        a.src = src;
+        a.onloadedmetadata = () => { asset.duration = a.duration; res(); };
+        a.onerror = res;
+      });
     }
-    renderMediaBin();
+    state.project.push(asset);
   }
   e.target.value = '';
-});
+  renderProject();
+};
 
-function addClipToTrack(asset, duration) {
-  const trackName = asset.type === 'audio' ? 'audio' : 'video';
-  const lane = timelineTracks[trackName];
-  const lastEnd = lane.reduce((m, c) => Math.max(m, c.start + c.duration), 0);
-  const clip = { id: 'clp_' + Math.random().toString(36).slice(2, 11), ...asset, duration, start: lastEnd };
-  lane.push(clip);
-  selectedClipId = clip.id;
-  if (asset.type === 'video' && currentTime >= clip.start && currentTime <= clip.start + clip.duration) {
-    videoElement.src = asset.src; videoElement.load();
-  }
-}
-
-function renderMediaBin() {
-  const bin = document.getElementById('projectBin1');
-  bin.innerHTML = mediaAssets.map(a => `
-    <div style="background:#222; padding:6px; border-radius:6px; border:1px solid #444; color:#fff; font-size:11px;">
-      <div style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${a.name}</div>
-      <div style="color:#666; font-size:10px;">${a.type}</div>
-    </div>`).join('');
-}
-
-/* ================== تحجيم الكانفس ================== */
-function resizeAllCanvases(w, h) {
-  if (!w || !h) return;
-  const maxW = 640, maxH = 360;
-  const ratio = Math.min(maxW / w, maxH / h);
-  const tw = Math.floor(w * ratio), th = Math.floor(h * ratio);
-  canvasIds.forEach(id => {
-    const c = document.getElementById(id);
-    if (c) { c.width = tw; c.height = th; }
+/* ================= PROJECT PANEL ================= */
+function renderProject(){
+  const list = $('#projList');
+  list.innerHTML = '';
+  state.project.forEach(a => {
+    const row = document.createElement('div');
+    row.className = 'proj-item' + (state.selectedAsset===a.id?' selected':'');
+    const icon = a.kind==='audio' ? '♫' : '';
+    row.innerHTML = `
+      <div class="proj-thumb">${a.thumb?`<img src="${a.thumb}">`:icon}</div>
+      <div class="proj-name">${a.name}</div>
+      <div class="proj-dur">${tc(a.duration)}</div>`;
+    row.onclick = () => {
+      state.selectedAsset = a.id;
+      showInSource(a);
+      renderProject();
+    };
+    row.ondblclick = () => addAssetToTimeline(a);
+    list.appendChild(row);
   });
 }
 
-/* ================== سحب العناصر ================== */
-function initCanvasDragListeners(canvas) {
-  canvas.onmousedown = e => {
-    const r = canvas.getBoundingClientRect();
-    const mx = e.clientX - r.left, my = e.clientY - r.top;
+$('#addToTLBtn').onclick = () => {
+  const a = state.project.find(x => x.id===state.selectedAsset);
+  if(a) addAssetToTimeline(a);
+  else alert('اختر عنصراً من المشروع أولاً');
+};
+$('#deleteBtn').onclick = () => {
+  state.project = state.project.filter(x => x.id!==state.selectedAsset);
+  state.selectedAsset = null;
+  renderProject();
+};
+$('#newBinBtn').onclick = () => alert('Bin جديد (سيتوفر قريباً)');
 
-    if (logoAsset.src && mx >= logoAsset.x && mx <= logoAsset.x + logoAsset.size &&
-        my >= logoAsset.y && my <= logoAsset.y + logoAsset.size * 0.6) {
-      isDraggingElement = true; draggedElementType = 'logo';
-      dragStartX = mx - logoAsset.x; dragStartY = my - logoAsset.y; return;
-    }
-    for (const t of textLayers) {
-      if (mx >= t.x - 10 && mx <= t.x + 220 && my >= t.y - t.size && my <= t.y + 10) {
-        isDraggingElement = true; draggedElementType = 'text';
-        draggedElementId = t.id;
-        dragStartX = mx - t.x; dragStartY = my - t.y; return;
-      }
-    }
-  };
-  canvas.onmousemove = e => {
-    if (!isDraggingElement) return;
-    const r = canvas.getBoundingClientRect();
-    const mx = e.clientX - r.left, my = e.clientY - r.top;
-    if (draggedElementType === 'logo') {
-      logoAsset.x = mx - dragStartX; logoAsset.y = my - dragStartY;
-    } else if (draggedElementType === 'text') {
-      const t = textLayers.find(x => x.id === draggedElementId);
-      if (t) { t.x = mx - dragStartX; t.y = my - dragStartY; }
-    }
-    drawCanvas();
-  };
-  canvas.onmouseup = canvas.onmouseleave = () => {
-    isDraggingElement = false; draggedElementType = null;
-  };
-}
-
-/* ================== التايملاين ================== */
-function renderTimelineUI() {
-  const container = document.getElementById('timelineTracks');
-  container.innerHTML = `
-    <div style="padding:6px 12px; background:#18181b; color:#aaa; font-size:11px; display:flex; justify-content:space-between;">
-      <span>تكبير: <input type="range" min="10" max="60" value="${timelineZoom}" oninput="changeTimelineZoom(this.value)" style="width:120px; vertical-align:middle;"></span>
-    </div>
-    <div id="timelineRuler" style="height:25px; background:#222; border-bottom:1px solid #444; position:relative; cursor:pointer; width:3000px;" onclick="seekTimelineByClick(event)">
-      <div id="timelinePlayhead" style="position:absolute; top:0; width:3px; height:180px; background:#ff3b30; left:${currentTime * timelineZoom}px; pointer-events:none; z-index:5;"></div>
-    </div>
-    ${renderLane('video', 'فيديو')}
-    ${renderLane('audio', 'صوت')}
-    ${renderLane('overlay', 'إضافات')}`;
-}
-
-function renderLane(name, label) {
-  const bg = name === 'video' ? '#1e1e24' : name === 'audio' ? '#1a231e' : '#221e24';
-  const col = name === 'video' ? '#2563eb' : name === 'audio' ? '#059669' : '#d97706';
-  const clips = timelineTracks[name].map(c => {
-    const left = c.start * timelineZoom, width = Math.max(20, c.duration * timelineZoom);
-    const sel = selectedClipId === c.id ? 'box-shadow:0 0 0 2px #ffcc00;' : '';
-    return `<div onclick="selectClip('${c.id}')" style="position:absolute; left:${left}px; width:${width}px; top:4px; height:40px;
-        background:${col}; border-radius:4px; padding:4px 8px; color:#fff; font-size:11px; cursor:pointer; ${sel}
-        overflow:hidden; white-space:nowrap; text-overflow:ellipsis;">${c.name}</div>`;
-  }).join('');
-  return `<div style="display:flex; height:50px; background:${bg}; border-bottom:1px solid #27272a; position:relative;">
-    <div style="width:70px; background:#121215; color:#888; font-size:11px; display:flex; align-items:center; justify-content:center; position:sticky; left:0; z-index:10;">${label}</div>
-    <div style="position:relative; height:100%; width:3000px;">${clips}</div>
-  </div>`;
-}
-
-function changeTimelineZoom(v) { timelineZoom = +v; renderTimelineUI(); }
-
-function seekTimelineByClick(e) {
-  const rect = document.getElementById('timelineRuler').getBoundingClientRect();
-  currentTime = Math.max(0, (e.clientX - rect.left) / timelineZoom);
-  updatePlayheadPosition(); seekVideoToCurrentTime(); drawCanvas();
-}
-function updatePlayheadPosition() {
-  const p = document.getElementById('timelinePlayhead');
-  if (p) p.style.left = (currentTime * timelineZoom) + 'px';
-}
-function seekVideoToCurrentTime() {
-  const clip = timelineTracks.video.find(c => currentTime >= c.start && currentTime <= c.start + c.duration);
-  if (clip && clip.type === 'video') {
-    if (videoElement.src !== clip.src) { videoElement.src = clip.src; videoElement.load(); }
-    const t = currentTime - clip.start;
-    if (videoElement.readyState >= 1 && Math.abs(videoElement.currentTime - t) > 0.15) {
-      try { videoElement.currentTime = t; } catch (_) {}
-    }
-  }
-}
-function selectClip(id) { selectedClipId = id; renderTimelineUI(); }
-
-/* ================== النصوص ================== */
-function addNewText() {
-  textLayers.push({ id: 'txt_' + Math.random().toString(36).slice(2, 11), text: 'نص جديد', x: 100, y: 100, color: '#ffffff', size: 32 });
-  renderTextControls(); drawCanvas();
-}
-function renderTextControls() {
-  const box = document.getElementById('textControlsContainer');
-  box.innerHTML = textLayers.map(t => `
-    <div style="background:#151515; padding:8px; border-radius:4px; border:1px solid #333;">
-      <input type="text" value="${t.text}" oninput="updateTextProp('${t.id}','text',this.value)" style="width:100%; background:#222; color:#fff; border:1px solid #445; padding:4px;">
-      <div style="display:flex; gap:8px; margin-top:6px; align-items:center;">
-        <input type="color" value="${t.color}" oninput="updateTextProp('${t.id}','color',this.value)" style="width:35px; height:25px; border:none;">
-        <input type="range" min="14" max="72" value="${t.size}" oninput="updateTextProp('${t.id}','size',parseInt(this.value))" style="flex:1;">
-      </div>
-    </div>`).join('');
-}
-function updateTextProp(id, prop, val) {
-  const t = textLayers.find(x => x.id === id);
-  if (t) { t[prop] = val; drawCanvas(); }
-}
-
-/* ================== اللوغو ================== */
-document.getElementById('logoInput').addEventListener('change', e => {
-  if (e.target.files[0]) { logoAsset.src = URL.createObjectURL(e.target.files[0]); drawCanvas(); }
-});
-document.getElementById('logoSizeRange').addEventListener('input', e => { logoAsset.size = +e.target.value; drawCanvas(); });
-
-/* ================== ربط الشرائح ================== */
-function bindSlider(id, labelId) {
-  const el = document.getElementById(id), lb = document.getElementById(labelId);
-  if (!el || !lb) return;
-  el.addEventListener('input', () => { lb.textContent = el.value; drawCanvas(); });
-  lb.textContent = el.value;
-}
-bindSlider('valBrightness', 'brightVal');
-bindSlider('valContrast', 'contrastVal');
-bindSlider('valSaturation', 'satVal');
-bindSlider('chromaTolRange', 'chromaTolVal');
-document.getElementById('chromaToggle').addEventListener('change', drawCanvas);
-document.getElementById('chromaColorPicker').addEventListener('input', drawCanvas);
-
-/* ================== الكروما ================== */
-function hexToRgb(hex) {
-  return [parseInt(hex.slice(1, 3), 16), parseInt(hex.slice(3, 5), 16), parseInt(hex.slice(5, 7), 16)];
-}
-function drawVideoWithChroma(ctx, canvas) {
-  const on = document.getElementById('chromaToggle').checked;
-  if (!on || videoElement.readyState < 2) {
-    if (videoElement.readyState >= 2) ctx.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
-    return;
-  }
-  chromaCanvas.width = canvas.width; chromaCanvas.height = canvas.height;
-  chromaCtx.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
-  const img = chromaCtx.getImageData(0, 0, canvas.width, canvas.height);
-  const d = img.data;
-  const [kr, kg, kb] = hexToRgb(document.getElementById('chromaColorPicker').value);
-  const tol = +document.getElementById('chromaTolRange').value * 2.55;
-  const tol2 = tol * tol;
-  for (let i = 0; i < d.length; i += 4) {
-    const dr = d[i] - kr, dg = d[i+1] - kg, db = d[i+2] - kb;
-    if (dr*dr + dg*dg + db*db < tol2) d[i+3] = 0;
-  }
-  chromaCtx.putImageData(img, 0, 0);
-  ctx.drawImage(chromaCanvas, 0, 0, canvas.width, canvas.height);
-}
-
-/* ================== الرسم ================== */
-function drawCanvas() {
-  const canvas = getActiveCanvas();
-  if (!canvas) return;
-  const ctx = canvas.getContext('2d');
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  ctx.fillStyle = '#050505';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-  const activeClip = timelineTracks.video.find(c => currentTime >= c.start && currentTime <= c.start + c.duration);
-  const bright = document.getElementById('valBrightness').value;
-  const contrast = document.getElementById('valContrast').value;
-  const sat = document.getElementById('valSaturation').value;
-
-  ctx.save();
-  ctx.filter = `brightness(${bright}%) contrast(${contrast}%) saturate(${sat}%)`;
-
-  if (activeClip) {
-    if (activeClip.type === 'image') {
-      const img = new Image();
-      img.onload = () => { ctx.drawImage(img, 0, 0, canvas.width, canvas.height); };
-      img.src = activeClip.src;
-    } else if (videoElement.readyState >= 2) {
-      drawVideoWithChroma(ctx, canvas);
-    }
-  }
-  ctx.restore();
-
-  ctx.textBaseline = 'alphabetic';
-  textLayers.forEach(t => {
-    ctx.font = `bold ${t.size}px Cairo, Tajawal, Tahoma`;
-    ctx.fillStyle = t.color;
-    ctx.fillText(t.text, t.x, t.y);
-  });
-
-  if (logoAsset.src) {
-    const l = new Image();
-    l.onload = () => ctx.drawImage(l, logoAsset.x, logoAsset.y, logoAsset.size, logoAsset.size * 0.6);
-    l.src = logoAsset.src;
-  }
-}
-
-/* ================== التشغيل ================== */
-function togglePlayback() {
-  isPlaying = !isPlaying;
-  const btn = document.getElementById('playBtn');
-  if (btn) btn.textContent = isPlaying ? '⏸ إيقاف' : '▶ تشغيل';
-  if (isPlaying) {
-    seekVideoToCurrentTime();
-    videoElement.play().catch(() => {});
-    lastFrameTime = 0;
-    requestAnimationFrame(renderLoop);
+/* ================= SOURCE MONITOR ================= */
+function showInSource(asset){
+  $('#sourceTitle').textContent = asset.name;
+  const c = $('#sourceCanvas'), ctx = c.getContext('2d');
+  ctx.fillStyle = '#000'; ctx.fillRect(0,0,c.width,c.height);
+  if(asset.kind==='image'){
+    const img = new Image();
+    img.onload = () => drawContain(ctx, img, c.width, c.height);
+    img.src = asset.src;
+  } else if(asset.kind==='video'){
+    const v = getVideo(asset.src);
+    v.currentTime = 0;
+    const draw = () => { if(v.readyState>=2) drawContain(ctx, v, c.width, c.height); };
+    v.onseeked = draw; v.onloadeddata = draw;
   } else {
-    videoElement.pause();
+    ctx.fillStyle = '#666'; ctx.font = '14px Tahoma';
+    ctx.textAlign = 'center';
+    ctx.fillText('♪ ' + asset.name, c.width/2, c.height/2);
+  }
+  $('#srcTC').textContent = tc(0);
+}
+
+function drawContain(ctx, src, W, H){
+  ctx.fillStyle = '#000'; ctx.fillRect(0,0,W,H);
+  const sw = src.videoWidth || src.width;
+  const sh = src.videoHeight || src.height;
+  const r = Math.min(W/sw, H/sh);
+  const w = sw*r, h = sh*r;
+  ctx.drawImage(src, (W-w)/2, (H-h)/2, w, h);
+}
+
+/* ================= ADD TO TIMELINE ================= */
+function addAssetToTimeline(asset){
+  const trackName = asset.kind==='audio' ? (state.tracks.A1.length<=state.tracks.A2.length?'A1':'A2')
+                    : asset.kind==='video' ? 'V1' : 'V2';
+  const lane = state.tracks[trackName];
+  const start = lane.reduce((m,c)=>Math.max(m, c.start+c.duration), 0);
+  const clip = { id:'c_'+Math.random().toString(36).slice(2,9),
+    assetId:asset.id, name:asset.name, src:asset.src, kind:asset.kind,
+    start, duration: asset.duration || 5 };
+  lane.push(clip);
+  state.selection = clip.id;
+  renderTimeline();
+  renderProgram();
+}
+
+/* ================= TIMELINE RENDER ================= */
+function renderTimeline(){
+  // Track headers
+  const thCol = $('#thCol');
+  thCol.innerHTML = '<div class="th-spacer"></div>';
+  // Order: V2, V1, A1, A2
+  TRACKS.forEach(name => {
+    const info = TRACK_INFO[name];
+    const h = document.createElement('div');
+    h.className = 'th ' + info.type;
+    h.style.height = '50px';
+    const eye = info.type==='video' ? `<button class="mini-btn ${state.visible[name]?'on':''}" data-act="eye" data-t="${name}" title="Toggle visibility">👁</button>` : '';
+    const lock = `<button class="mini-btn ${state.locked[name]?'on':''}" data-act="lock" data-t="${name}" title="Lock">🔒</button>`;
+    const mute = info.type==='audio' ? `<button class="mini-btn ${state.muted[name]?'mute-on':''}" data-act="mute" data-t="${name}" title="Mute">M</button>` : '';
+    const solo = info.type==='audio' ? `<button class="mini-btn ${state.solo[name]?'on':''}" data-act="solo" data-t="${name}" title="Solo">S</button>` : '';
+    h.innerHTML = `<span class="name">${info.label}</span><span class="spacer"></span>${eye}${lock}${mute}${solo}`;
+    thCol.appendChild(h);
+  });
+  // Bind mini-buttons
+  thCol.querySelectorAll('.mini-btn').forEach(b => {
+    b.onclick = () => {
+      const { act, t } = b.dataset;
+      if(act==='eye')  state.visible[t] = !state.visible[t];
+      if(act==='lock') state.locked[t]  = !state.locked[t];
+      if(act==='mute') state.muted[t]   = !state.muted[t];
+      if(act==='solo') state.solo[t]    = !state.solo[t];
+      renderTimeline(); renderProgram();
+    };
+  });
+
+  // Ruler
+  renderRuler();
+
+  // Tracks
+  const tracks = $('#tracks');
+  tracks.innerHTML = '';
+  TRACKS.forEach(name => {
+    const info = TRACK_INFO[name];
+    const lane = document.createElement('div');
+    lane.className = 'lane ' + (info.type==='audio'?'audio':'');
+    lane.style.height = '50px';
+    lane.dataset.track = name;
+    if(state.locked[name]) lane.classList.add('locked');
+    state.tracks[name].forEach(clip => {
+      const el = document.createElement('div');
+      el.className = 'clip ' + (info.type==='audio'?'audio':'video');
+      el.dataset.id = clip.id;
+      el.style.left = (clip.start * state.zoom) + 'px';
+      el.style.width = (clip.duration * state.zoom) + 'px';
+      if(state.selection===clip.id) el.classList.add('selected');
+      el.innerHTML = `
+        <div class="clip-name">${clip.name}</div>
+        <div class="${info.type==='audio'?'waveform':'frames'}"></div>`;
+      bindClipEvents(el, clip, name);
+      lane.appendChild(el);
+    });
+    // Drop zone: dblclick empty area to receive dragged asset
+    lane.ondblclick = e => {
+      if(e.target !== lane) return;
+      const a = state.project.find(x=>x.id===state.selectedAsset);
+      if(a) addAssetToTimelineAt(a, name);
+    };
+    tracks.appendChild(lane);
+  });
+
+  // Playhead
+  updatePlayhead();
+  updateTC();
+}
+
+function renderRuler(){
+  const ruler = $('#ruler');
+  const w = Math.max(state.duration * state.zoom + 400, 3000);
+  ruler.style.width = w + 'px';
+  ruler.innerHTML = '';
+  const step = state.zoom >= 80 ? 1 : state.zoom >= 40 ? 2 : state.zoom >= 20 ? 5 : 10;
+  for(let s=0; s<=w/state.zoom; s+=step){
+    const t = document.createElement('div');
+    t.className = 'tick' + (s % (step*5)===0 ? ' major':'');
+    t.style.left = (s*state.zoom) + 'px';
+    if(s%(step*5)===0) t.textContent = tc(s);
+    ruler.appendChild(t);
   }
 }
-function renderLoop(ts) {
-  if (!isPlaying) return;
-  if (!lastFrameTime) lastFrameTime = ts;
-  currentTime += (ts - lastFrameTime) / 1000;
-  lastFrameTime = ts;
 
-  const totalDuration = timelineTracks.video.reduce((m, c) => Math.max(m, c.start + c.duration), 0);
-  if (totalDuration && currentTime >= totalDuration) { togglePlayback(); return; }
+/* ================= CLIP EVENTS ================= */
+function bindClipEvents(el, clip, trackName){
+  let dragging = false, startX = 0, origStart = 0;
 
-  updatePlayheadPosition();
-  seekVideoToCurrentTime();
-  drawCanvas();
-  requestAnimationFrame(renderLoop);
-}
-
-/* ================== القص ================== */
-function splitCurrentClip() {
-  const idx = timelineTracks.video.findIndex(c => currentTime > c.start && currentTime < c.start + c.duration);
-  if (idx < 0) { alert('ضع المؤشر داخل مقطع ثم اضغط تقطيع.'); return; }
-  const c = timelineTracks.video[idx];
-  const at = currentTime - c.start;
-  const second = { ...c, id: 'clp_' + Math.random().toString(36).slice(2, 11), start: currentTime, duration: c.duration - at };
-  c.duration = at;
-  timelineTracks.video.splice(idx + 1, 0, second);
-  renderTimelineUI(); drawCanvas();
-}
-
-/* ================== التصدير ================== */
-function exportFinalProject() {
-  const canvas = getActiveCanvas();
-  const totalDuration = timelineTracks.video.reduce((m, c) => Math.max(m, c.start + c.duration), 0);
-  if (!totalDuration) { alert('أضف مقاطع أولاً.'); return; }
-  if (!confirm('سيتم تسجيل الفيديو من البداية حتى النهاية. المتابعة؟')) return;
-
-  const stream = canvas.captureStream(30);
-  try { if (videoElement.captureStream) videoElement.captureStream().getAudioTracks().forEach(t => stream.addTrack(t)); } catch (_) {}
-
-  let mime = 'video/webm;codecs=vp9,opus';
-  if (!MediaRecorder.isTypeSupported(mime)) mime = 'video/webm';
-  const rec = new MediaRecorder(stream, { mimeType: mime });
-  const chunks = [];
-  rec.ondataavailable = e => e.data.size && chunks.push(e.data);
-  rec.onstop = () => {
-    const blob = new Blob(chunks, { type: 'video/webm' });
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = 'tarek_project_' + Date.now() + '.webm';
-    a.click();
-    alert('✅ تم التصدير.');
+  el.onmousedown = e => {
+    if(state.locked[trackName]) return;
+    e.stopPropagation();
+    if(state.tool==='razor'){
+      splitClip(trackName, clip, e);
+      return;
+    }
+    state.selection = clip.id;
+    dragging = true;
+    startX = e.clientX;
+    origStart = clip.start;
+    renderTimeline();
+    document.body.style.cursor = 'grabbing';
   };
-
-  currentTime = 0;
-  seekVideoToCurrentTime();
-  if (!isPlaying) togglePlayback();
-  rec.start();
-  setTimeout(() => { rec.stop(); if (isPlaying) togglePlayback(); }, totalDuration * 1000 + 300);
+  window.addEventListener('mousemove', e => {
+    if(!dragging) return;
+    const dx = e.clientX - startX;
+    let newStart = Math.max(0, origStart + dx/state.zoom);
+    clip.start = newStart;
+    renderTimeline();
+  });
+  window.addEventListener('mouseup', () => {
+    if(dragging){ dragging=false; document.body.style.cursor=''; }
+  });
 }
 
-/* ================== التهيئة ================== */
-window.addEventListener('DOMContentLoaded', () => {
-  canvasIds.forEach(id => { const c = document.getElementById(id); if (c) initCanvasDragListeners(c); });
-  renderTimelineUI();
-  renderMediaBin();
-  renderTextControls();
-  if (document.fonts && document.fonts.ready) document.fonts.ready.then(drawCanvas);
-  drawCanvas();
+function splitClip(trackName, clip, e){
+  const rect = e.target.getBoundingClientRect();
+  const localX = e.clientX - rect.left;
+  const at = clip.start + localX/state.zoom;
+  if(at <= clip.start + 0.05 || at >= clip.start + clip.duration - 0.05) return;
+  const first = { ...clip, duration: at - clip.start };
+  const second = { ...clip, id:'c_'+Math.random().toString(36).slice(2,9),
+    start: at, duration: clip.duration - (at - clip.start) };
+  const lane = state.tracks[trackName];
+  const i = lane.findIndex(c => c.id===clip.id);
+  lane.splice(i, 1, first, second);
+  state.selection = second.id;
+  renderTimeline();
+}
+
+/* ================= RULER / PLAYHEAD ================= */
+const ruler = $('#ruler');
+let scrubbing = false;
+ruler.addEventListener('mousedown', e => {
+  scrubbing = true;
+  seekToPx(e.offsetX);
 });
+window.addEventListener('mousemove', e => {
+  if(!scrubbing) return;
+  const rect = ruler.getBoundingClientRect();
+  seekToPx(e.clientX - rect.left);
+});
+window.addEventListener('mouseup', () => { scrubbing = false; });
+
+function seekToPx(px){
+  state.playhead = Math.max(0, px / state.zoom);
+  updatePlayhead();
+  updateTC();
+  renderProgram();
+}
+
+function updatePlayhead(){
+  const p = $('#playhead');
+  p.style.left = (state.playhead * state.zoom) + 'px';
+}
+
+function updateTC(){
+  $('#progTC').textContent = tc(state.playhead);
+}
+
+/* ================= TOOL SELECTION ================= */
+$$('.tool-btn').forEach(b => {
+  b.onclick = () => {
+    $$('.tool-btn').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active');
+    state.tool = b.dataset.tool;
+  };
+});
+document.addEventListener('keydown', e => {
+  if(e.key==='v' || e.key==='V'){ setTool('select'); }
+  if(e.key==='c' || e.key==='C'){ setTool('razor'); }
+  if(e.key==='h' || e.key==='H'){ setTool('hand'); }
+  if(e.key===' '){ e.preventDefault(); togglePlay(); }
+});
+function setTool(t){
+  state.tool = t;
+  $$('.tool-btn').forEach(b=>b.classList.toggle('active', b.dataset.tool===t));
+}
+
+/* ================= ZOOM ================= */
+$('#zoomRange').oninput = e => {
+  state.zoom = +e.target.value;
+  renderTimeline();
+};
+
+/* ================= PROGRAM MONITOR RENDER ================= */
+const progCanvas = $('#programCanvas');
+const progCtx = progCanvas.getContext('2d');
+const chromaCanvas = document.createElement('canvas');
+const chromaCtx = chromaCanvas.getContext('2d', { willReadFrequently:true });
+
+function renderProgram(){
+  const W = progCanvas.width, H = progCanvas.height;
+  progCtx.fillStyle = '#000'; progCtx.fillRect(0,0,W,H);
+
+  const active = state.tracks.V1.concat(state.tracks.V2)
+    .find(c => state.playhead >= c.start && state.playhead <= c.start + c.duration);
+  if(!active){ return; }
+
+  // Apply effects via ctx.filter
+  progCtx.save();
+  const fx = state.effects;
+  progCtx.globalAlpha = fx.opacity / 100;
+  progCtx.filter = `brightness(${fx.brightness}%) contrast(${fx.contrast}%) saturate(${fx.saturation}%)`;
+
+  if(active.kind === 'image'){
+    const img = getImage(active.src);
+    if(img.complete) drawContain(progCtx, img, W, H);
+    else img.onload = () => { drawContain(progCtx, img, W, H); };
+  } else if(active.kind === 'video'){
+    const v = getVideo(active.src);
+    const local = state.playhead - active.start;
+    if(Math.abs(v.currentTime - local) > 0.15) v.currentTime = local;
+    if(v.readyState >= 2){
+      if(state.chroma.on) drawWithChroma(progCtx, v, W, H);
+      else drawContain(progCtx, v, W, H);
+    }
+  }
+  progCtx.restore();
+
+  // Logo
+  if(state.logo.img){
+    const L = state.logo;
+    progCtx.drawImage(L.img, L.x, L.y, L.size, L.size*0.6);
+  }
+}
+
+const imageCache = {};
+function getImage(src){
+  if(!imageCache[src]){
+    const i = new Image(); i.src = src; imageCache[src] = i;
+  }
+  return imageCache[src];
+}
+
+function drawWithChroma(ctx, video, W, H){
+  chromaCanvas.width = W; chromaCanvas.height = H;
+  chromaCtx.drawImage(video, 0, 0, W, H);
+  const frame = chromaCtx.getImageData(0, 0, W, H);
+  const d = frame.data;
+  const [kr,kg,kb] = hexToRgb(state.chroma.color);
+  const tol = state.chroma.tol * 2.55;
+  const tol2 = tol*tol;
+  for(let i=0;i<d.length;i+=4){
+    const dr=d[i]-kr, dg=d[i+1]-kg, db=d[i+2]-kb;
+    if(dr*dr+dg*dg+db*db < tol2) d[i+3]=0;
+  }
+  chromaCtx.putImageData(frame, 0, 0);
+  ctx.drawImage(chromaCanvas, 0, 0, W, H);
+}
+function hexToRgb(h){ return [parseInt(h.slice(1,3),16), parseInt(h.slice(3,5),16), parseInt(h.slice(5,7),16)]; }
+
+/* ================= EFFECT CONTROLS ================= */
+function bindEff(id, valId, key, suffix){
+  const el = $(id), v = $(valId);
+  if(!el) return;
+  el.oninput = () => {
+    state.effects[key] = +el.value;
+    if(v) v.textContent = el.value + (suffix||'');
+    renderProgram();
+  };
+  if(v) v.textContent = el.value + (suffix||'');
+}
+bindEff('#effOpacity','#effOpacityVal','opacity','%');
+bindEff('#effBright','#effBrightVal','brightness','');
+bindEff('#effContrast','#effContrastVal','contrast','');
+bindEff('#effSat','#effSatVal','saturation','');
+
+$('#chromaToggle').onchange = e => { state.chroma.on = e.target.checked; renderProgram(); };
+$('#chromaColorPicker').oninput = e => { state.chroma.color = e.target.value; renderProgram(); };
+$('#chromaTolRange').oninput = e => { state.chroma.tol = +e.target.value; $('#chromaTolVal').textContent = e.target.value; renderProgram(); };
+
+$('#logoBtn').onclick = () => $('#logoInput').click();
+$('#logoInput').onchange = e => {
+  const f = e.target.files[0]; if(!f) return;
+  const img = new Image();
+  img.onload = () => { state.logo.img = img; renderProgram(); };
+  img.src = URL.createObjectURL(f);
+};
+$('#logoSizeRange').oninput = e => {
+  state.logo.size = +e.target.value;
+  $('#logoSizeVal').textContent = e.target.value;
+  renderProgram();
+};
+
+/* ================= PLAYBACK ================= */
+let rafId = null, lastT = 0;
+function togglePlay(){
+  state.playing = !state.playing;
+  $('#progPlay').textContent = state.playing ? '⏸' : '▶';
+  if(state.playing){
+    const active = state.tracks.V1.concat(state.tracks.V2).find(c =>
+      state.playhead >= c.start && state.playhead <= c.start + c.duration);
+    if(active && active.kind==='video') getVideo(active.src).play().catch(()=>{});
+    lastT = performance.now();
+    rafId = requestAnimationFrame(loop);
+  } else {
+    Object.values(videoPool).forEach(v => v.pause());
+    if(rafId) cancelAnimationFrame(rafId);
+  }
+}
+function loop(t){
+  if(!state.playing) return;
+  const dt = (t - lastT)/1000; lastT = t;
+  state.playhead += dt;
+  updatePlayhead(); updateTC(); renderProgram();
+  const maxEnd = TRACKS.flatMap(n => state.tracks[n].map(c=>c.start+c.duration)).reduce((a,b)=>Math.max(a,b),0);
+  if(maxEnd && state.playhead >= maxEnd){ togglePlay(); return; }
+  rafId = requestAnimationFrame(loop);
+}
+$('#progPlay').onclick = togglePlay;
+
+/* ================= INIT ================= */
+renderProject();
+renderTimeline();
+renderProgram();
+document.fonts && document.fonts.ready.then(()=>renderProgram());
