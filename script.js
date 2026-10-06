@@ -1,6 +1,7 @@
 const fileInput = document.getElementById('fileInput');
 const projectBin = document.getElementById('projectBin');
 const mainPlayer = document.getElementById('mainPlayer');
+const canvasPlaceholder = document.getElementById('canvasPlaceholder');
 const timecodeDisplay = document.getElementById('timecodeDisplay');
 const playheadLine = document.getElementById('playheadLine');
 const overlaysStage = document.getElementById('overlaysStage');
@@ -19,12 +20,12 @@ const inspectorFont = document.getElementById('inspectorFont');
 const inspectorTextColor = document.getElementById('inspectorTextColor');
 const inspectorFontSize = document.getElementById('inspectorFontSize');
 
-let mediaFiles = []; // الوسائط المستوردة
-let timelineClips = []; // جميع القطع في التايملاين (فيديوهات، صور، نصوص، بلور)
+let mediaFiles = [];
+let timelineClips = [];
 let selectedClipId = null;
 let currentTime = 0;
 let isPlaying = false;
-let timelineDuration = 30; // مدة التايملاين بالثواني
+let timelineDuration = 30;
 
 // استيراد الميديا
 fileInput.addEventListener('change', (e) => {
@@ -54,7 +55,6 @@ fileInput.addEventListener('change', (e) => {
     });
 });
 
-// التعامل مع السحب والإفلات على المسارات
 function allowDrop(ev) { ev.preventDefault(); }
 
 function dropToTrack(ev, trackName) {
@@ -89,9 +89,9 @@ function dropToTrack(ev, trackName) {
 
     timelineClips.push(newClip);
     renderTimeline();
+    updateStagePreview();
 }
 
-// إضافة طبقة نصية جديدة
 function addNewTextLayer() {
     let newClip = {
         id: 'clip_' + Math.random().toString(36).substr(2, 9),
@@ -111,11 +111,10 @@ function addNewTextLayer() {
     selectClip(newClip.id);
 }
 
-// إضافة طبقة بلور جديدة
 function addNewBlurLayer(shape) {
     let newClip = {
         id: 'clip_' + Math.random().toString(36).substr(2, 9),
-        name: 'فلور تغشية (' + shape + ')',
+        name: 'فلتر تغشية (' + shape + ')',
         type: 'blur',
         track: 'V2',
         start: currentTime,
@@ -128,7 +127,6 @@ function addNewBlurLayer(shape) {
     selectClip(newClip.id);
 }
 
-// رسم التايملاين والمسارات
 function renderTimeline() {
     laneV1.innerHTML = '';
     laneV2.innerHTML = '';
@@ -161,7 +159,6 @@ function renderTimeline() {
     });
 }
 
-// تحديد عنصر لتعديل خصائصه
 function selectClip(id) {
     selectedClipId = id;
     let clip = timelineClips.find(c => c.id === id);
@@ -187,10 +184,8 @@ function selectClip(id) {
         textInspectorControls.style.display = 'none';
     }
     renderTimeline();
-    updateStagePreview();
 }
 
-// تعديل الخصائص فورياً
 clipSpeedRange.addEventListener('input', (e) => {
     let clip = timelineClips.find(c => c.id === selectedClipId);
     if (clip && clip.type === 'video') {
@@ -232,7 +227,7 @@ inspectorFontSize.addEventListener('input', (e) => {
     if (clip && clip.type === 'text') { clip.fontSize = e.target.value; updateStagePreview(); }
 });
 
-// تحديث شاشة المعاينة والطبقات
+// تحديث شاشة المعاينة
 function updateStagePreview() {
     overlaysStage.innerHTML = '';
     
@@ -241,6 +236,7 @@ function updateStagePreview() {
     ).find(c => c !== undefined);
 
     if (activeVideoClip) {
+        canvasPlaceholder.style.display = 'none';
         if (activeVideoClip.type === 'video') {
             if (mainPlayer.src !== activeVideoClip.url) {
                 mainPlayer.src = activeVideoClip.url;
@@ -254,6 +250,7 @@ function updateStagePreview() {
         }
     } else {
         mainPlayer.style.display = 'none';
+        canvasPlaceholder.style.display = 'block';
     }
 
     let sortedClips = [...timelineClips].sort((a, b) => {
@@ -289,7 +286,6 @@ function updateStagePreview() {
     });
 }
 
-// تحريك العناصر بالماوس
 function makeDraggableElement(elm, clipData) {
     let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
     elm.onmousedown = dragMouseDown;
@@ -320,7 +316,6 @@ function makeDraggableElement(elm, clipData) {
     }
 }
 
-// تقطيع الفيديو المحدد
 function splitSelectedVideoClip() {
     let clip = timelineClips.find(c => c.id === selectedClipId && c.type === 'video');
     if (!clip) {
@@ -333,23 +328,19 @@ function splitSelectedVideoClip() {
     }
 
     let splitOffset = currentTime - clip.start;
-    let part1Duration = splitOffset;
-    let part2Duration = clip.duration - splitOffset;
-
     let part2 = {
         ...clip,
         id: 'clip_' + Math.random().toString(36).substr(2, 9),
         start: currentTime,
-        duration: part2Duration
+        duration: clip.duration - splitOffset
     };
 
-    clip.duration = part1Duration;
+    clip.duration = splitOffset;
     timelineClips.push(part2);
     renderTimeline();
     alert('تم تقطيع المقطع بنجاح!');
 }
 
-// التحكم بالتشغيل والزمن
 function togglePlayPlayback() {
     isPlaying = !isPlaying;
     document.getElementById('playPauseBtn').textContent = isPlaying ? "إيقاف مؤقت" : "تشغيل / إيقاف";
@@ -409,3 +400,6 @@ function resetTimeline() {
     renderTimeline();
     updateStagePreview();
 }
+
+// تهيئة أولية آمنة
+updateStagePreview();
