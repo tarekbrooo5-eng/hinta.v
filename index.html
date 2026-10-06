@@ -2,300 +2,215 @@
 <html lang="ar" dir="ltr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Premiere Studio - Tarek Ibrahim</title>
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
-:root{
-  --bg:#1a1a1a; --panel:#232323; --panel-head:#2b2b2b; --panel-head-active:#333;
-  --border:#0d0d0d; --line:#333; --text:#c9c9c9; --dim:#888;
-  --accent:#4a9eff; --accent-hover:#6bb0ff;
-  --video-clip:#3d6b9a; --video-clip-border:#5a8bc0;
-  --audio-clip:#3d6b4a; --audio-clip-border:#5a8b6a;
-  --selected:#ffcc00; --playhead:#4a9eff;
-  --th-bg:#262626; --lane:#1e1e1e; --lane-alt:#202020;
-}
+:root{--bg:#1a1a1a;--panel:#232323;--panel-head:#2b2b2b;--border:#0d0d0d;--text:#c9c9c9;
+--accent:#4a9eff;--accent-hover:#6bb0ff;--video-clip:#3d6b9a;--audio-clip:#3d6b4a;
+--selected:#ffcc00;--playhead:#4a9eff;--lane:#1e1e1e;--lane-alt:#202020}
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{width:100vw;height:100vh;overflow:hidden;background:var(--bg);color:var(--text);
-  font-family:'Segoe UI','Cairo',Tahoma,sans-serif;font-size:11px;user-select:none}
-
+font-family:'Segoe UI','Cairo',Tahoma,sans-serif;font-size:11px;user-select:none}
 .app{display:grid;grid-template-rows:26px 1fr 250px;width:100vw;height:100vh;gap:1px;background:var(--border)}
-
-/* ====== Menu Bar ====== */
 .menubar{background:#181818;display:flex;align-items:center;padding:0 8px;gap:14px;font-size:11px;color:#b8b8b8}
-.menubar .logo{background:#4a9eff;color:#0a0a0a;font-weight:800;padding:2px 7px;border-radius:3px;font-size:12px}
-.menubar .menu{padding:3px 7px;border-radius:3px;cursor:pointer}
-.menubar .menu:hover{background:#2a2a2a;color:#fff}
-.menubar .spacer{flex:1}
-.menubar .ws-title{color:#888;font-size:10px;letter-spacing:.5px}
-
-/* ====== Middle panels ====== */
+.menubar .logo{background:#4a9eff;color:#0a0a0a;font-weight:800;padding:2px 7px;border-radius:3px}
+.menubar .menu{padding:3px 7px;border-radius:3px;cursor:pointer}.menubar .menu:hover{background:#2a2a2a;color:#fff}
+.menubar .spacer{flex:1}.menubar .status{color:#4a9eff;font-size:10px;font-family:Consolas,monospace}
 .middle{display:grid;grid-template-columns:250px 1fr 1fr 250px;gap:1px;background:var(--border);overflow:hidden}
-
 .panel{display:flex;flex-direction:column;background:var(--panel);overflow:hidden}
 .panel-header{height:26px;background:var(--panel-head);border-bottom:1px solid var(--border);
-  display:flex;align-items:center;padding:0 10px;font-size:11px;font-weight:600;color:#ddd;gap:6px}
+display:flex;align-items:center;padding:0 10px;font-size:11px;font-weight:600;color:#ddd;gap:6px}
 .panel-header .dot{width:7px;height:7px;border-radius:50%;background:var(--accent)}
 .panel-body{flex:1;overflow:auto;position:relative}
-
-/* Project Panel */
 .proj-toolbar{display:flex;align-items:center;gap:4px;padding:5px 8px;background:#212121;border-bottom:1px solid var(--border)}
 .icon-btn{background:transparent;border:1px solid transparent;color:#b8b8b8;padding:3px 7px;border-radius:3px;
-  cursor:pointer;font-size:12px;display:flex;align-items:center;gap:4px}
+cursor:pointer;font-size:12px;display:flex;align-items:center;gap:4px}
 .icon-btn:hover{background:#2e2e2e;color:#fff;border-color:#3a3a3a}
 .icon-btn.primary{background:var(--accent);color:#fff;border-color:#2b7de9;font-size:11px;padding:4px 10px}
 .icon-btn.primary:hover{background:var(--accent-hover)}
 .proj-cols{display:grid;grid-template-columns:1fr 70px;gap:8px;padding:5px 10px;background:#1c1c1c;
-  border-bottom:1px solid var(--border);color:#777;font-size:10px;font-weight:600;text-transform:uppercase}
-.proj-list{overflow-y:auto;height:100%}
-.proj-item{display:grid;grid-template-columns:26px 1fr 70px;gap:8px;padding:5px 8px;align-items:center;
-  cursor:pointer;border-bottom:1px solid #1c1c1c}
-.proj-item:hover{background:#2a2a2a}
-.proj-item.selected{background:#2b4a75}
-.proj-thumb{width:26px;height:18px;background:#111;border:1px solid #333;border-radius:2px;
-  display:flex;align-items:center;justify-content:center;font-size:9px;color:#777;overflow:hidden}
+border-bottom:1px solid var(--border);color:#777;font-size:10px;font-weight:600;text-transform:uppercase}
+.proj-list{overflow-y:auto;height:100%;min-height:100px}
+.proj-item{display:grid;grid-template-columns:32px 1fr 70px;gap:8px;padding:5px 8px;align-items:center;
+cursor:pointer;border-bottom:1px solid #1c1c1c}
+.proj-item:hover{background:#2a2a2a}.proj-item.selected{background:#2b4a75}
+.proj-thumb{width:32px;height:22px;background:#111;border:1px solid #333;border-radius:2px;
+display:flex;align-items:center;justify-content:center;font-size:12px;color:#777;overflow:hidden}
 .proj-thumb img{width:100%;height:100%;object-fit:cover}
 .proj-name{font-size:11px;color:#ddd;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.proj-dur{font-size:10px;color:#888;text-align:right}
-
-/* Monitors */
+.proj-dur{font-size:10px;color:#888;text-align:right;font-family:Consolas,monospace}
+.empty-hint{padding:20px 12px;text-align:center;color:#666;font-size:11px;line-height:1.9}
+.empty-hint b{color:#4a9eff}
 .monitor-wrap{display:flex;flex-direction:column;flex:1;background:#0f0f0f;overflow:hidden}
 .monitor-canvas-wrap{flex:1;display:flex;align-items:center;justify-content:center;padding:8px;overflow:hidden}
 .monitor-canvas-wrap canvas{max-width:100%;max-height:100%;background:#000;border:1px solid #111;box-shadow:0 0 12px rgba(0,0,0,.9)}
 .monitor-ctrl{height:36px;background:var(--panel-head);border-top:1px solid var(--border);
-  display:flex;align-items:center;justify-content:center;gap:8px;padding:0 8px}
-.monitor-ctrl button{background:transparent;border:none;color:#c9c9c9;cursor:pointer;padding:4px 6px;border-radius:3px;font-size:12px}
+display:flex;align-items:center;justify-content:center;gap:8px;padding:0 8px}
+.monitor-ctrl button{background:transparent;border:none;color:#c9c9c9;cursor:pointer;padding:4px 8px;border-radius:3px;font-size:13px}
 .monitor-ctrl button:hover{background:#3a3a3a;color:#fff}
-.tc-display{font-family:'Consolas',monospace;font-size:11px;color:#4a9eff;letter-spacing:.5px}
-
-/* Effect Controls */
-.eff-list{display:flex;flex-direction:column}
+.tc-display{font-family:Consolas,monospace;font-size:11px;color:#4a9eff;letter-spacing:.5px;margin-left:8px}
 .eff-item{background:#1c1c1c;border-bottom:1px solid #111}
-.eff-title{padding:6px 10px;background:#242424;color:#ddd;font-weight:600;font-size:11px;
-  display:flex;align-items:center;gap:6px;cursor:pointer}
-.eff-title .arrow{color:#777;font-size:9px}
+.eff-title{padding:6px 10px;background:#242424;color:#ddd;font-weight:600;font-size:11px}
 .eff-ctrl{padding:7px 10px;display:flex;flex-direction:column;gap:6px}
 .eff-row{display:flex;align-items:center;gap:6px}
-.eff-row label{color:#aaa;font-size:10px;min-width:60px}
+.eff-row label{color:#aaa;font-size:10px;min-width:65px}
 .eff-row input[type=range]{flex:1;accent-color:var(--accent);height:3px}
-.eff-row .val{font-family:'Consolas',monospace;color:#4a9eff;font-size:10px;min-width:40px;text-align:right}
+.eff-row .val{font-family:Consolas,monospace;color:#4a9eff;font-size:10px;min-width:38px;text-align:right}
 .eff-row input[type=color]{width:28px;height:20px;border:1px solid #444;background:#111;border-radius:3px;padding:0}
 .eff-row input[type=checkbox]{accent-color:var(--accent)}
-
-/* ====== Timeline ====== */
 .timeline{display:flex;flex-direction:column;background:var(--panel);overflow:hidden}
 .tl-header{height:28px;background:var(--panel-head);border-bottom:1px solid var(--border);
-  display:flex;align-items:center;padding:0 10px;gap:8px}
+display:flex;align-items:center;padding:0 10px;gap:8px}
 .seq-tab{background:#1e1e1e;border:1px solid #333;border-top:2px solid var(--accent);
-  padding:4px 12px;border-radius:3px 3px 0 0;color:#ddd;font-size:11px;font-weight:600}
+padding:4px 12px;border-radius:3px 3px 0 0;color:#ddd;font-size:11px;font-weight:600}
 .tl-tools{display:flex;gap:2px;margin-left:10px}
 .tool-btn{background:transparent;border:1px solid transparent;color:#999;padding:3px 7px;border-radius:3px;cursor:pointer;font-size:12px}
 .tool-btn:hover{background:#2e2e2e;color:#fff}
 .tool-btn.active{background:#2b4a75;color:#fff;border-color:var(--accent)}
 .tl-zoom{margin-left:auto;display:flex;align-items:center;gap:6px;color:#888;font-size:10px}
 .tl-zoom input{width:120px;accent-color:var(--accent)}
-
 .tl-body{flex:1;display:grid;grid-template-columns:170px 1fr;overflow:hidden}
-
-/* Track Headers */
 .th-col{background:#1c1c1c;border-right:1px solid var(--border);overflow:hidden;display:flex;flex-direction:column}
 .th-spacer{height:26px;background:#181818;border-bottom:1px solid var(--border)}
 .th{display:flex;align-items:center;padding:0 8px;gap:4px;border-bottom:1px solid #111}
-.th.video{background:#222629}
-.th.audio{background:#212a23}
+.th.video{background:#222629}.th.audio{background:#212a23}
 .th .name{font-weight:700;color:#ddd;font-size:11px;min-width:26px}
 .th .spacer{flex:1}
-.th .mini-btn{width:16px;height:16px;background:transparent;border:1px solid transparent;border-radius:2px;
-  color:#777;font-size:9px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0}
+.th .mini-btn{width:18px;height:18px;background:transparent;border:1px solid transparent;border-radius:2px;
+color:#777;font-size:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0}
 .th .mini-btn:hover{background:#333;color:#fff}
 .th .mini-btn.on{color:#4a9eff;background:#1c2a3d}
 .th .mini-btn.mute-on{color:#ff5a5a;background:#3a1c1c}
-
-/* Track Lanes */
 .lanes-col{position:relative;overflow:auto;background:#181818}
 .ruler{height:26px;background:#1c1c1c;border-bottom:1px solid var(--border);position:relative;
-  min-width:3000px;cursor:pointer;overflow:hidden}
+min-width:3000px;cursor:pointer;overflow:hidden}
 .ruler .tick{position:absolute;top:0;height:100%;border-left:1px solid #2a2a2a;color:#888;font-size:9px;
-  font-family:'Consolas',monospace;padding:3px 0 0 4px;pointer-events:none}
+font-family:Consolas,monospace;padding:3px 0 0 4px;pointer-events:none}
 .ruler .tick.major{border-left-color:#4a4a4a;color:#c9c9c9}
 .tracks{position:relative;min-width:3000px}
 .lane{height:50px;border-bottom:1px solid #111;position:relative;background:var(--lane)}
-.lane.audio{background:var(--lane-alt)}
-.lane.locked{opacity:.6}
-
+.lane.audio{background:var(--lane-alt)}.lane.locked{opacity:.6}
 .clip{position:absolute;top:4px;height:42px;border-radius:3px;overflow:hidden;cursor:pointer;
-  border:1px solid transparent;display:flex;flex-direction:column;font-size:10px;color:#eaeaea}
-.clip.video{background:var(--video-clip);border-color:var(--video-clip-border)}
-.clip.audio{background:var(--audio-clip);border-color:var(--audio-clip-border);height:36px;top:7px}
+border:1px solid transparent;display:flex;flex-direction:column;font-size:10px;color:#eaeaea}
+.clip.video{background:var(--video-clip);border-color:#5a8bc0}
+.clip.audio{background:var(--audio-clip);border-color:#5a8b6a;height:36px;top:7px}
 .clip.selected{box-shadow:0 0 0 2px var(--selected);z-index:5}
 .clip .clip-name{background:rgba(0,0,0,.35);padding:2px 6px;font-weight:600;overflow:hidden;
-  white-space:nowrap;text-overflow:ellipsis;font-size:10px}
-.clip .waveform{flex:1;background:linear-gradient(90deg,transparent 0,rgba(255,255,255,.08) 50%,transparent 100%);
-  background-size:4px 100%;background-repeat:repeat-x}
-.clip .frames{flex:1;background-image:repeating-linear-gradient(90deg,transparent 0,transparent 44px,rgba(0,0,0,.3) 44px,rgba(0,0,0,.3) 45px)}
-
-/* Playhead */
+white-space:nowrap;text-overflow:ellipsis;font-size:10px}
+.clip .strip{flex:1;background-image:repeating-linear-gradient(90deg,transparent 0,transparent 44px,rgba(0,0,0,.25) 44px,rgba(0,0,0,.25) 45px)}
 .playhead{position:absolute;top:0;width:2px;background:var(--playhead);pointer-events:none;z-index:20;
-  box-shadow:0 0 4px rgba(74,158,255,.6)}
-.playhead::before{content:'';position:absolute;top:0;left:-5px;width:12px;height:12px;
-  background:var(--playhead);clip-path:polygon(0 0,100% 0,50% 100%);pointer-events:auto;cursor:ew-resize}
-
-/* Context/Selection highlight on ruler */
-.ruler-sel{position:absolute;top:0;height:100%;background:rgba(74,158,255,.08);border-left:1px solid #4a9eff;border-right:1px solid #4a9eff;pointer-events:none}
-
-/* Scroll */
+box-shadow:0 0 4px rgba(74,158,255,.6)}
+.playhead::before{content:'';position:absolute;top:0;left:-5px;width:12px;height:12px;background:var(--playhead);
+clip-path:polygon(0 0,100% 0,50% 100%);pointer-events:auto;cursor:ew-resize}
 ::-webkit-scrollbar{width:10px;height:10px}
 ::-webkit-scrollbar-track{background:#1a1a1a}
 ::-webkit-scrollbar-thumb{background:#3a3a3a;border-radius:2px}
 ::-webkit-scrollbar-thumb:hover{background:#4a4a4a}
-
-.hidden{display:none!important}
+.err-banner{position:fixed;top:30px;left:50%;transform:translateX(-50%);background:#7a1f1f;color:#fff;
+padding:10px 20px;border-radius:6px;font-size:12px;z-index:9999;max-width:80vw;box-shadow:0 4px 20px rgba(0,0,0,.5);
+display:none;font-family:Consolas,monospace}
+.err-banner.show{display:block}
+.drop-active{outline:2px dashed #4a9eff !important;outline-offset:-6px;background:rgba(74,158,255,.08) !important}
 </style>
 </head>
 <body>
-
+<div class="err-banner" id="errBanner"></div>
 <div class="app">
-
-  <!-- ============ MENU BAR ============ -->
   <div class="menubar">
     <div class="logo">Pr</div>
-    <div class="menu">File</div>
-    <div class="menu">Edit</div>
-    <div class="menu">Clip</div>
-    <div class="menu">Sequence</div>
-    <div class="menu">Marker</div>
-    <div class="menu">Window</div>
-    <div class="menu">Help</div>
+    <div class="menu">File</div><div class="menu">Edit</div><div class="menu">Clip</div>
+    <div class="menu">Sequence</div><div class="menu">Window</div><div class="menu">Help</div>
     <div class="spacer"></div>
-    <div class="ws-title">EDITING WORKSPACE</div>
+    <div class="status" id="statusBar">loading…</div>
   </div>
 
-  <!-- ============ MIDDLE PANELS ============ -->
   <div class="middle">
-
-    <!-- Project Panel -->
-    <div class="panel">
-      <div class="panel-header"><span class="dot"></span>Project: Tarek_Studio.prproj</div>
+    <div class="panel" id="projectPanel">
+      <div class="panel-header"><span class="dot"></span>Project: Tarek.prproj</div>
       <div class="proj-toolbar">
-        <button class="icon-btn primary" id="importBtn">⬆ Import</button>
-        <button class="icon-btn" id="newBinBtn" title="New Bin">🗀</button>
-        <button class="icon-btn" id="deleteBtn" title="Delete">🗑</button>
-        <button class="icon-btn" id="addToTLBtn" title="Add to Timeline" style="margin-left:auto">＋</button>
+        <button class="icon-btn primary" id="importBtn" type="button">⬆ Import</button>
+        <button class="icon-btn" id="deleteBtn" title="Delete" type="button">🗑</button>
+        <button class="icon-btn" id="addToTLBtn" title="Add to Timeline" style="margin-left:auto;background:#2b4a75;color:#fff;padding:4px 10px" type="button">＋ Add to Timeline</button>
       </div>
-      <div class="proj-cols">
-        <div>Name</div>
-        <div>Duration</div>
-      </div>
+      <div class="proj-cols"><div>Name</div><div>Duration</div></div>
       <div class="proj-list" id="projList"></div>
       <input type="file" id="fileInput" accept="video/*,image/*,audio/*" multiple hidden>
     </div>
 
-    <!-- Source Monitor -->
     <div class="panel">
       <div class="panel-header"><span class="dot" style="background:#888"></span>Source: <span id="sourceTitle" style="color:#888;font-weight:400">no clip selected</span></div>
       <div class="monitor-wrap">
         <div class="monitor-canvas-wrap"><canvas id="sourceCanvas" width="640" height="360"></canvas></div>
         <div class="monitor-ctrl">
-          <button>⏮</button><button>◀◀</button>
-          <button id="srcPlay">▶</button>
+          <button>⏮</button><button>◀◀</button><button id="srcPlay">▶</button>
           <button>▶▶</button><button>⏭</button>
-          <span class="tc-display" id="srcTC" style="margin-left:10px">00:00:00:00</span>
+          <span class="tc-display" id="srcTC">00:00:00:00</span>
         </div>
       </div>
     </div>
 
-    <!-- Program Monitor -->
     <div class="panel">
       <div class="panel-header"><span class="dot"></span>Program: Sequence 01</div>
       <div class="monitor-wrap">
         <div class="monitor-canvas-wrap"><canvas id="programCanvas" width="640" height="360"></canvas></div>
         <div class="monitor-ctrl">
-          <button>⏮</button><button>◀◀</button>
-          <button id="progPlay">▶</button>
+          <button>⏮</button><button>◀◀</button><button id="progPlay">▶</button>
           <button>▶▶</button><button>⏭</button>
-          <span class="tc-display" id="progTC" style="margin-left:10px">00:00:00:00</span>
+          <span class="tc-display" id="progTC">00:00:00:00</span>
         </div>
       </div>
     </div>
 
-    <!-- Effect Controls -->
     <div class="panel">
       <div class="panel-header"><span class="dot" style="background:#888"></span>Effect Controls</div>
       <div class="panel-body">
-        <div class="eff-list">
-          <div class="eff-item">
-            <div class="eff-title"><span class="arrow">▼</span>Opacity</div>
-            <div class="eff-ctrl">
-              <div class="eff-row"><label>Opacity</label>
-                <input type="range" id="effOpacity" min="0" max="100" value="100">
-                <span class="val" id="effOpacityVal">100%</span></div>
-            </div>
+        <div class="eff-item">
+          <div class="eff-title">Opacity</div>
+          <div class="eff-ctrl"><div class="eff-row"><label>Opacity</label>
+            <input type="range" id="effOpacity" min="0" max="100" value="100">
+            <span class="val" id="effOpacityVal">100%</span></div></div>
+        </div>
+        <div class="eff-item">
+          <div class="eff-title">Lumetri Color</div>
+          <div class="eff-ctrl">
+            <div class="eff-row"><label>Brightness</label><input type="range" id="effBright" min="0" max="200" value="100"><span class="val" id="effBrightVal">100</span></div>
+            <div class="eff-row"><label>Contrast</label><input type="range" id="effContrast" min="0" max="200" value="100"><span class="val" id="effContrastVal">100</span></div>
+            <div class="eff-row"><label>Saturation</label><input type="range" id="effSat" min="0" max="200" value="100"><span class="val" id="effSatVal">100</span></div>
           </div>
-          <div class="eff-item">
-            <div class="eff-title"><span class="arrow">▼</span>Lumetri Color</div>
-            <div class="eff-ctrl">
-              <div class="eff-row"><label>Brightness</label>
-                <input type="range" id="effBright" min="0" max="200" value="100">
-                <span class="val" id="effBrightVal">100</span></div>
-              <div class="eff-row"><label>Contrast</label>
-                <input type="range" id="effContrast" min="0" max="200" value="100">
-                <span class="val" id="effContrastVal">100</span></div>
-              <div class="eff-row"><label>Saturation</label>
-                <input type="range" id="effSat" min="0" max="200" value="100">
-                <span class="val" id="effSatVal">100</span></div>
-            </div>
+        </div>
+        <div class="eff-item">
+          <div class="eff-title">Ultra Key (Chroma)</div>
+          <div class="eff-ctrl">
+            <div class="eff-row"><label>Enable</label><input type="checkbox" id="chromaToggle"></div>
+            <div class="eff-row"><label>Key Color</label><input type="color" id="chromaColorPicker" value="#00ff00"></div>
+            <div class="eff-row"><label>Tolerance</label><input type="range" id="chromaTolRange" min="10" max="150" value="40"><span class="val" id="chromaTolVal">40</span></div>
           </div>
-          <div class="eff-item">
-            <div class="eff-title"><span class="arrow">▼</span>Ultra Key (Chroma)</div>
-            <div class="eff-ctrl">
-              <div class="eff-row">
-                <label>Enable</label>
-                <input type="checkbox" id="chromaToggle">
-              </div>
-              <div class="eff-row"><label>Key Color</label>
-                <input type="color" id="chromaColorPicker" value="#00ff00">
-                <span class="val" style="color:#888">pick</span></div>
-              <div class="eff-row"><label>Tolerance</label>
-                <input type="range" id="chromaTolRange" min="10" max="150" value="40">
-                <span class="val" id="chromaTolVal">40</span></div>
-            </div>
-          </div>
-          <div class="eff-item">
-            <div class="eff-title"><span class="arrow">▼</span>Logo Overlay</div>
-            <div class="eff-ctrl">
-              <div class="eff-row">
-                <button class="icon-btn" id="logoBtn" style="width:100%;justify-content:center;background:#2b4a75;color:#fff">📁 Load Logo</button>
-                <input type="file" id="logoInput" accept="image/*" hidden>
-              </div>
-              <div class="eff-row"><label>Size</label>
-                <input type="range" id="logoSizeRange" min="30" max="300" value="100">
-                <span class="val" id="logoSizeVal">100</span></div>
-            </div>
+        </div>
+        <div class="eff-item">
+          <div class="eff-title">Logo Overlay</div>
+          <div class="eff-ctrl">
+            <div class="eff-row"><button class="icon-btn" id="logoBtn" style="width:100%;justify-content:center;background:#2b4a75;color:#fff" type="button">📁 Load Logo</button>
+              <input type="file" id="logoInput" accept="image/*" hidden></div>
+            <div class="eff-row"><label>Size</label><input type="range" id="logoSizeRange" min="30" max="300" value="100"><span class="val" id="logoSizeVal">100</span></div>
           </div>
         </div>
       </div>
     </div>
-
   </div>
 
-  <!-- ============ TIMELINE ============ -->
   <div class="timeline">
     <div class="tl-header">
       <div class="seq-tab">Sequence 01</div>
       <div class="tl-tools">
-        <button class="tool-btn active" data-tool="select" title="Selection (V)">➤</button>
-        <button class="tool-btn" data-tool="razor" title="Razor (C)">✂</button>
-        <button class="tool-btn" data-tool="hand" title="Hand (H)">✋</button>
+        <button class="tool-btn active" data-tool="select" type="button">➤</button>
+        <button class="tool-btn" data-tool="razor" type="button">✂</button>
+        <button class="tool-btn" data-tool="hand" type="button">✋</button>
       </div>
-      <div class="tl-zoom">
-        <span>Zoom</span>
-        <input type="range" id="zoomRange" min="15" max="200" value="60">
-      </div>
+      <div class="tl-zoom"><span>Zoom</span><input type="range" id="zoomRange" min="15" max="200" value="60"></div>
     </div>
     <div class="tl-body">
-      <div class="th-col" id="thCol">
-        <div class="th-spacer"></div>
-      </div>
+      <div class="th-col" id="thCol"><div class="th-spacer"></div></div>
       <div class="lanes-col" id="lanesCol">
         <div class="ruler" id="ruler"></div>
         <div class="tracks" id="tracks"></div>
@@ -303,9 +218,588 @@ html,body{width:100vw;height:100vh;overflow:hidden;background:var(--bg);color:va
       </div>
     </div>
   </div>
-
 </div>
 
-<script src="script.js"></script>
+<script>
+/* ================ GLOBAL ERROR SHOW ================ */
+const errBanner = document.getElementById('errBanner');
+function showError(msg){
+  console.error('[Pr FATAL]', msg);
+  errBanner.textContent = '⚠ ' + msg;
+  errBanner.classList.add('show');
+  setTimeout(()=>errBanner.classList.remove('show'), 6000);
+  const s = document.getElementById('statusBar');
+  if(s) s.textContent = '⚠ error: ' + msg.slice(0,50);
+}
+window.addEventListener('error', e => showError(e.message));
+window.addEventListener('unhandledrejection', e => showError('Promise: ' + (e.reason?.message || e.reason)));
+
+/* ================ HELPERS ================ */
+const $ = s => document.querySelector(s);
+const LOG = (...a) => console.log('[Pr]', ...a);
+const pad2 = n => String(n).padStart(2,'0');
+function tc(sec){
+  sec = Math.max(0, sec||0);
+  const h=Math.floor(sec/3600), m=Math.floor((sec%3600)/60),
+        s=Math.floor(sec%60), f=Math.floor((sec%1)*30);
+  return `${pad2(h)}:${pad2(m)}:${pad2(s)}:${pad2(f)}`;
+}
+
+/* ================ STATE ================ */
+const TRACKS = ['V2','V1','A1','A2'];
+const TRACK_INFO = { V2:{type:'video'}, V1:{type:'video'}, A1:{type:'audio'}, A2:{type:'audio'} };
+const state = {
+  project: [], tracks:{V2:[],V1:[],A1:[],A2:[]},
+  playhead:0, zoom:60, selection:null, selectedAsset:null,
+  tool:'select', playing:false,
+  locked:{V2:false,V1:false,A1:false,A2:false},
+  visible:{V2:true,V1:true}, muted:{A1:false,A2:false}, solo:{A1:false,A2:false},
+  chroma:{on:false,color:'#00ff00',tol:40},
+  logo:{img:null,x:60,y:60,size:100},
+  effects:{opacity:100,brightness:100,contrast:100,saturation:100}
+};
+
+const videoPool = {};
+function getVideo(src){
+  if(!videoPool[src]){
+    const v = document.createElement('video');
+    v.src = src; v.preload = 'auto'; v.muted = true; v.playsInline = true;
+    v.onerror = () => console.error('[Pr] video error:', src, v.error);
+    videoPool[src] = v;
+  }
+  return videoPool[src];
+}
+const imageCache = {};
+function getImage(src){
+  if(!imageCache[src]){ const i = new Image(); i.src = src; imageCache[src] = i; }
+  return imageCache[src];
+}
+
+/* ================ IMPORT ================ */
+function detectKind(file){
+  if(file.type && file.type.startsWith('video/')) return 'video';
+  if(file.type && file.type.startsWith('audio/')) return 'audio';
+  if(file.type && file.type.startsWith('image/')) return 'image';
+  const ext = (file.name.split('.').pop()||'').toLowerCase();
+  if(['mp4','webm','mov','mkv','avi','m4v','ogv','3gp'].includes(ext)) return 'video';
+  if(['mp3','wav','ogg','m4a','aac','flac'].includes(ext)) return 'audio';
+  if(['png','jpg','jpeg','gif','webp','bmp','svg'].includes(ext)) return 'image';
+  return null;
+}
+
+function probeVideo(src){
+  return new Promise(resolve => {
+    const v = document.createElement('video');
+    v.preload = 'metadata'; v.muted = true; v.playsInline = true;
+    let done = false;
+    const finish = (dur, thumb) => {
+      if(done) return; done = true;
+      clearTimeout(timer);
+      resolve({ duration: dur||5, thumb: thumb||null });
+    };
+    const timer = setTimeout(()=>{ LOG('probe timeout'); finish(5, null); }, 6000);
+    v.onloadedmetadata = () => {
+      const dur = (isFinite(v.duration) && v.duration>0) ? v.duration : 5;
+      try { v.currentTime = Math.min(0.5, dur/2); } catch(_) { finish(dur, null); }
+      setTimeout(()=>finish(dur, null), 1500);
+    };
+    v.onseeked = () => {
+      try {
+        const c = document.createElement('canvas');
+        c.width = 80; c.height = 45;
+        c.getContext('2d').drawImage(v, 0, 0, 80, 45);
+        finish(v.duration||5, c.toDataURL('image/jpeg',.6));
+      } catch(_) { finish(v.duration||5, null); }
+    };
+    v.onerror = () => { console.error('[Pr] probe error', v.error); finish(5, null); };
+    v.src = src;
+  });
+}
+
+function probeAudio(src){
+  return new Promise(resolve => {
+    const a = document.createElement('audio');
+    a.preload = 'metadata';
+    let done = false;
+    const finish = d => { if(done) return; done=true; clearTimeout(t); resolve(d||5); };
+    const t = setTimeout(()=>finish(5), 4000);
+    a.onloadedmetadata = () => finish(a.duration);
+    a.onerror = () => finish(5);
+    a.src = src;
+  });
+}
+
+async function importFiles(files){
+  if(!files || !files.length){ LOG('no files to import'); return; }
+  LOG('importing', files.length, 'file(s)');
+  for(const f of files){
+    const kind = detectKind(f);
+    LOG('  →', f.name, '| type:', f.type || '(empty)', '| kind:', kind);
+    if(!kind){ console.warn('[Pr] unsupported file:', f.name); continue; }
+
+    const src = URL.createObjectURL(f);
+    const asset = { id:'a_'+Math.random().toString(36).slice(2,9),
+                    name:f.name, src, kind, duration:5, thumb:null, status:'loading' };
+
+    if(kind === 'image'){
+      asset.duration = 5; asset.thumb = src; asset.status = 'ready';
+    } else if(kind === 'video'){
+      const { duration, thumb } = await probeVideo(src);
+      asset.duration = duration; asset.thumb = thumb; asset.status = 'ready';
+      LOG('    duration:', duration.toFixed(2), 'thumb:', !!thumb);
+    } else {
+      asset.duration = await probeAudio(src); asset.status = 'ready';
+    }
+    state.project.push(asset);
+    renderProject();
+    updateStatus();
+  }
+  LOG('project now has', state.project.length, 'item(s)');
+}
+
+/* ================ PROJECT PANEL ================ */
+function renderProject(){
+  const list = $('#projList');
+  list.innerHTML = '';
+  if(!state.project.length){
+    list.innerHTML = `<div class="empty-hint">
+      اسحب ملفات الفيديو هنا<br>أو اضغط <b>Import</b> في الأعلى<br><br>
+      <span style="font-size:10px;color:#555">الصيغ المدعومة: MP4, WebM, MOV, JPG, PNG, MP3…</span>
+    </div>`;
+    return;
+  }
+  state.project.forEach(a => {
+    const row = document.createElement('div');
+    row.className = 'proj-item' + (state.selectedAsset===a.id?' selected':'');
+    const icon = a.kind==='audio'?'♫':a.kind==='image'?'🖼':'🎬';
+    row.innerHTML = `
+      <div class="proj-thumb">${a.thumb?`<img src="${a.thumb}" alt="">`:icon}</div>
+      <div class="proj-name" title="${a.name}">${a.name}</div>
+      <div class="proj-dur">${a.status==='loading'?'…':tc(a.duration)}</div>`;
+    row.onclick = () => { state.selectedAsset = a.id; showInSource(a); renderProject(); updateStatus(); };
+    row.ondblclick = () => { LOG('dblclick on', a.name); addAssetToTimeline(a); };
+    list.appendChild(row);
+  });
+}
+
+/* ================ SOURCE MONITOR ================ */
+function showInSource(asset){
+  $('#sourceTitle').textContent = asset.name;
+  const c = $('#sourceCanvas'), ctx = c.getContext('2d');
+  ctx.fillStyle='#000'; ctx.fillRect(0,0,c.width,c.height);
+  if(asset.kind==='image'){
+    const img = getImage(asset.src);
+    const draw = () => drawContain(ctx, img, c.width, c.height);
+    img.complete ? draw() : (img.onload = draw);
+  } else if(asset.kind==='video'){
+    const v = getVideo(asset.src);
+    const draw = () => { if(v.readyState>=2) drawContain(ctx,v,c.width,c.height); };
+    v.onseeked = draw; v.onloadeddata = draw;
+    try { v.currentTime = 0; } catch(_) {}
+  } else {
+    ctx.fillStyle='#666'; ctx.font='14px Tahoma'; ctx.textAlign='center';
+    ctx.fillText('♪ ' + asset.name, c.width/2, c.height/2);
+  }
+}
+function drawContain(ctx, src, W, H){
+  ctx.fillStyle='#000'; ctx.fillRect(0,0,W,H);
+  const sw = src.videoWidth||src.width, sh = src.videoHeight||src.height;
+  if(!sw || !sh) return;
+  const r = Math.min(W/sw, H/sh);
+  const w = sw*r, h = sh*r;
+  ctx.drawImage(src, (W-w)/2, (H-h)/2, w, h);
+}
+
+/* ================ ADD TO TIMELINE ================ */
+function addAssetToTimeline(asset){
+  if(!asset){ alert('اختر ملفًا من Project أولاً'); return; }
+  const trackName = asset.kind==='audio'
+    ? (state.tracks.A1.length <= state.tracks.A2.length ? 'A1' : 'A2')
+    : asset.kind==='image' ? 'V2' : 'V1';
+  const lane = state.tracks[trackName];
+  const start = lane.reduce((m,c)=>Math.max(m, c.start + c.duration), 0);
+  const clip = {
+    id:'c_'+Math.random().toString(36).slice(2,9),
+    assetId:asset.id, name:asset.name, src:asset.src, kind:asset.kind,
+    start, duration: asset.duration || 5
+  };
+  lane.push(clip);
+  state.selection = clip.id;
+  LOG('added to', trackName, ':', clip.name, '(', clip.duration.toFixed(2), 's )');
+  renderTimeline(); renderProgram(); updateStatus();
+}
+
+/* ================ TIMELINE RENDER ================ */
+function renderTimeline(){
+  // Track headers
+  const thCol = $('#thCol');
+  thCol.innerHTML = '<div class="th-spacer"></div>';
+  TRACKS.forEach(name => {
+    const info = TRACK_INFO[name];
+    const h = document.createElement('div');
+    h.className = 'th ' + info.type; h.style.height = '50px';
+    const eye = info.type==='video'
+      ? `<button class="mini-btn ${state.visible[name]?'on':''}" data-act="eye" data-t="${name}" type="button">👁</button>` : '';
+    const lock = `<button class="mini-btn ${state.locked[name]?'on':''}" data-act="lock" data-t="${name}" type="button">🔒</button>`;
+    const mute = info.type==='audio'
+      ? `<button class="mini-btn ${state.muted[name]?'mute-on':''}" data-act="mute" data-t="${name}" type="button">M</button>` : '';
+    const solo = info.type==='audio'
+      ? `<button class="mini-btn ${state.solo[name]?'on':''}" data-act="solo" data-t="${name}" type="button">S</button>` : '';
+    h.innerHTML = `<span class="name">${name}</span><span class="spacer"></span>${eye}${lock}${mute}${solo}`;
+    thCol.appendChild(h);
+  });
+  thCol.querySelectorAll('.mini-btn').forEach(b => {
+    b.onclick = () => {
+      const { act, t } = b.dataset;
+      if(act==='eye') state.visible[t] = !state.visible[t];
+      if(act==='lock') state.locked[t] = !state.locked[t];
+      if(act==='mute') state.muted[t] = !state.muted[t];
+      if(act==='solo') state.solo[t] = !state.solo[t];
+      renderTimeline(); renderProgram();
+    };
+  });
+
+  renderRuler();
+
+  const tracks = $('#tracks');
+  tracks.innerHTML = '';
+  TRACKS.forEach(name => {
+    const info = TRACK_INFO[name];
+    const lane = document.createElement('div');
+    lane.className = 'lane ' + (info.type==='audio'?'audio':'');
+    lane.style.height = '50px';
+    lane.dataset.track = name;
+    if(state.locked[name]) lane.classList.add('locked');
+
+    state.tracks[name].forEach(clip => {
+      const el = document.createElement('div');
+      el.className = 'clip ' + (info.type==='audio'?'audio':'video');
+      el.dataset.id = clip.id;
+      el.style.left = (clip.start * state.zoom) + 'px';
+      el.style.width = Math.max(6, clip.duration * state.zoom) + 'px';
+      if(state.selection === clip.id) el.classList.add('selected');
+      el.innerHTML = `<div class="clip-name">${clip.name}</div><div class="strip"></div>`;
+      bindClipEvents(el, clip, name);
+      lane.appendChild(el);
+    });
+
+    lane.addEventListener('dragover', e => { e.preventDefault(); e.dataTransfer.dropEffect='copy'; });
+    lane.addEventListener('drop', e => {
+      e.preventDefault();
+      if(state.selectedAsset){
+        const a = state.project.find(x=>x.id===state.selectedAsset);
+        if(a){
+          const rect = tracks.getBoundingClientRect();
+          const start = Math.max(0, (e.clientX - rect.left) / state.zoom);
+          state.tracks[name].push({
+            id:'c_'+Math.random().toString(36).slice(2,9),
+            assetId:a.id, name:a.name, src:a.src, kind:a.kind,
+            start, duration:a.duration||5
+          });
+          renderTimeline(); renderProgram(); updateStatus();
+        }
+      }
+    });
+    tracks.appendChild(lane);
+  });
+
+  updatePlayhead(); updateTC();
+}
+
+function renderRuler(){
+  const ruler = $('#ruler');
+  const w = Math.max(state.zoom * 60 + 400, 3000);
+  ruler.style.width = w + 'px';
+  ruler.innerHTML = '';
+  const step = state.zoom >= 80 ? 1 : state.zoom >= 40 ? 2 : state.zoom >= 20 ? 5 : 10;
+  const loops = Math.floor(w / state.zoom / step);
+  for(let i=0; i<=loops; i++){
+    const s = i * step;
+    const t = document.createElement('div');
+    t.className = 'tick' + (s % (step*5) === 0 ? ' major' : '');
+    t.style.left = (s * state.zoom) + 'px';
+    if(s % (step*5) === 0) t.textContent = tc(s);
+    ruler.appendChild(t);
+  }
+}
+
+/* ================ CLIP DRAG ================ */
+let activeDrag = null;
+document.addEventListener('mousemove', e => {
+  if(!activeDrag) return;
+  const dx = e.clientX - activeDrag.startX;
+  activeDrag.clip.start = Math.max(0, activeDrag.origStart + dx/state.zoom);
+  renderTimeline();
+});
+document.addEventListener('mouseup', () => {
+  if(activeDrag){ activeDrag = null; document.body.style.cursor=''; }
+});
+
+function bindClipEvents(el, clip, trackName){
+  el.addEventListener('mousedown', e => {
+    if(state.locked[trackName]) return;
+    e.stopPropagation();
+    if(state.tool === 'razor'){ splitClip(trackName, clip, e); return; }
+    state.selection = clip.id;
+    activeDrag = { clip, startX:e.clientX, origStart:clip.start };
+    renderTimeline();
+    document.body.style.cursor = 'grabbing';
+  });
+}
+
+function splitClip(trackName, clip, e){
+  const el = e.target.closest('.clip');
+  const rect = el.getBoundingClientRect();
+  const at = clip.start + (e.clientX - rect.left) / state.zoom;
+  if(at <= clip.start + 0.05 || at >= clip.start + clip.duration - 0.05) return;
+  const first = { ...clip, duration: at - clip.start };
+  const second = { ...clip, id:'c_'+Math.random().toString(36).slice(2,9),
+                   start: at, duration: clip.duration - (at - clip.start) };
+  const lane = state.tracks[trackName];
+  const i = lane.findIndex(c => c.id === clip.id);
+  lane.splice(i, 1, first, second);
+  state.selection = second.id;
+  renderTimeline();
+}
+
+/* ================ RULER SCRUB ================ */
+const ruler = $('#ruler');
+let scrubbing = false;
+ruler.addEventListener('mousedown', e => {
+  scrubbing = true;
+  const rect = ruler.getBoundingClientRect();
+  seekToPx(e.clientX - rect.left);
+});
+window.addEventListener('mousemove', e => {
+  if(!scrubbing) return;
+  const rect = ruler.getBoundingClientRect();
+  seekToPx(e.clientX - rect.left);
+});
+window.addEventListener('mouseup', () => { scrubbing = false; });
+
+function seekToPx(px){
+  state.playhead = Math.max(0, px / state.zoom);
+  updatePlayhead(); updateTC(); renderProgram();
+}
+function updatePlayhead(){ $('#playhead').style.left = (state.playhead * state.zoom) + 'px'; }
+function updateTC(){ $('#progTC').textContent = tc(state.playhead); }
+
+/* ================ TOOLS ================ */
+function setTool(t){
+  state.tool = t;
+  document.querySelectorAll('.tool-btn').forEach(b =>
+    b.classList.toggle('active', b.dataset.tool === t));
+}
+document.querySelectorAll('.tool-btn').forEach(b =>
+  b.addEventListener('click', () => setTool(b.dataset.tool)));
+
+document.addEventListener('keydown', e => {
+  if(e.target.matches('input,textarea')) return;
+  if(e.key==='v'||e.key==='V') setTool('select');
+  if(e.key==='c'||e.key==='C') setTool('razor');
+  if(e.key==='h'||e.key==='H') setTool('hand');
+  if(e.key===' '){ e.preventDefault(); togglePlay(); }
+  if(e.key==='Delete' && state.selection){
+    TRACKS.forEach(n => state.tracks[n] = state.tracks[n].filter(c=>c.id!==state.selection));
+    state.selection = null;
+    renderTimeline(); renderProgram();
+  }
+});
+
+/* ================ ZOOM ================ */
+$('#zoomRange').addEventListener('input', e => {
+  state.zoom = +e.target.value;
+  renderTimeline();
+});
+
+/* ================ PROGRAM MONITOR ================ */
+const progCanvas = $('#programCanvas');
+const progCtx = progCanvas.getContext('2d');
+const chromaCanvas = document.createElement('canvas');
+const chromaCtx = chromaCanvas.getContext('2d', { willReadFrequently:true });
+
+function renderProgram(){
+  const W = progCanvas.width, H = progCanvas.height;
+  progCtx.fillStyle = '#000'; progCtx.fillRect(0,0,W,H);
+
+  const active = state.tracks.V1.concat(state.tracks.V2)
+    .find(c => state.playhead >= c.start && state.playhead <= c.start + c.duration);
+  if(!active) return;
+
+  progCtx.save();
+  const fx = state.effects;
+  progCtx.globalAlpha = fx.opacity / 100;
+  progCtx.filter = `brightness(${fx.brightness}%) contrast(${fx.contrast}%) saturate(${fx.saturation}%)`;
+
+  if(active.kind === 'image'){
+    const img = getImage(active.src);
+    if(img.complete) drawContain(progCtx, img, W, H);
+    else img.onload = () => drawContain(progCtx, img, W, H);
+  } else if(active.kind === 'video'){
+    const v = getVideo(active.src);
+    const local = state.playhead - active.start;
+    if(v.readyState >= 1 && Math.abs(v.currentTime - local) > 0.15){
+      try { v.currentTime = local; } catch(_) {}
+    }
+    if(v.readyState >= 2){
+      if(state.chroma.on) drawWithChroma(progCtx, v, W, H);
+      else drawContain(progCtx, v, W, H);
+    }
+  }
+  progCtx.restore();
+
+  if(state.logo.img){
+    const L = state.logo;
+    progCtx.drawImage(L.img, L.x, L.y, L.size, L.size*0.6);
+  }
+}
+
+function drawWithChroma(ctx, video, W, H){
+  chromaCanvas.width = W; chromaCanvas.height = H;
+  chromaCtx.drawImage(video, 0, 0, W, H);
+  const frame = chromaCtx.getImageData(0, 0, W, H);
+  const d = frame.data;
+  const kr = parseInt(state.chroma.color.slice(1,3),16);
+  const kg = parseInt(state.chroma.color.slice(3,5),16);
+  const kb = parseInt(state.chroma.color.slice(5,7),16);
+  const tol = state.chroma.tol * 2.55, tol2 = tol*tol;
+  for(let i=0;i<d.length;i+=4){
+    const dr=d[i]-kr, dg=d[i+1]-kg, db=d[i+2]-kb;
+    if(dr*dr+dg*dg+db*db < tol2) d[i+3] = 0;
+  }
+  chromaCtx.putImageData(frame, 0, 0);
+  ctx.drawImage(chromaCanvas, 0, 0, W, H);
+}
+
+/* ================ EFFECTS BINDING ================ */
+function bindEff(id, valId, key, suffix){
+  const el = $(id), v = $(valId);
+  if(!el) return;
+  el.addEventListener('input', () => {
+    state.effects[key] = +el.value;
+    if(v) v.textContent = el.value + (suffix||'');
+    renderProgram();
+  });
+  if(v) v.textContent = el.value + (suffix||'');
+}
+bindEff('#effOpacity','#effOpacityVal','opacity','%');
+bindEff('#effBright','#effBrightVal','brightness','');
+bindEff('#effContrast','#effContrastVal','contrast','');
+bindEff('#effSat','#effSatVal','saturation','');
+
+$('#chromaToggle').addEventListener('change', e => { state.chroma.on = e.target.checked; renderProgram(); });
+$('#chromaColorPicker').addEventListener('input', e => { state.chroma.color = e.target.value; renderProgram(); });
+$('#chromaTolRange').addEventListener('input', e => {
+  state.chroma.tol = +e.target.value;
+  $('#chromaTolVal').textContent = e.target.value;
+  renderProgram();
+});
+$('#logoBtn').addEventListener('click', () => $('#logoInput').click());
+$('#logoInput').addEventListener('change', e => {
+  const f = e.target.files[0]; if(!f) return;
+  const img = new Image();
+  img.onload = () => { state.logo.img = img; renderProgram(); };
+  img.src = URL.createObjectURL(f);
+});
+$('#logoSizeRange').addEventListener('input', e => {
+  state.logo.size = +e.target.value;
+  $('#logoSizeVal').textContent = e.target.value;
+  renderProgram();
+});
+
+/* ================ PLAYBACK ================ */
+let rafId = null, lastT = 0;
+function togglePlay(){
+  state.playing = !state.playing;
+  $('#progPlay').textContent = state.playing ? '⏸' : '▶';
+  if(state.playing){
+    const active = state.tracks.V1.concat(state.tracks.V2)
+      .find(c => state.playhead >= c.start && state.playhead <= c.start + c.duration);
+    if(active && active.kind === 'video') getVideo(active.src).play().catch(()=>{});
+    lastT = performance.now();
+    rafId = requestAnimationFrame(loop);
+  } else {
+    Object.values(videoPool).forEach(v => v.pause());
+    if(rafId) cancelAnimationFrame(rafId);
+  }
+}
+function loop(t){
+  if(!state.playing) return;
+  const dt = (t - lastT)/1000; lastT = t;
+  state.playhead += dt;
+  updatePlayhead(); updateTC(); renderProgram();
+  const maxEnd = TRACKS.flatMap(n => state.tracks[n].map(c => c.start + c.duration))
+                       .reduce((a,b) => Math.max(a,b), 0);
+  if(maxEnd && state.playhead >= maxEnd){ togglePlay(); return; }
+  rafId = requestAnimationFrame(loop);
+}
+$('#progPlay').addEventListener('click', togglePlay);
+
+/* ================ IMPORT BUTTONS ================ */
+const fileInput = $('#fileInput');
+$('#importBtn').addEventListener('click', () => {
+  LOG('Import clicked');
+  fileInput.value = '';
+  fileInput.click();
+});
+fileInput.addEventListener('change', e => {
+  LOG('input change:', e.target.files.length, 'file(s)');
+  importFiles([...e.target.files]);
+});
+$('#addToTLBtn').addEventListener('click', () => {
+  LOG('Add-to-Timeline clicked. selectedAsset =', state.selectedAsset);
+  const a = state.project.find(x => x.id === state.selectedAsset) || state.project[0];
+  if(!a){ alert('لا يوجد ملف في Project — استورد أولاً'); return; }
+  state.selectedAsset = a.id;
+  addAssetToTimeline(a);
+});
+$('#deleteBtn').addEventListener('click', () => {
+  if(!state.selectedAsset) return;
+  state.project = state.project.filter(x => x.id !== state.selectedAsset);
+  state.selectedAsset = null;
+  renderProject(); updateStatus();
+});
+
+/* ================ DESKTOP DRAG-DROP ================ */
+const projPanel = $('#projectPanel');
+['dragenter','dragover'].forEach(ev =>
+  projPanel.addEventListener(ev, e => {
+    e.preventDefault(); e.stopPropagation();
+    projPanel.classList.add('drop-active');
+  }));
+['dragleave','dragend'].forEach(ev =>
+  projPanel.addEventListener(ev, e => {
+    if(e.target === projPanel) projPanel.classList.remove('drop-active');
+  }));
+projPanel.addEventListener('drop', e => {
+  e.preventDefault(); e.stopPropagation();
+  projPanel.classList.remove('drop-active');
+  LOG('drop event — files:', e.dataTransfer.files.length);
+  importFiles([...e.dataTransfer.files]);
+});
+document.addEventListener('dragover', e => e.preventDefault());
+document.addEventListener('drop', e => e.preventDefault());
+
+/* ================ STATUS ================ */
+function updateStatus(){
+  const total = TRACKS.reduce((s,n) => s + state.tracks[n].length, 0);
+  $('#statusBar').textContent =
+    `Project: ${state.project.length} | Timeline clips: ${total} | Ready`;
+}
+
+/* ================ INIT ================ */
+function init(){
+  LOG('init start');
+  renderProject();
+  renderTimeline();
+  renderProgram();
+  updateStatus();
+  LOG('init done — app ready ✓');
+  setTimeout(() => LOG('TIPS: اضغط Import أو اسحب ملفات على Project Panel ثم دبل كليك لإضافتها للتايملاين'), 500);
+}
+document.readyState === 'loading'
+  ? document.addEventListener('DOMContentLoaded', init)
+  : init();
+</script>
 </body>
 </html>
