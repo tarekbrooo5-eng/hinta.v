@@ -45,7 +45,7 @@ fileInput.addEventListener('change', (e) => {
         thumb.className = 'media-thumb';
         thumb.draggable = true;
         thumb.innerHTML = `
-            <div style="background:#111; height:40px; display:flex; align-items:center; justify-content:center; color:#777; font-size:8px;">${mediaObj.type.toUpperCase()}</div>
+            <div style="background:#111; height:36px; display:flex; align-items:center; justify-content:center; color:#777; font-size:8px;">${mediaObj.type.toUpperCase()}</div>
             <span>${file.name}</span>
         `;
         thumb.ondragstart = (ev) => {
@@ -227,7 +227,6 @@ inspectorFontSize.addEventListener('input', (e) => {
     if (clip && clip.type === 'text') { clip.fontSize = e.target.value; updateStagePreview(); }
 });
 
-// تحديث شاشة المعاينة
 function updateStagePreview() {
     overlaysStage.innerHTML = '';
     
@@ -401,5 +400,4 @@ function resetTimeline() {
     updateStagePreview();
 }
 
-// تهيئة أولية آمنة
 updateStagePreview();
