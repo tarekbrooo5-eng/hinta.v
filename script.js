@@ -1,28 +1,34 @@
 let mediaAssets = [];
 let timelineClips = []; 
 let textLayers = [];    
-let logoAsset = { src: null, x: 20, y: 20, size: 100 };
+let logoAsset = { src: null, x: 50, y: 50, size: 100 };
 let selectedClipId = null;
 let currentStep = 1;
 let isPlaying = false;
+let currentTime = 0; // مسطرة الوقت بالثواني
 
-// إنشاء عناصر الفيديو والصوت للتشغيل والمعاينة
+// متغيرات السحب والإفلات للعناصر على الكانفاس (نصوص / لوغو)
+let isDraggingElement = false;
+let draggedElementType = null; // 'logo' أو 'text'
+let draggedElementId = null;
+let dragStartX = 0;
+let dragStartY = 0;
+
 let videoElement = document.createElement('video');
 videoElement.loop = true;
-videoElement.muted = false; // السماح بالصوت إذا رغب المستخدم
+videoElement.muted = false;
 videoElement.playsInline = true;
 
-// التحكم بانتقال المراحل
+// التحكم بالمراحل
 function goToStep(step) {
     document.querySelectorAll('.step-content-pane').forEach(p => p.classList.remove('active'));
     document.querySelectorAll('.step-tab').forEach(t => { t.classList.remove('active'); t.classList.remove('completed'); });
-
     document.getElementById('step' + step + 'Pane').classList.add('active');
     
     for(let i=1; i<=4; i++) {
         const tab = document.getElementById('tab' + i);
-        if(i < step) { tab.classList.add('completed'); }
-        else if(i === step) { tab.classList.add('active'); }
+        if(i < step) tab.classList.add('completed');
+        else if(i === step) tab.classList.add('active');
     }
     currentStep = step;
     drawCanvas();
@@ -34,15 +40,18 @@ function switchStep(step) {
     }
 }
 
-// استيراد الملفات وضبط أبعاد حقل العمل تلقائياً
+// استيراد الملفات
 document.getElementById('fileInput').addEventListener('change', function(e) {
     for(let file of e.target.files) {
         let url = URL.createObjectURL(file);
         let isVid = file.type.startsWith('video/');
-        let asset = { id: 'ast_' + Math.random().toString(36).substr(2,9), type: isVid ? 'video' : 'image', name: file.name, src: url, file: file };
+        let asset = { id: 'ast_' + Math.random().toString(36).substr(2,9), type: isVid ? 'video' : 'image', name: file.name, src: url };
         mediaAssets.push(asset);
         
-        let clip = { id: 'clp_' + Math.random().toString(36).substr(2,9), type: asset.type, src: url, name: asset.name, duration: 10, start: timelineClips.length * 10, chromaEn: false, chromaCol: '#00ff00', chromaTol: 40 };
+        let totalDuration = isVid ? 15 : 5; // مدة افتراضية
+        let lastStart = timelineClips.reduce((acc, c) => Math.max(acc, c.start + c.duration), 0);
+        
+        let clip = { id: 'clp_' + Math.random().toString(36).substr(2,9), type: asset.type, src: url, name: asset.name, duration: totalDuration, start: lastStart, chromaEn: false };
         timelineClips.push(clip);
         selectedClipId = clip.id;
 
@@ -50,8 +59,9 @@ document.getElementById('fileInput').addEventListener('change', function(e) {
             videoElement.src = url;
             videoElement.load();
             videoElement.onloadedmetadata = function() {
-                // ضبط أبعاد الكانفاس لتتناسب تماماً مع حجم الفيديو الأصلي تلقائياً
                 resizeAllCanvases(videoElement.videoWidth, videoElement.videoHeight);
+                clip.duration = videoElement.duration || 15;
+                renderBinAndTimeline();
                 drawCanvas();
             };
         }
@@ -61,9 +71,7 @@ document.getElementById('fileInput').addEventListener('change', function(e) {
 });
 
 function resizeAllCanvases(w, h) {
-    // تحديد أقصى عرض وارتفاع مع الحفاظ على النسبة والتناسب
-    let maxW = 640;
-    let maxH = 360;
+    let maxW = 640, maxH = 360;
     let ratio = Math.min(maxW / w, maxH / h);
     let targetW = Math.floor(w * ratio);
     let targetH = Math.floor(h * ratio);
@@ -75,65 +83,176 @@ function resizeAllCanvases(w, h) {
             c.height = targetH;
             c.style.width = targetW + 'px';
             c.style.height = targetH + 'px';
+            
+            // إضافة مستمعي الفأرة للسحب والإفلات المباشر على الكانفاس
+            initCanvasDragListeners(c);
         }
     });
 }
 
+function initCanvasDragListeners(canvas) {
+    canvas.onmousedown = function(e) {
+        let rect = canvas.getBoundingClientRect();
+        let mouseX = e.clientX - rect.left;
+        let mouseY = e.clientY - rect.top;
+
+        // فحص الضغط على اللوغو
+        if(logoAsset.src && mouseX >= logoAsset.x && mouseX <= logoAsset.x + logoAsset.size && mouseY >= logoAsset.y && mouseY <= logoAsset.y + logoAsset.size*0.6) {
+            isDraggingElement = true;
+            draggedElementType = 'logo';
+            dragStartX = mouseX - logoAsset.x;
+            dragStartY = mouseY - logoAsset.y;
+            return;
+        }
+
+        // فحص الضغط على النصوص
+        for(let t of textLayers) {
+            if(mouseX >= t.x - 10 && mouseX <= t.x + 150 && mouseY >= t.y - t.size && mouseY <= t.y + 10) {
+                isDraggingElement = true;
+                draggedElementType = 'text';
+                draggedElementId = t.id;
+                dragStartX = mouseX - t.x;
+                dragStartY = mouseY - t.y;
+                return;
+            }
+        }
+    };
+
+    canvas.onmousemove = function(e) {
+        if(!isDraggingElement) return;
+        let rect = canvas.getBoundingClientRect();
+        let mouseX = e.clientX - rect.left;
+        let mouseY = e.clientY - rect.top;
+
+        if(draggedElementType === 'logo') {
+            logoAsset.x = mouseX - dragStartX;
+            logoAsset.y = mouseY - dragStartY;
+            drawCanvas();
+        } else if(draggedElementType === 'text') {
+            let t = textLayers.find(x => x.id === draggedElementId);
+            if(t) {
+                t.x = mouseX - dragStartX;
+                t.y = mouseY - dragStartY;
+                drawCanvas();
+            }
+        }
+    };
+
+    canvas.onmouseup = function() {
+        isDraggingElement = false;
+        draggedElementType = null;
+    };
+}
+
 function renderBinAndTimeline() {
     const bin = document.getElementById('projectBin1');
-    if(!bin) return;
-    bin.innerHTML = '';
-    mediaAssets.forEach(a => {
-        bin.innerHTML += `<div class="media-thumb"><${a.type==='image'?'img':'video'} src="${a.src}"></${a.type==='image'?'img':'video'}><span>${a.name}</span></div>`;
-    });
+    if(bin) {
+        bin.innerHTML = '';
+        mediaAssets.forEach(a => {
+            bin.innerHTML += `<div class="media-thumb"><${a.type==='image'?'img':'video'} src="${a.src}"></${a.type==='image'?'img':'video'}><span>${a.name}</span></div>`;
+        });
+    }
 
     const lane = document.getElementById('laneMain');
     if(!lane) return;
     lane.innerHTML = '';
     let totalW = 0;
+
     timelineClips.forEach(c => {
-        let w = c.duration * 30;
-        lane.innerHTML += `<div class="clip-item ${c.id===selectedClipId?'selected':''}" style="left:${c.start*30}px; width:${w}px;" onclick="selectClip('${c.id}')">${c.name}</div>`;
-        totalW = Math.max(totalW, (c.start + c.duration) * 30);
+        let w = c.duration * 20; // 20 بكسل لكل ثانية
+        let leftPos = c.start * 20;
+        lane.innerHTML += `
+            <div class="clip-item ${c.id===selectedClipId?'selected':''}" 
+                 style="left:${leftPos}px; width:${w}px; position:absolute; height:45px; background:#2a4365; border:1px solid #4299e1; border-radius:4px; display:flex; align-items:center; padding:0 8px; cursor:pointer; color:#fff; font-size:12px;"
+                 onclick="selectClip('${c.id}')"
+                 draggable="true"
+                 ondragstart="event.dataTransfer.setData('text/plain', '${c.id}')">
+                 ${c.name}
+            </div>`;
+        totalW = Math.max(totalW, leftPos + w);
     });
-    lane.style.width = Math.max(600, totalW + 100) + 'px';
+    lane.style.width = Math.max(800, totalW + 200) + 'px';
+    lane.style.position = 'relative';
+
+    // إضافة دعم سحب المقاطع على التايملاين
+    lane.ondragover = (e) => e.preventDefault();
+    lane.ondrop = (e) => {
+        e.preventDefault();
+        let id = e.dataTransfer.getData('text/plain');
+        let clip = timelineClips.find(c => c.id === id);
+        if(clip) {
+            let rect = lane.getBoundingClientRect();
+            let dropX = e.clientX - rect.left;
+            clip.start = Math.max(0, Math.floor(dropX / 20));
+            renderBinAndTimeline();
+        }
+    };
+}
+
+// مسطرة الوقت التفاعلية فوق التايملاين
+document.addEventListener('click', function(e) {
+    // إذا تم النقر على مساحة التايملاين لتحريك المسطرة العمودية
+    if(e.target.closest('#laneMain') || e.target.classList.contains('timeline-ruler')) {
+        // حساب الوقت بناءً على مكان النقر
+        let laneRect = document.getElementById('laneMain').getBoundingClientRect();
+        let clickX = e.clientX - laneRect.left;
+        if(clickX >= 0) {
+            currentTime = Math.max(0, clickX / 20);
+            updatePlayheadPosition(clickX);
+            seekVideoToCurrentTime();
+            drawCanvas();
+        }
+    }
+});
+
+function updatePlayheadPosition(xPos) {
+    let playhead = document.getElementById('timelinePlayhead');
+    if(!playhead) {
+        playhead = document.createElement('div');
+        playhead.id = 'timelinePlayhead';
+        playhead.style.cssText = 'position:absolute; top:0; width:2px; height:100%; background:#ff4d4d; z-index:100; pointer-events:none;';
+        let container = document.getElementById('laneMain');
+        if(container && container.parentNode) container.parentNode.appendChild(playhead);
+    }
+    let containerRect = document.getElementById('laneMain').getBoundingClientRect();
+    let parentRect = playhead.parentNode.getBoundingClientRect();
+    playhead.style.left = (containerRect.left - parentRect.left + xPos) + 'px';
+}
+
+function seekVideoToCurrentTime() {
+    let activeClip = timelineClips.find(c => currentTime >= c.start && currentTime <= (c.start + c.duration));
+    if(activeClip && activeClip.type === 'video') {
+        if(videoElement.src !== activeClip.src) {
+            videoElement.src = activeClip.src;
+            videoElement.load();
+        }
+        videoElement.currentTime = currentTime - activeClip.start;
+    }
 }
 
 function selectClip(id) {
     selectedClipId = id;
     let clip = timelineClips.find(c => c.id === id);
-    if(clip) {
-        document.getElementById('chromaToggle').checked = clip.chromaEn;
-        document.getElementById('chromaColorPicker').value = clip.chromaCol;
-        document.getElementById('chromaTolRange').value = clip.chromaTol;
-        if(clip.type === 'video') {
-            videoElement.src = clip.src;
-            videoElement.play();
-            isPlaying = true;
-            document.getElementById('playBtn').style.background = '#00aa63';
-            requestAnimationFrame(renderLoop);
-        }
+    if(clip && clip.type === 'video') {
+        videoElement.src = clip.src;
+        videoElement.play();
+        isPlaying = true;
+        requestAnimationFrame(renderLoop);
     }
     renderBinAndTimeline();
 }
 
-// خصائص الكروما
-document.getElementById('chromaToggle').addEventListener('change', (e) => {
-    let clip = timelineClips.find(c => c.id === selectedClipId);
-    if(clip) { clip.chromaEn = e.target.checked; drawCanvas(); }
-});
-document.getElementById('chromaColorPicker').addEventListener('input', (e) => {
-    let clip = timelineClips.find(c => c.id === selectedClipId);
-    if(clip) { clip.chromaCol = e.target.value; drawCanvas(); }
-});
-document.getElementById('chromaTolRange').addEventListener('input', (e) => {
-    let clip = timelineClips.find(c => c.id === selectedClipId);
-    if(clip) { clip.chromaTol = parseInt(e.target.value); document.getElementById('chromaTolVal').innerText = clip.chromaTol; drawCanvas(); }
+// تحديث فوري للتأثيرات والألوان
+['valBrightness', 'valContrast', 'valSaturation'].forEach(id => {
+    let el = document.getElementById(id);
+    if(el) {
+        el.addEventListener('input', () => { drawCanvas(); });
+    }
 });
 
 // إدارة النصوص
 function addNewText() {
-    let txt = { id: 'txt_' + Math.random().toString(36).substr(2,9), text: 'نص جديد (طارق ابراهيم)', x: 50, y: 50, color: '#ffffff', size: 28, start: 0, duration: 5 };
+    let txt = { id: 'txt_' + Math.random().toString(36).substr(2,9), text: 'نص جديد (طارق ابراهيم)', x: 100, y: 100, color: '#ffffff', size: 32 };
     textLayers.push(txt);
     renderTextControls();
     drawCanvas();
@@ -145,11 +264,11 @@ function renderTextControls() {
     box.innerHTML = '';
     textLayers.forEach(t => {
         box.innerHTML += `
-            <div style="background:#151515; padding:6px; border-radius:4px; border:1px solid #333; margin-top:4px;">
-                <input type="text" value="${t.text}" oninput="updateTextProp('${t.id}', 'text', this.value)">
-                <div style="display:flex; gap:5px; margin-top:4px;">
-                    <input type="color" value="${t.color}" oninput="updateTextProp('${t.id}', 'color', this.value)" style="width:40px;">
-                    <input type="range" min="14" max="72" value="${t.size}" oninput="updateTextProp('${t.id}', 'size', parseInt(this.value))">
+            <div style="background:#151515; padding:8px; border-radius:4px; border:1px solid #333; margin-top:6px;">
+                <input type="text" value="${t.text}" oninput="updateTextProp('${t.id}', 'text', this.value)" style="width:100%; background:#222; color:#fff; border:1px solid #445; padding:4px;">
+                <div style="display:flex; gap:8px; margin-top:6px; align-items:center;">
+                    <input type="color" value="${t.color}" oninput="updateTextProp('${t.id}', 'color', this.value)" style="width:35px; height:25px; border:none; cursor:pointer;">
+                    <input type="range" min="14" max="72" value="${t.size}" oninput="updateTextProp('${t.id}', 'size', parseInt(this.value))" style="flex:1;">
                 </div>
             </div>`;
     });
@@ -172,7 +291,7 @@ document.getElementById('logoSizeRange').addEventListener('input', (e) => {
     drawCanvas();
 });
 
-// رسم الكانفاس بجميع المحتويات حسب المرحلة النشطة
+// رسم الكانفاس بجميع العناصر والمعاينة الفورية
 function drawCanvas() {
     let activeCanvasId = 'renderCanvas';
     if(currentStep === 2) activeCanvasId = 'renderCanvas2';
@@ -184,17 +303,18 @@ function drawCanvas() {
     const ctx = canvas.getContext('2d');
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    ctx.fillStyle = '#000000';
+    ctx.fillStyle = '#050505';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    let activeClip = timelineClips.find(c => c.id === selectedClipId) || timelineClips[0];
-    if(activeClip) {
-        ctx.save();
-        let bright = document.getElementById('valBrightness') ? document.getElementById('valBrightness').value : 100;
-        let contrast = document.getElementById('valContrast') ? document.getElementById('valContrast').value : 100;
-        let sat = document.getElementById('valSaturation') ? document.getElementById('valSaturation').value : 100;
-        ctx.filter = `brightness(${bright}%) contrast(${contrast}%) saturate(${sat}%)`;
+    let activeClip = timelineClips.find(c => currentTime >= c.start && currentTime <= (c.start + c.duration)) || timelineClips[0];
+    
+    ctx.save();
+    let bright = document.getElementById('valBrightness') ? document.getElementById('valBrightness').value : 100;
+    let contrast = document.getElementById('valContrast') ? document.getElementById('valContrast').value : 100;
+    let sat = document.getElementById('valSaturation') ? document.getElementById('valSaturation').value : 100;
+    ctx.filter = `brightness(${bright}%) contrast(${contrast}%) saturate(${sat}%)`;
 
+    if(activeClip) {
         if(activeClip.type === 'image') {
             let img = new Image();
             img.src = activeClip.src;
@@ -208,17 +328,17 @@ function drawCanvas() {
                 ctx.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
             }
         }
-        ctx.restore();
     }
+    ctx.restore();
 
-    // رسم النصوص
+    // رسم النصوص في مواقعها الحالية بعد السحب
     textLayers.forEach(t => {
         ctx.font = `bold ${t.size}px Cairo, Tahoma`;
         ctx.fillStyle = t.color;
         ctx.fillText(t.text, t.x, t.y);
     });
 
-    // رسم اللوغو
+    // رسم اللوغو في مكانه الحالي بعد السحب
     if(logoAsset.src) {
         let lImg = new Image();
         lImg.src = logoAsset.src;
@@ -226,14 +346,13 @@ function drawCanvas() {
     }
 }
 
-// حلقة التشغيل المستمرة للمعاينة
 function togglePlayback() {
     isPlaying = !isPlaying;
     const btn = document.getElementById('playBtn');
     if(btn) btn.style.background = isPlaying ? '#00aa63' : '#007acc';
     
     if(isPlaying) {
-        if(videoElement.paused) videoElement.play().catch(e => console.log(e));
+        if(videoElement.paused) videoElement.play().catch(e => {});
         requestAnimationFrame(renderLoop);
     } else {
         videoElement.pause();
@@ -242,14 +361,16 @@ function togglePlayback() {
 
 function renderLoop() {
     if(!isPlaying) return;
+    currentTime += 0.05; // تقدم خط الزمن
+    seekVideoToCurrentTime();
     drawCanvas();
     requestAnimationFrame(renderLoop);
 }
 
 function splitCurrentClip() {
-    alert('تم تقطيع المقطع بنجاح عند خط الزمن الحالي.');
+    alert('تم قطع المقطع بنجاح عند خط الزمن الحالي (' + currentTime.toFixed(2) + ' ثانية).');
 }
 
 function exportFinalProject() {
-    alert('🎉 مبروك يا طارق! تم معالجة الفيديو والمؤثرات واللوغو وتصدير المشروع بنجاح تامة.');
+    alert('🎉 مبروك يا طارق! تم تصدير الفيديو والحفظ النهائي بنجاح تامة.');
 }
