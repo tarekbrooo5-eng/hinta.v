@@ -1,206 +1,140 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Step-by-Step Video Studio - المصمم طارق ابراهيم</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@700&family=Amiri:wght@700&family=Tajawal:wght@700&family=El+Messiri:wght@700&family=Changa:wght@700&family=Roboto:wght@700&family=Montserrat:wght@700&display=swap" rel="stylesheet">
-    <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        html, body { width: 100%; height: 100%; background-color: #121212; color: #cccccc; font-family: Tahoma, sans-serif; overflow: hidden; direction: rtl; font-size: 11px; user-select: none; }
-        
-        .app-container { display: flex; flex-direction: column; width: 100vw; height: 100vh; overflow: hidden; }
-
-        /* شريط المراحل التتابعية (Steps Header) */
-        .steps-header { background: #1e1e1e; height: 45px; min-height: 45px; display: flex; align-items: center; justify-content: space-around; border-bottom: 1px solid #333; padding: 0 10px; }
-        .step-tab { display: flex; align-items: center; gap: 6px; padding: 6px 14px; background: #262626; border: 1px solid #383838; border-radius: 4px; color: #888; font-weight: bold; cursor: not-allowed; }
-        .step-tab.active { background: #007acc; color: #fff; border-color: #3178c6; cursor: pointer; }
-        .step-tab.completed { background: #1b3a2b; color: #00aa63; border-color: #008751; cursor: pointer; }
-
-        .step-content-pane { display: none; flex: 1; flex-direction: column; overflow: hidden; }
-        .step-content-pane.active { display: flex; }
-
-        .main-workspace { display: flex; flex: 1; overflow: hidden; background: #222; }
-        
-        /* لوحة الأدوات الجانبية */
-        .sidebar-panel { width: 320px; min-width: 320px; background: #1b1b1b; border-left: 1px solid #333; display: flex; flex-direction: column; padding: 12px; gap: 12px; overflow-y: auto; }
-        
-        /* شاشة المعاينة المركزية */
-        .monitor-workspace { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #0f0f0f; position: relative; padding: 10px; }
-        
-        .canvas-container { position: relative; display: flex; align-items: center; justify-content: center; background: #000; box-shadow: 0 0 20px rgba(0,0,0,0.9); border: 1px solid #333; overflow: hidden; }
-        
-        /* تحكمات أسفل الشاشة */
-        .workspace-footer { height: 50px; min-height: 50px; background: #181818; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; border-top: 1px solid #333; }
-
-        button { background: #333; color: #fff; border: 1px solid #444; padding: 6px 14px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 11px; }
-        button:hover { background: #444; }
-        .btn-next { background: #008751; border-color: #00aa63; }
-        .btn-next:hover { background: #00aa63; }
-        .btn-primary { background: #007acc; border-color: #3178c6; }
-
-        input[type="range"], select, input[type="text"], input[type="color"] { width: 100%; background: #111; border: 1px solid #444; color: #fff; padding: 6px; border-radius: 3px; margin-top: 4px; }
-        label { display: block; color: #aaa; margin-top: 6px; }
-
-        /* التايملاين للمرحلة الأولى */
-        .timeline-box { height: 160px; min-height: 160px; background: #161616; border-top: 1px solid #333; display: flex; flex-direction: column; padding: 8px; }
-        .tracks-container { flex: 1; background: #111; border-radius: 4px; position: relative; overflow-x: auto; display: flex; flex-direction: column; gap: 4px; padding: 6px; }
-        .track-lane { height: 40px; background: #1c1c1c; border: 1px dashed #333; position: relative; display: flex; align-items: center; }
-        
-        .clip-item { position: absolute; height: 32px; background: #1c3d5a; border: 1px solid #3178c6; border-radius: 4px; display: flex; align-items: center; padding: 0 10px; color: #fff; cursor: grab; font-size: 10px; }
-        .clip-item.selected { border-color: #ffcc00; background: #2b5680; }
-
-        .media-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; max-height: 150px; overflow-y: auto; }
-        .media-thumb { background: #262626; border: 1px solid #333; padding: 4px; text-align: center; border-radius: 4px; cursor: pointer; }
-        .media-thumb img, .media-thumb video { width: 100%; height: 45px; object-fit: cover; border-radius: 2px; }
-        .media-thumb span { font-size: 9px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; margin-top: 2px; }
-
-        /* صندوق المعاينة المرن */
-        #renderCanvas { width: 100%; height: 100%; object-fit: contain; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Step-by-Step Video Studio - المصمم طارق ابراهيم</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@700&family=Tajawal:wght@700&family=El+Messiri:wght@700&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { width: 100%; height: 100%; background:#121212; color:#ccc; font-family: Tahoma, sans-serif; overflow:hidden; direction:rtl; font-size:12px; user-select:none; }
+.app-container { display:flex; flex-direction:column; width:100vw; height:100vh; overflow:hidden; }
+.steps-header { background:#1e1e1e; height:45px; display:flex; align-items:center; justify-content:space-around; border-bottom:1px solid #333; padding:0 10px; }
+.step-tab { padding:6px 14px; background:#262626; border:1px solid #383838; border-radius:4px; color:#888; font-weight:bold; cursor:not-allowed; }
+.step-tab.active { background:#007acc; color:#fff; border-color:#3178c6; cursor:pointer; }
+.step-tab.completed { background:#1b3a2b; color:#00aa63; border-color:#008751; cursor:pointer; }
+.step-content-pane { display:none; flex:1; flex-direction:column; overflow:hidden; }
+.step-content-pane.active { display:flex; }
+.main-workspace { display:flex; flex:1; overflow:hidden; background:#222; }
+.sidebar-panel { width:320px; background:#1b1b1b; border-left:1px solid #333; display:flex; flex-direction:column; padding:12px; gap:12px; overflow-y:auto; }
+.monitor-workspace { flex:1; display:flex; align-items:center; justify-content:center; background:#0f0f0f; padding:10px; }
+.canvas-container { position:relative; background:#000; box-shadow:0 0 20px rgba(0,0,0,.9); border:1px solid #333; overflow:hidden; }
+.workspace-footer { height:50px; background:#181818; display:flex; align-items:center; justify-content:space-between; padding:0 20px; border-top:1px solid #333; }
+button { background:#333; color:#fff; border:1px solid #444; padding:6px 14px; border-radius:4px; cursor:pointer; font-weight:bold; font-size:11px; }
+button:hover { background:#444; }
+.btn-next { background:#008751; border-color:#00aa63; }
+.btn-primary { background:#007acc; border-color:#3178c6; }
+input[type="range"], select, input[type="text"], input[type="color"] { width:100%; background:#111; border:1px solid #444; color:#fff; padding:6px; border-radius:3px; margin-top:4px; }
+label { display:block; color:#aaa; margin-top:6px; }
+#renderCanvas, #renderCanvas2, #renderCanvas3, #renderCanvas4 { display:block; }
+</style>
 </head>
 <body>
-
 <div class="app-container">
-    <!-- شريط المراحل التتابعية -->
-    <div class="steps-header">
-        <div class="step-tab active" id="tab1" onclick="switchStep(1)">1. قص وترتيب وتفريغ الكروما</div>
-        <div class="step-tab" id="tab2" onclick="switchStep(2)">2. ضبط الألوان والوضوح والإضاءة</div>
-        <div class="step-tab" id="tab3" onclick="switchStep(3)">3. إضافة وإدارة النصوص المتحركة</div>
-        <div class="step-tab" id="tab4" onclick="switchStep(4)">4. إضافة اللوغو والتصدير النهائي</div>
+  <div class="steps-header">
+    <div class="step-tab active" id="tab1" onclick="switchStep(1)">1. قص وترتيب وتفريغ الكروما</div>
+    <div class="step-tab" id="tab2" onclick="switchStep(2)">2. ضبط الألوان والوضوح</div>
+    <div class="step-tab" id="tab3" onclick="switchStep(3)">3. النصوص المتحركة</div>
+    <div class="step-tab" id="tab4" onclick="switchStep(4)">4. اللوغو والتصدير</div>
+  </div>
+
+  <!-- Step 1 -->
+  <div class="step-content-pane active" id="step1Pane">
+    <div class="main-workspace">
+      <div class="sidebar-panel">
+        <h3 style="color:#fff;">استيراد الميديا</h3>
+        <button onclick="document.getElementById('fileInput').click()" class="btn-primary">+ استيراد ملفات</button>
+        <input type="file" id="fileInput" accept="video/*,image/*,audio/*" multiple style="display:none;">
+        <div id="projectBin1" style="display:flex; flex-direction:column; gap:6px; max-height:180px; overflow-y:auto;"></div>
+        <hr style="border-color:#333;">
+        <h3 style="color:#00ffcc;">إزالة الكروما</h3>
+        <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
+          <input type="checkbox" id="chromaToggle" style="width:auto;"> تفعيل عزل الشاشة الخضراء
+        </label>
+        <label>لون الكروما:</label>
+        <input type="color" id="chromaColorPicker" value="#00ff00">
+        <label>الحساسية (<span id="chromaTolVal">40</span>):</label>
+        <input type="range" id="chromaTolRange" min="10" max="150" value="40">
+        <button onclick="splitCurrentClip()" style="background:#8a4b11; margin-top:10px;">✂ تقطيع عند المؤشر</button>
+      </div>
+      <div class="monitor-workspace">
+        <div class="canvas-container"><canvas id="renderCanvas" width="640" height="360"></canvas></div>
+      </div>
     </div>
-
-    <!-- ================= المرحلة الأولى: التحرير، الكروما، والقص ================= -->
-    <div class="step-content-pane active" id="step1Pane">
-        <div class="main-workspace">
-            <div class="sidebar-panel">
-                <h3 style="color:#fff;">استيراد الميديا (فيديو / صور)</h3>
-                <button onclick="document.getElementById('fileInput').click()" class="btn-primary">+ استيراد ملفات جديدة</button>
-                <input type="file" id="fileInput" accept="video/*,image/*" multiple style="display:none;">
-                
-                <div class="media-grid" id="projectBin1"></div>
-
-                <hr style="border-color:#333;">
-                <h3 style="color:#00ffcc;">إزالة الكروما للمقطع المحدد</h3>
-                <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
-                    <input type="checkbox" id="chromaToggle" style="width:auto;"> تفعيل عزل الشاشة الخضراء
-                </label>
-                <label>اختر لون الكروما المراد حذفه:</label>
-                <input type="color" id="chromaColorPicker" value="#00ff00">
-                <label>حساسية العزل (<span id="chromaTolVal">40</span>):</label>
-                <input type="range" id="chromaTolRange" min="10" max="150" value="40">
-
-                <button onclick="splitCurrentClip()" style="background:#8a4b11; margin-top:10px;">✂ تقطيع المقطع الحالي</button>
-            </div>
-
-            <div class="monitor-workspace">
-                <div class="canvas-container" id="canvasBox1" style="width: 640px; height: 360px;">
-                    <canvas id="renderCanvas" width="640" height="360"></canvas>
-                </div>
-            </div>
-        </div>
-
-        <div class="timeline-box">
-            <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
-                <span style="color:#fff; font-weight:bold;">التايملاين (اسحب المقاطع والصور إلى المسار أدناه)</span>
-                <button onclick="togglePlayback()" id="playBtn" class="btn-primary" style="padding:2px 10px;">تشغيل / إيقاف المعاينة</button>
-            </div>
-            <div class="tracks-container" id="timelineTracks">
-                <div class="track-lane" id="laneMain" data-track="main"></div>
-            </div>
-        </div>
-
-        <div class="workspace-footer">
-            <span style="color:#888;">المرحلة 1 من 4</span>
-            <button onclick="goToStep(2)" class="btn-next">التالي: ضبط الألوان ➡</button>
-        </div>
+    <div style="height:200px; background:#161616; border-top:1px solid #333; padding:8px; display:flex; flex-direction:column;">
+      <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+        <span style="color:#fff; font-weight:bold;">التايملاين</span>
+        <button onclick="togglePlayback()" id="playBtn" class="btn-primary" style="padding:2px 10px;">▶ تشغيل / إيقاف</button>
+      </div>
+      <div id="timelineTracks" style="flex:1; background:#111; border-radius:4px; overflow:auto;"></div>
     </div>
-
-    <!-- ================= المرحلة الثانية: الألوان، الوضوح، والإضاءة ================= -->
-    <div class="step-content-pane" id="step2Pane">
-        <div class="main-workspace">
-            <div class="sidebar-panel">
-                <h3 style="color:#fff;">تعديل ألوان ووضوح الفيديو</h3>
-                <label>السطوع (<span id="brightVal">100</span>%):</label>
-                <input type="range" id="valBrightness" min="0" max="200" value="100">
-
-                <label>التباين والتضاد (<span id="contrastVal">100</span>%):</label>
-                <input type="range" id="valContrast" min="0" max="200" value="100">
-
-                <label>الوضوح والحدة (<span id="sharpVal">0</span>%):</label>
-                <input type="range" id="valSharpness" min="0" max="100" value="0">
-
-                <label>التشبع اللوني (<span id="satVal">100</span>%):</label>
-                <input type="range" id="valSaturation" min="0" max="200" value="100">
-            </div>
-
-            <div class="monitor-workspace">
-                <div class="canvas-container" id="canvasBox2" style="width: 640px; height: 360px;">
-                    <canvas id="renderCanvas2" width="640" height="360"></canvas>
-                </div>
-            </div>
-        </div>
-
-        <div class="workspace-footer">
-            <button onclick="goToStep(1)">⬅ السابقة</button>
-            <button onclick="goToStep(3)" class="btn-next">التالي: النصوص المتحركة ➡</button>
-        </div>
+    <div class="workspace-footer">
+      <span style="color:#888;">المرحلة 1 من 4</span>
+      <button onclick="goToStep(2)" class="btn-next">التالي: الألوان ➡</button>
     </div>
+  </div>
 
-    <!-- ================= المرحلة الثالثة: النصوص المتحركة والمؤثرات ================= -->
-    <div class="step-content-pane" id="step3Pane">
-        <div class="main-workspace">
-            <div class="sidebar-panel">
-                <h3 style="color:#fff;">إدارة النصوص ومدة الظهور</h3>
-                <button onclick="addNewText()" class="btn-primary">+ إضافة نص جديد</button>
-                
-                <div id="textControlsContainer" style="margin-top:10px; display:flex; flex-direction:column; gap:8px;"></div>
-            </div>
-
-            <div class="monitor-workspace">
-                <div class="canvas-container" id="canvasBox3" style="width: 640px; height: 360px;">
-                    <canvas id="renderCanvas3" width="640" height="360"></canvas>
-                </div>
-            </div>
-        </div>
-
-        <div class="workspace-footer">
-            <button onclick="goToStep(2)">⬅ السابقة</button>
-            <button onclick="goToStep(4)" class="btn-next">التالي: اللوغو والتصدير ➡</button>
-        </div>
+  <!-- Step 2 -->
+  <div class="step-content-pane" id="step2Pane">
+    <div class="main-workspace">
+      <div class="sidebar-panel">
+        <h3 style="color:#fff;">ألوان ووضوح</h3>
+        <label>السطوع (<span id="brightVal">100</span>%):</label>
+        <input type="range" id="valBrightness" min="0" max="200" value="100">
+        <label>التباين (<span id="contrastVal">100</span>%):</label>
+        <input type="range" id="valContrast" min="0" max="200" value="100">
+        <label>التشبع (<span id="satVal">100</span>%):</label>
+        <input type="range" id="valSaturation" min="0" max="200" value="100">
+      </div>
+      <div class="monitor-workspace">
+        <div class="canvas-container"><canvas id="renderCanvas2" width="640" height="360"></canvas></div>
+      </div>
     </div>
-
-    <!-- ================= المرحلة الرابعة: اللوغو والتصدير النهائي ================= -->
-    <div class="step-content-pane" id="step4Pane">
-        <div class="main-workspace">
-            <div class="sidebar-panel">
-                <h3 style="color:#fff;">إضافة الشعار (اللوغو)</h3>
-                <button onclick="document.getElementById('logoInput').click()" class="btn-primary">رفع ملف اللوغو (صورة)</button>
-                <input type="file" id="logoInput" accept="image/*" style="display:none;">
-
-                <label style="margin-top:15px;">حجم اللوغو:</label>
-                <input type="range" id="logoSizeRange" min="30" max="300" value="100">
-
-                <div style="margin-top: 20px; background: #111; padding: 10px; border-radius: 4px; border:1px solid #333;">
-                    <p style="color:#00ffcc; font-weight:bold; margin-bottom:5px;">💡 إرشادات:</p>
-                    <p style="color:#aaa; font-size:10px; line-height: 1.5;">يمكنك سحب اللوغو بالماوس مباشرة داخل شاشة المعاينة لوضعه في المكان المناسب.</p>
-                </div>
-            </div>
-
-            <div class="monitor-workspace">
-                <div class="canvas-container" id="canvasBox4" style="width: 640px; height: 360px;">
-                    <canvas id="renderCanvas4" width="640" height="360"></canvas>
-                </div>
-            </div>
-        </div>
-
-        <div class="workspace-footer">
-            <button onclick="goToStep(3)">⬅ السابقة</button>
-            <button onclick="exportFinalProject()" class="btn-next" style="background:#00aa63;">💾 الحفظ النهائي والتصدير</button>
-        </div>
+    <div class="workspace-footer">
+      <button onclick="goToStep(1)">⬅ السابقة</button>
+      <button onclick="goToStep(3)" class="btn-next">التالي: النصوص ➡</button>
     </div>
+  </div>
+
+  <!-- Step 3 -->
+  <div class="step-content-pane" id="step3Pane">
+    <div class="main-workspace">
+      <div class="sidebar-panel">
+        <h3 style="color:#fff;">النصوص</h3>
+        <button onclick="addNewText()" class="btn-primary">+ إضافة نص</button>
+        <div id="textControlsContainer" style="display:flex; flex-direction:column; gap:8px; margin-top:10px;"></div>
+      </div>
+      <div class="monitor-workspace">
+        <div class="canvas-container"><canvas id="renderCanvas3" width="640" height="360"></canvas></div>
+      </div>
+    </div>
+    <div class="workspace-footer">
+      <button onclick="goToStep(2)">⬅ السابقة</button>
+      <button onclick="goToStep(4)" class="btn-next">التالي: اللوغو ➡</button>
+    </div>
+  </div>
+
+  <!-- Step 4 -->
+  <div class="step-content-pane" id="step4Pane">
+    <div class="main-workspace">
+      <div class="sidebar-panel">
+        <h3 style="color:#fff;">اللوغو</h3>
+        <button onclick="document.getElementById('logoInput').click()" class="btn-primary">رفع اللوغو</button>
+        <input type="file" id="logoInput" accept="image/*" style="display:none;">
+        <label>حجم اللوغو:</label>
+        <input type="range" id="logoSizeRange" min="30" max="300" value="100">
+        <p style="color:#aaa; font-size:11px; margin-top:10px;">اسحب اللوغو بالماوس داخل الشاشة لتغيير مكانه.</p>
+      </div>
+      <div class="monitor-workspace">
+        <div class="canvas-container"><canvas id="renderCanvas4" width="640" height="360"></canvas></div>
+      </div>
+    </div>
+    <div class="workspace-footer">
+      <button onclick="goToStep(3)">⬅ السابقة</button>
+      <button onclick="exportFinalProject()" class="btn-next" style="background:#00aa63;">💾 تصدير الفيديو</button>
+    </div>
+  </div>
 </div>
-
 <script src="script.js"></script>
 </body>
 </html>
