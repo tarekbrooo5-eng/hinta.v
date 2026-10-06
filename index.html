@@ -3,136 +3,137 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>محرر الفيديو السحابي الاحترافي - طبقتين (V1 & V2)</title>
+    <title>Adobe Premiere Pro - Web Workspace</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { background-color: #1e1e1e; color: #f3f4f6; font-family: Tahoma, sans-serif; user-select: none; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
-        header { background: #252526; padding: 10px 16px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #333; z-index: 10; }
-        .main-container { display: flex; flex: 1; overflow: hidden; position: relative; }
-        .preview-pane { flex: 1; background: #000; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; border-right: 1px solid #333; }
-        .sidebar { width: 320px; background: #252526; padding: 16px; display: flex; flex-direction: column; gap: 16px; overflow-y: auto; border-left: 1px solid #333; font-size: 14px; }
-        .timeline { height: 210px; background: #1e1e1e; border-top: 1px solid #333; display: flex; flex-direction: column; }
-        .timeline-header { height: 36px; background: #2d2d2d; border-bottom: 1px solid #444; display: flex; align-items: center; padding: 0 16px; font-size: 12px; color: #9ca3af; justify-content: space-between; }
-        .track { background: #2d2d2d; border-bottom: 1px solid #404040; height: 42px; display: flex; align-items: center; padding: 0 8px; border-radius: 4px; margin: 4px; }
-        button { background: #333; color: #fff; border: 1px solid #555; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 13px; transition: 0.2s; }
+        body { background-color: #121212; color: #cccccc; font-family: Tahoma, sans-serif; height: 100vh; display: flex; flex-direction: column; overflow: hidden; font-size: 11px; user-select: none; }
+        
+        /* شريط القوائم العلوي */
+        .top-menu { background: #1e1e1e; height: 30px; display: flex; align-items: center; justify-content: space-between; padding: 0 10px; border-bottom: 1px solid #2d2d2d; }
+        .top-menu .menu-items { display: flex; gap: 15px; color: #aaa; }
+        .top-menu .menu-items span:hover { color: #fff; cursor: pointer; }
+
+        /* التخطيط الرئيسي للوحات */
+        .workspace { display: grid; grid-template-columns: 320px 1fr 300px; grid-template-rows: 1fr 240px; flex: 1; gap: 1px; background: #2d2d2d; overflow: hidden; }
+        
+        .panel { background: #1b1b1b; display: flex; flex-direction: column; position: relative; overflow: hidden; }
+        .panel-header { background: #252525; height: 26px; display: flex; align-items: center; padding: 0 8px; font-weight: bold; border-bottom: 1px solid #333; color: #ddd; gap: 10px; }
+        
+        /* لوحة المشروع (Project Panel) */
+        .project-content { padding: 8px; display: flex; gap: 8px; flex-wrap: wrap; align-content: flex-start; overflow-y: auto; flex: 1; }
+        .media-thumb { width: 70px; background: #262626; border: 1px solid #333; padding: 4px; text-align: center; cursor: pointer; border-radius: 3px; }
+        .media-thumb:hover { border-color: #007acc; }
+        .media-thumb img, .media-thumb video { width: 100%; height: 45px; object-fit: cover; background: #000; }
+        .media-thumb span { display: block; font-size: 9px; margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+        /* شاشة المعاينة (Program / Source Monitor) */
+        .monitor-pane { display: flex; flex-direction: column; align-items: center; justify-content: center; background: #0a0a0a; flex: 1; position: relative; }
+        .monitor-controls { height: 32px; background: #1e1e1e; width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px; border-top: 1px solid #2d2d2d; }
+        
+        /* التايملاين (Timeline Panel) */
+        .timeline-pane { grid-column: 1 / 3; background: #181818; display: flex; flex-direction: column; border-top: 1px solid #2d2d2d; }
+        .timeline-toolbar { height: 32px; background: #222; display: flex; align-items: center; padding: 0 10px; gap: 8px; border-bottom: 1px solid #333; }
+        .timeline-tracks { flex: 1; overflow-y: auto; display: flex; flex-direction: column; background: #151515; }
+        
+        .track-row { height: 36px; background: #1f1f1f; border-bottom: 1px solid #282828; display: flex; align-items: center; position: relative; }
+        .track-label { width: 70px; background: #252525; height: 100%; display: flex; align-items: center; justify-content: space-between; padding: 0 6px; border-left: 2px solid #007acc; font-weight: bold; font-size: 10px; color: #fff; }
+        .track-lane { flex: 1; height: 30px; position: relative; margin: 0 4px; background: #111; border-radius: 2px; }
+        
+        .clip-item { position: absolute; height: 26px; top: 2px; background: #1c3d5a; border: 1px solid #3178c6; border-radius: 3px; display: flex; align-items: center; padding: 0 6px; font-size: 10px; color: #fff; cursor: grab; overflow: hidden; white-space: nowrap; }
+        .clip-v2 { background: #5a1c3d; border-color: #c63178; }
+
+        /* الأزرار وعناصر التحكم */
+        button { background: #333; color: #fff; border: 1px solid #444; padding: 3px 8px; border-radius: 2px; cursor: pointer; font-size: 11px; }
         button:hover { background: #444; }
-        input[type="range"] { accent-color: #f59e0b; cursor: pointer; width: 100%; }
-        select, input[type="text"] { background: #1e1e1e; border: 1px solid #444; color: #fff; padding: 6px; border-radius: 4px; width: 100%; font-size: 13px; }
-        .track-content { flex: 1; height: 30px; border-radius: 4px; margin-right: 8px; display: flex; align-items: center; justify-content: space-between; padding: 0 8px; font-size: 11px; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .track-v1 { background: #1e3a8a; border: 1px solid rgba(59, 130, 246, 0.5); }
-        .track-v2 { background: #831843; border: 1px solid rgba(236, 72, 153, 0.5); }
+        
+        /* الخصائص (Effects Control) */
+        .effects-content { padding: 10px; display: flex; flex-direction: column; gap: 10px; }
+        .effect-group { background: #222; padding: 8px; border-radius: 3px; border: 1px solid #333; }
+        .effect-group label { display: block; margin-bottom: 4px; color: #aaa; }
+        input[type="range"] { width: 100%; accent-color: #007acc; }
     </style>
 </head>
 <body>
 
     <!-- شريط القوائم العلوي -->
-    <header>
-        <div style="display: flex; gap: 12px; align-items: center;">
-            <span style="font-weight: bold; color: #f59e0b; font-size: 16px;">🎬 محرر الفيديو السحابي</span>
-            <button onclick="document.getElementById('fileInputV1').click()" style="background: #1e3a8a; border-color: #3b82f6;">📁 استيراد V1</button>
-            <input type="file" id="fileInputV1" accept="video/*,image/*" style="display: none;">
-            
-            <button onclick="document.getElementById('fileInputV2').click()" style="background: #831843; border-color: #ec4899;">📁 استيراد V2 (فوق V1)</button>
-            <input type="file" id="fileInputV2" accept="video/*,image/*" style="display: none;">
+    <div class="top-menu">
+        <div class="menu-items">
+            <span style="color: #007acc; font-weight: bold;">Premiere Pro</span>
+            <span>File</span><span>Edit</span><span>Clip</span><span>Sequence</span><span>Window</span><span>Help</span>
         </div>
-        <div style="font-size: 12px; color: #9ca3af;">المصمم طارق ابراهيم</div>
-    </header>
-
-    <!-- منطقة العمل الرئيسية -->
-    <div class="main-container">
-        
-        <!-- شاشة المعاينة المباشرة -->
-        <div id="dropZone" class="preview-pane">
-            <div style="position: absolute; top: 8px; right: 8px; font-size: 11px; color: #9ca3af; background: rgba(30,30,30,0.8); padding: 4px 8px; border-radius: 4px; z-index: 10;">شاشة المعاينة المباشرة</div>
-            
-            <div style="position: relative; max-height: 100%; max-width: 100%; display: flex; align-items: center; justify-content: center; padding: 16px;">
-                <!-- مشغلات الفيديو -->
-                <video id="playerV1" style="max-height: 58vh; max-width: 100%; display: none; border-radius: 6px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.5);" playsinline controls></video>
-                <video id="playerV2" style="max-height: 58vh; max-width: 100%; display: none; position: absolute; border-radius: 6px;" playsinline></video>
-                
-                <div id="textOverlay" style="position: absolute; text-align: center; font-weight: bold; transition: all 0.2s; pointer-events: none; display: none; text-shadow: 2px 2px 4px #000;">النص المضاف</div>
-            </div>
-
-            <div id="dragHint" style="position: absolute; color: #6b7280; font-size: 14px; pointer-events: none; text-align: center; padding: 16px;">
-                اسحب وأفلت الملفات هنا، أو استخدم أزرار الاستيراد في الأعلى
-            </div>
-        </div>
-
-        <!-- لوحة التحكم بالخصائص والتأثيرات المتقدمة -->
-        <div class="sidebar">
-            <h3 style="font-weight: bold; border-bottom: 1px solid #444; padding-bottom: 8px; color: #fbbf24;">الخصائص والتأثيرات المتقدمة</h3>
-            
-            <!-- السطوع والإضاءة -->
-            <div>
-                <label style="font-size: 12px; color: #9ca3af; display: block; margin-bottom: 4px;">السطوع العام (<span id="brightVal">100</span>%)</label>
-                <input type="range" id="brightnessRange" min="0" max="200" value="100">
-            </div>
-
-            <!-- الشفافية العامة -->
-            <div>
-                <label style="font-size: 12px; color: #9ca3af; display: block; margin-bottom: 4px;">الشفافية العامة (<span id="opacityVal">100</span>%)</label>
-                <input type="range" id="opacityRange" min="0" max="100" value="100">
-            </div>
-
-            <!-- النصوص -->
-            <div style="border-top: 1px solid #444; padding-top: 12px; display: flex; flex-direction: column; gap: 8px;">
-                <label style="font-size: 12px; color: #fbbf24; font-weight: bold;">إضافة وتنسيق النصوص</label>
-                <input type="text" id="textInput" placeholder="اكتب النص هنا...">
-                
-                <label style="font-size: 11px; color: #9ca3af;">نوع الخط</label>
-                <select id="fontSelector">
-                    <option value="Tahoma">Tahoma (افتراضي)</option>
-                    <option value="Cairo">Cairo (عربي عصري)</option>
-                    <option value="Amiri">Amiri (عربي كلاسيك)</option>
-                    <option value="Roboto">Roboto (إنجليزي)</option>
-                </select>
-
-                <div style="display: flex; gap: 8px;">
-                    <div style="flex: 1;">
-                        <label style="font-size: 10px; color: #9ca3af;">لون النص</label>
-                        <input type="color" id="textColor" value="#ffffff" style="width: 100%; height: 32px; background: transparent; cursor: pointer; border-radius: 4px; border: none;">
-                    </div>
-                    <div style="flex: 1;">
-                        <label style="font-size: 10px; color: #9ca3af;">لون الظل</label>
-                        <input type="color" id="shadowColor" value="#000000" style="width: 100%; height: 32px; background: transparent; cursor: pointer; border-radius: 4px; border: none;">
-                    </div>
-                </div>
-            </div>
-        </div>
+        <div style="font-size: 10px; color: #777;">المصمم طارق ابراهيم</div>
     </div>
 
-    <!-- التايم لاين (مسارين V1 و V2) -->
-    <div class="timeline">
-        <div class="timeline-header">
-            <div style="display: flex; align-items: center; gap: 12px;">
-                <span id="timecode">التوقيت: 00:00:00</span>
-                <div style="display: flex; gap: 4px;">
-                    <button onclick="stepVideo(-0.04)" title="تأخير إطار واحد">◀ 1-</button>
-                    <button id="playPauseBtn" onclick="togglePlayPause()" style="background: #d97706; font-weight: bold;">تشغيل</button>
-                    <button onclick="stepVideo(0.04)" title="تقديم إطار واحد">1+ ▶</button>
-                </div>
+    <!-- مساحة العمل الرئيسية -->
+    <div class="workspace">
+        
+        <!-- 1. لوحة المشروع (Project Panel) -->
+        <div class="panel">
+            <div class="panel-header">
+                <span>Project: Untitled.prproj</span>
+                <button onclick="document.getElementById('fileInput').click()" style="margin-right: auto; font-size: 10px;">+ استيراد وسائط</button>
+                <input type="file" id="fileInput" accept="video/*,image/*" multiple style="display: none;">
             </div>
-            <div>
-                <button onclick="clearAllTracks()" style="background: #7f1d1d;">🗑 تفريغ التايم لاين</button>
+            <div class="project-content" id="projectBin">
+                <div style="color: #666; font-size: 10px; text-align: center; width: 100%; margin-top: 20px;">اسحب الملفات هنا أو اضغط استيراد</div>
             </div>
         </div>
 
-        <div style="flex: 1; overflow-y: auto; padding: 4px; display: flex; flex-direction: column; gap: 2px;">
-            <!-- مسار V2 العلوي -->
-            <div class="track">
-                <span style="width: 32px; font-weight: bold; color: #ec4899; font-size: 12px;">V2</span>
-                <div id="trackV2" class="track-content track-v2">
-                    <span>لم يتم إدراج ملف في V2...</span>
-                </div>
+        <!-- 2. شاشة المعاينة (Program Monitor) -->
+        <div class="panel">
+            <div class="panel-header">
+                <span>Program: Sequence 01</span>
+                <span id="timecodeDisplay" style="margin-right: auto; color: #3178c6; font-family: monospace;">00:00:00:00</span>
             </div>
-            <!-- مسار V1 الأساسي -->
-            <div class="track">
-                <span style="width: 32px; font-weight: bold; color: #3b82f6; font-size: 12px;">V1</span>
-                <div id="trackV1" class="track-content track-v1">
-                    <span>لم يتم إدراج ملف في V1...</span>
+            <div class="monitor-pane" id="dropZone">
+                <video id="mainPlayer" style="max-height: 100%; max-width: 100%; display: none;" playsinline controls></video>
+                <video id="overlayPlayer" style="max-height: 100%; max-width: 100%; display: none; position: absolute; pointer-events: none;" playsinline></video>
+                <div id="placeholderText" style="color: #555; text-align: center;">شاشة المعاينة الفارغة</div>
+            </div>
+            <div class="monitor-controls">
+                <button onclick="stepFrame(-1)">◀</button>
+                <button id="playPauseBtn" onclick="togglePlayPlayback()" style="font-weight: bold; background: #007acc; border-color: #005999;">تشغيل / إيقاف</button>
+                <button onclick="stepFrame(1)">▶</button>
+            </div>
+        </div>
+
+        <!-- 3. لوحة التأثيرات والخصائص (Effects Controls) -->
+        <div class="panel" style="grid-row: span 2;">
+            <div class="panel-header">Effects Controls</div>
+            <div class="effects-content">
+                <div class="effect-group">
+                    <label>السطوع (<span id="brightVal">100</span>%)</label>
+                    <input type="range" id="brightnessRange" min="0" max="200" value="100">
+                </div>
+                <div class="effect-group">
+                    <label>الشفافية (<span id="opacityVal">100</span>%)</label>
+                    <input type="range" id="opacityRange" min="0" max="100" value="100">
+                </div>
+                <div class="effect-group">
+                    <label>النص التوضيحي (字幕)</label>
+                    <input type="text" id="customTextInput" placeholder="أدخل النص هنا..." style="width:100%; background:#111; border:1px solid #444; color:#fff; padding:4px;">
                 </div>
             </div>
         </div>
+
+        <!-- 4. التايملاين الاحترافي (Timeline Panel) -->
+        <div class="timeline-pane">
+            <div class="timeline-toolbar">
+                <span style="color: #fff; font-weight: bold;">Sequence 01</span>
+                <button onclick="clearTimeline()" style="background: #5a1c1c; font-size: 10px; margin-right: auto;">تفريغ التايملاين</button>
+            </div>
+            <div class="timeline-tracks">
+                <!-- مسار V3 -->
+                <div class="track-row"><div class="track-label" style="border-left-color: #c63178;">V3</div><div class="track-lane"></div></div>
+                <!-- مسار V2 -->
+                <div class="track-row"><div class="track-label" style="border-left-color: #c63178;">V2</div><div class="track-lane" id="laneV2"></div></div>
+                <!-- مسار V1 -->
+                <div class="track-row"><div class="track-label" style="border-left-color: #3178c6;">V1</div><div class="track-lane" id="laneV1"></div></div>
+                <!-- مسارات الصوت A1 و A2 -->
+                <div class="track-row" style="height: 30px;"><div class="track-label" style="border-left-color: #2e8b57;">A1</div><div class="track-lane"></div></div>
+            </div>
+        </div>
+
     </div>
 
     <script src="script.js"></script>
