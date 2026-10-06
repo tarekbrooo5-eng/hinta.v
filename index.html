@@ -3,203 +3,200 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Premiere Pro Web Studio - المصمم طارق ابراهيم</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@700&family=Amiri:wght@700&family=Tajawal:wght@700&family=El+Messiri:wght@700&family=Changa:wght@700&family=Roboto:wght@700&family=Montserrat:wght@700&family=Lobster&family=Oswald:wght@700&family=Courier+Prime:wght@700&display=swap" rel="stylesheet">
+    <title>Step-by-Step Video Studio - المصمم طارق ابراهيم</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@700&family=Amiri:wght@700&family=Tajawal:wght@700&family=El+Messiri:wght@700&family=Changa:wght@700&family=Roboto:wght@700&family=Montserrat:wght@700&display=swap" rel="stylesheet">
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         html, body { width: 100%; height: 100%; background-color: #121212; color: #cccccc; font-family: Tahoma, sans-serif; overflow: hidden; direction: rtl; font-size: 11px; user-select: none; }
         
         .app-container { display: flex; flex-direction: column; width: 100vw; height: 100vh; overflow: hidden; }
 
-        .top-menu { background: #1e1e1e; height: 38px; min-height: 38px; display: flex; align-items: center; justify-content: space-between; padding: 0 12px; border-bottom: 1px solid #2d2d2d; z-index: 10; }
-        .top-menu .menu-items { display: flex; gap: 15px; color: #aaa; align-items: center; }
-        
-        .btn-export { background: #008751; color: #fff; font-weight: bold; padding: 5px 14px; border-radius: 4px; border: 1px solid #00aa63; cursor: pointer; font-size: 11px; display: flex; align-items: center; gap: 6px; }
-        .btn-export:hover { background: #00aa63; }
+        /* شريط المراحل التتابعية (Steps Header) */
+        .steps-header { background: #1e1e1e; height: 45px; min-height: 45px; display: flex; align-items: center; justify-content: space-around; border-bottom: 1px solid #333; padding: 0 10px; }
+        .step-tab { display: flex; align-items: center; gap: 6px; padding: 6px 14px; background: #262626; border: 1px solid #383838; border-radius: 4px; color: #888; font-weight: bold; cursor: not-allowed; }
+        .step-tab.active { background: #007acc; color: #fff; border-color: #3178c6; cursor: pointer; }
+        .step-tab.completed { background: #1b3a2b; color: #00aa63; border-color: #008751; cursor: pointer; }
 
-        .main-workspace { display: flex; flex-direction: column; flex: 1; height: calc(100vh - 38px); overflow: hidden; background: #2d2d2d; }
-        
-        .top-panels { display: flex; flex: 1; min-height: 0; gap: 1px; background: #2d2d2d; }
-        .panel { background: #1b1b1b; display: flex; flex-direction: column; position: relative; overflow: hidden; }
-        
-        .panel-project { width: 280px; min-width: 280px; }
-        .panel-monitor { flex: 1; background: #0f0f0f; }
-        .panel-inspector { width: 310px; min-width: 310px; }
+        .step-content-pane { display: none; flex: 1; flex-direction: column; overflow: hidden; }
+        .step-content-pane.active { display: flex; }
 
-        .panel-header { background: #252525; height: 28px; min-height: 28px; display: flex; align-items: center; padding: 0 8px; font-weight: bold; border-bottom: 1px solid #333; color: #ddd; gap: 8px; }
+        .main-workspace { display: flex; flex: 1; overflow: hidden; background: #222; }
         
-        .project-content { padding: 8px; display: flex; gap: 6px; flex-wrap: wrap; align-content: flex-start; overflow-y: auto; flex: 1; }
-        .media-thumb { width: 80px; background: #262626; border: 1px solid #333; padding: 4px; text-align: center; cursor: grab; border-radius: 3px; }
-        .media-thumb img, .media-thumb video { width: 100%; height: 50px; object-fit: cover; background: #000; border-radius: 2px; }
-        .media-thumb span { display: block; font-size: 9px; margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #fff; }
+        /* لوحة الأدوات الجانبية */
+        .sidebar-panel { width: 320px; min-width: 320px; background: #1b1b1b; border-left: 1px solid #333; display: flex; flex-direction: column; padding: 12px; gap: 12px; overflow-y: auto; }
+        
+        /* شاشة المعاينة المركزية */
+        .monitor-workspace { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #0f0f0f; position: relative; padding: 10px; }
+        
+        .canvas-container { position: relative; display: flex; align-items: center; justify-content: center; background: #000; box-shadow: 0 0 20px rgba(0,0,0,0.9); border: 1px solid #333; overflow: hidden; }
+        
+        /* تحكمات أسفل الشاشة */
+        .workspace-footer { height: 50px; min-height: 50px; background: #181818; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; border-top: 1px solid #333; }
 
-        .monitor-pane { display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; position: relative; overflow: hidden; }
-        .canvas-container { position: relative; display: flex; align-items: center; justify-content: center; width: 480px; height: 270px; background: #000; box-shadow: 0 0 15px rgba(0,0,0,0.9); border: 1px solid #333; }
-        
-        video#mainPlayer { width: 100%; height: 100%; object-fit: contain; display: none; }
-        .canvas-placeholder { position: absolute; color: #666; font-size: 11px; text-align: center; padding: 10px; pointer-events: none; }
-        
-        .interactive-overlay { position: absolute; cursor: move; border: 1px dashed rgba(0, 122, 204, 0.6); display: flex; align-items: center; justify-content: center; user-select: none; }
-        .interactive-overlay:hover, .interactive-overlay.active { border-color: #ffcc00; background: rgba(255,204,0,0.05); }
-        .resize-handle { position: absolute; width: 8px; height: 8px; background: #ffcc00; bottom: -4px; right: -4px; cursor: se-resize; border-radius: 50%; }
-
-        .monitor-controls { height: 36px; min-height: 36px; background: #1e1e1e; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; border-top: 1px solid #2d2d2d; }
-        
-        .timeline-pane { height: 240px; min-height: 240px; background: #181818; display: flex; flex-direction: column; border-top: 1px solid #2d2d2d; }
-        .timeline-toolbar { height: 30px; min-height: 30px; background: #222; display: flex; align-items: center; padding: 0 10px; gap: 8px; border-bottom: 1px solid #333; }
-        .timeline-tracks-wrapper { flex: 1; overflow-y: auto; overflow-x: auto; position: relative; background: #151515; }
-        .timeline-tracks { position: relative; min-width: 1200px; display: flex; flex-direction: column; height: 100%; }
-        
-        #playheadLine { position: absolute; top: 0; bottom: 0; width: 2px; background: #ffcc00; z-index: 200; cursor: ew-resize; left: 0px; }
-        #playheadLine::before { content: ''; position: absolute; top: 0; left: -5px; border-width: 6px 6px 0 6px; border-style: solid; border-color: #ffcc00 transparent transparent transparent; }
-
-        .track-row { height: 42px; min-height: 42px; background: #1f1f1f; border-bottom: 1px solid #282828; display: flex; align-items: center; position: relative; width: 100%; }
-        .track-label { width: 75px; min-width: 75px; background: #252525; height: 100%; display: flex; align-items: center; justify-content: space-between; padding: 0 6px; border-right: 2px solid #007acc; font-weight: bold; font-size: 10px; color: #fff; z-index: 10; }
-        .track-lane { flex: 1; height: 36px; position: relative; margin: 0 6px; background: #111; border-radius: 2px; }
-        
-        .clip-item { position: absolute; height: 32px; top: 2px; background: #1c3d5a; border: 1px solid #3178c6; border-radius: 3px; display: flex; align-items: center; padding: 0 8px; font-size: 10px; color: #fff; cursor: grab; overflow: hidden; white-space: nowrap; z-index: 5; }
-        .clip-item:active { cursor: grabbing; }
-        .clip-item.selected { border-color: #ffcc00; background: #23527c; box-shadow: 0 0 4px rgba(255,204,0,0.5); z-index: 6; }
-        .clip-item.text-clip { background: #5a331c; border-color: #d97706; }
-        .clip-item.image-clip { background: #2e5a1c; border-color: #2e8b57; }
-        .clip-item.blur-clip { background: #4a1c5a; border-color: #9932cc; }
-
-        button { background: #333; color: #fff; border: 1px solid #444; padding: 3px 8px; border-radius: 2px; cursor: pointer; font-size: 11px; }
+        button { background: #333; color: #fff; border: 1px solid #444; padding: 6px 14px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 11px; }
         button:hover { background: #444; }
+        .btn-next { background: #008751; border-color: #00aa63; }
+        .btn-next:hover { background: #00aa63; }
+        .btn-primary { background: #007acc; border-color: #3178c6; }
+
+        input[type="range"], select, input[type="text"], input[type="color"] { width: 100%; background: #111; border: 1px solid #444; color: #fff; padding: 6px; border-radius: 3px; margin-top: 4px; }
+        label { display: block; color: #aaa; margin-top: 6px; }
+
+        /* التايملاين للمرحلة الأولى */
+        .timeline-box { height: 160px; min-height: 160px; background: #161616; border-top: 1px solid #333; display: flex; flex-direction: column; padding: 8px; }
+        .tracks-container { flex: 1; background: #111; border-radius: 4px; position: relative; overflow-x: auto; display: flex; flex-direction: column; gap: 4px; padding: 6px; }
+        .track-lane { height: 40px; background: #1c1c1c; border: 1px dashed #333; position: relative; display: flex; align-items: center; }
         
-        .effects-content { padding: 10px; display: flex; flex-direction: column; gap: 8px; overflow-y: auto; flex: 1; }
-        .effect-group { background: #222; padding: 6px 8px; border-radius: 3px; border: 1px solid #333; }
-        .effect-group label { display: block; margin-bottom: 3px; color: #aaa; }
-        input[type="range"], select, input[type="text"], input[type="color"] { width: 100%; background: #111; border: 1px solid #444; color: #fff; padding: 4px; border-radius: 2px; }
-        input[type="color"] { height: 26px; padding: 0; cursor: pointer; }
+        .clip-item { position: absolute; height: 32px; background: #1c3d5a; border: 1px solid #3178c6; border-radius: 4px; display: flex; align-items: center; padding: 0 10px; color: #fff; cursor: grab; font-size: 10px; }
+        .clip-item.selected { border-color: #ffcc00; background: #2b5680; }
+
+        .media-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; max-height: 150px; overflow-y: auto; }
+        .media-thumb { background: #262626; border: 1px solid #333; padding: 4px; text-align: center; border-radius: 4px; cursor: pointer; }
+        .media-thumb img, .media-thumb video { width: 100%; height: 45px; object-fit: cover; border-radius: 2px; }
+        .media-thumb span { font-size: 9px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; margin-top: 2px; }
+
+        /* صندوق المعاينة المرن */
+        #renderCanvas { width: 100%; height: 100%; object-fit: contain; }
     </style>
 </head>
 <body>
 
 <div class="app-container">
-    <div class="top-menu">
-        <div class="menu-items">
-            <span style="color: #007acc; font-weight: bold; font-size: 13px;">Premiere Pro Studio</span>
-            <span>File</span><span>Edit</span><span>Sequence</span><span>Window</span>
+    <!-- شريط المراحل التتابعية -->
+    <div class="steps-header">
+        <div class="step-tab active" id="tab1" onclick="switchStep(1)">1. قص وترتيب وتفريغ الكروما</div>
+        <div class="step-tab" id="tab2" onclick="switchStep(2)">2. ضبط الألوان والوضوح والإضاءة</div>
+        <div class="step-tab" id="tab3" onclick="switchStep(3)">3. إضافة وإدارة النصوص المتحركة</div>
+        <div class="step-tab" id="tab4" onclick="switchStep(4)">4. إضافة اللوغو والتصدير النهائي</div>
+    </div>
+
+    <!-- ================= المرحلة الأولى: التحرير، الكروما، والقص ================= -->
+    <div class="step-content-pane active" id="step1Pane">
+        <div class="main-workspace">
+            <div class="sidebar-panel">
+                <h3 style="color:#fff;">استيراد الميديا (فيديو / صور)</h3>
+                <button onclick="document.getElementById('fileInput').click()" class="btn-primary">+ استيراد ملفات جديدة</button>
+                <input type="file" id="fileInput" accept="video/*,image/*" multiple style="display:none;">
+                
+                <div class="media-grid" id="projectBin1"></div>
+
+                <hr style="border-color:#333;">
+                <h3 style="color:#00ffcc;">إزالة الكروما للمقطع المحدد</h3>
+                <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
+                    <input type="checkbox" id="chromaToggle" style="width:auto;"> تفعيل عزل الشاشة الخضراء
+                </label>
+                <label>اختر لون الكروما المراد حذفه:</label>
+                <input type="color" id="chromaColorPicker" value="#00ff00">
+                <label>حساسية العزل (<span id="chromaTolVal">40</span>):</label>
+                <input type="range" id="chromaTolRange" min="10" max="150" value="40">
+
+                <button onclick="splitCurrentClip()" style="background:#8a4b11; margin-top:10px;">✂ تقطيع المقطع الحالي</button>
+            </div>
+
+            <div class="monitor-workspace">
+                <div class="canvas-container" id="canvasBox1" style="width: 640px; height: 360px;">
+                    <canvas id="renderCanvas" width="640" height="360"></canvas>
+                </div>
+            </div>
         </div>
-        <div>
-            <button class="btn-export" onclick="exportFinalVideo()">💾 الحفظ النهائي والتصدير</button>
+
+        <div class="timeline-box">
+            <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+                <span style="color:#fff; font-weight:bold;">التايملاين (اسحب المقاطع والصور إلى المسار أدناه)</span>
+                <button onclick="togglePlayback()" id="playBtn" class="btn-primary" style="padding:2px 10px;">تشغيل / إيقاف المعاينة</button>
+            </div>
+            <div class="tracks-container" id="timelineTracks">
+                <div class="track-lane" id="laneMain" data-track="main"></div>
+            </div>
+        </div>
+
+        <div class="workspace-footer">
+            <span style="color:#888;">المرحلة 1 من 4</span>
+            <button onclick="goToStep(2)" class="btn-next">التالي: ضبط الألوان ➡</button>
         </div>
     </div>
 
-    <div class="main-workspace">
-        <div class="top-panels">
-            <div class="panel panel-project">
-                <div class="panel-header">
-                    <span>Project Bin</span>
-                    <button onclick="document.getElementById('fileInput').click()" style="margin-right: auto; font-size: 10px;">+ استيراد ميديا / لوغو</button>
-                    <input type="file" id="fileInput" accept="video/*,image/*" multiple style="display: none;">
-                </div>
-                <div class="project-content" id="projectBin">
-                    <div style="color: #666; font-size: 10px; text-align: center; width: 100%; margin-top: 20px;">اسحب المقاطع والصور واللوغو هنا ثم للتايملاين</div>
-                </div>
+    <!-- ================= المرحلة الثانية: الألوان، الوضوح، والإضاءة ================= -->
+    <div class="step-content-pane" id="step2Pane">
+        <div class="main-workspace">
+            <div class="sidebar-panel">
+                <h3 style="color:#fff;">تعديل ألوان ووضوح الفيديو</h3>
+                <label>السطوع (<span id="brightVal">100</span>%):</label>
+                <input type="range" id="valBrightness" min="0" max="200" value="100">
+
+                <label>التباين والتضاد (<span id="contrastVal">100</span>%):</label>
+                <input type="range" id="valContrast" min="0" max="200" value="100">
+
+                <label>الوضوح والحدة (<span id="sharpVal">0</span>%):</label>
+                <input type="range" id="valSharpness" min="0" max="100" value="0">
+
+                <label>التشبع اللوني (<span id="satVal">100</span>%):</label>
+                <input type="range" id="valSaturation" min="0" max="200" value="100">
             </div>
 
-            <div class="panel panel-monitor">
-                <div class="panel-header">
-                    <span>Program Monitor</span>
-                    <span id="timecodeDisplay" style="margin-right: auto; color: #3178c6; font-family: monospace;">00:00:00</span>
-                </div>
-                <div class="monitor-pane">
-                    <div class="canvas-container" id="canvasContainer">
-                        <div id="canvasPlaceholder" class="canvas-placeholder">شاشة المعاينة فارغة<br>أضف مقاطع للبدء</div>
-                        <video id="mainPlayer" playsinline></video>
-                        <div id="overlaysStage" style="position:absolute; inset:0; pointer-events:none;"></div>
-                    </div>
-                </div>
-                <div class="monitor-controls">
-                    <button onclick="stepFrame(-1)">◀ 1-</button>
-                    <button id="playPauseBtn" onclick="togglePlayPlayback()" style="background: #007acc; font-weight: bold;">تشغيل / إيقاف</button>
-                    <button onclick="stepFrame(1)">1+ ▶</button>
-                    <button onclick="splitSelectedVideoClip()" style="background: #5a331c;">✂ تقطيع الفيديو</button>
-                </div>
-            </div>
-
-            <div class="panel panel-inspector">
-                <div class="panel-header">Inspector & Layers</div>
-                <div class="effects-content">
-                    <div class="effect-group" style="border: 1px solid #007acc; background: #18222b;">
-                        <label style="color: #007acc; font-weight: bold;" id="inspectorTitle">لم يتم تحديد عنصر</label>
-                        
-                        <div id="mediaInspectorControls" style="display:none; margin-top:5px;">
-                            <label>سرعة التشغيل (<span id="speedVal">1.0</span>x):</label>
-                            <input type="range" id="clipSpeedRange" min="0.5" max="4.0" step="0.25" value="1.0">
-                            <label style="margin-top:4px;">السطوع (<span id="brightVal">100</span>%):</label>
-                            <input type="range" id="brightnessRange" min="0" max="200" value="100">
-                        </div>
-
-                        <div id="chromaInspectorControls" style="display:none; margin-top:8px; border-top:1px dashed #333; padding-top:6px;">
-                            <label style="display:flex; align-items:center; gap:6px; cursor:pointer; color:#00ffcc;">
-                                <input type="checkbox" id="chromaEnableCheck" style="width:auto;"> تفعيل إزالة الكروما (شاشة خضراء)
-                            </label>
-                            <label style="margin-top:4px;">دقة عزل الكروما (<span id="chromaTolVal">40</span>):</label>
-                            <input type="range" id="chromaToleranceRange" min="10" max="150" value="40">
-                        </div>
-
-                        <div id="textInspectorControls" style="display:none; margin-top:5px;">
-                            <input type="text" id="inspectorTextInput" placeholder="نص الطبقة...">
-                            <select id="inspectorFont" style="margin-top:4px;">
-                                <optgroup label="عربية">
-                                    <option value="Cairo">Cairo</option>
-                                    <option value="Amiri">Amiri</option>
-                                    <option value="Tajawal">Tajawal</option>
-                                    <option value="El Messiri">El Messiri</option>
-                                    <option value="Changa">Changa</option>
-                                </optgroup>
-                                <optgroup label="إنجليزية">
-                                    <option value="Roboto">Roboto</option>
-                                    <option value="Montserrat">Montserrat</option>
-                                    <option value="Lobster">Lobster</option>
-                                    <option value="Oswald">Oswald</option>
-                                    <option value="Courier Prime">Courier Prime</option>
-                                </optgroup>
-                            </select>
-                            <div style="display:flex; gap:5px; margin-top:4px;">
-                                <input type="color" id="inspectorTextColor" value="#ffffff">
-                                <input type="range" id="inspectorFontSize" min="12" max="80" value="24" title="الحجم">
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="effect-group">
-                        <label>إضافة طبقة نص جديدة:</label>
-                        <button onclick="addNewTextLayer()" style="width:100%; background:#734d26;">+ إضافة نص للتايملاين</button>
-                    </div>
-
-                    <div class="effect-group">
-                        <label>إضافة فلتر البلور (Blur):</label>
-                        <div style="display:flex; gap:5px;">
-                            <button onclick="addNewBlurLayer('rect')" style="flex:1; background:#4a1c5a;">مستطيل بلور</button>
-                            <button onclick="addNewBlurLayer('circle')" style="flex:1; background:#4a1c5a;">دائرة بلور</button>
-                        </div>
-                    </div>
-
-                    <div class="effect-group">
-                        <label>إدارة الطبقات:</label>
-                        <button onclick="deleteSelectedClip()" style="width:100%; background:#5a1c1c;">حذف العنصر المحدد</button>
-                    </div>
+            <div class="monitor-workspace">
+                <div class="canvas-container" id="canvasBox2" style="width: 640px; height: 360px;">
+                    <canvas id="renderCanvas2" width="640" height="360"></canvas>
                 </div>
             </div>
         </div>
 
-        <div class="timeline-pane">
-            <div class="timeline-toolbar">
-                <span style="color: #fff; font-weight: bold;">Timeline (المسارات الزمنية)</span>
-                <button onclick="resetTimeline()" style="background: #5a1c1c; font-size: 10px; margin-right: auto;">تفريغ التايملاين</button>
+        <div class="workspace-footer">
+            <button onclick="goToStep(1)">⬅ السابقة</button>
+            <button onclick="goToStep(3)" class="btn-next">التالي: النصوص المتحركة ➡</button>
+        </div>
+    </div>
+
+    <!-- ================= المرحلة الثالثة: النصوص المتحركة والمؤثرات ================= -->
+    <div class="step-content-pane" id="step3Pane">
+        <div class="main-workspace">
+            <div class="sidebar-panel">
+                <h3 style="color:#fff;">إدارة النصوص ومدة الظهور</h3>
+                <button onclick="addNewText()" class="btn-primary">+ إضافة نص جديد</button>
+                
+                <div id="textControlsContainer" style="margin-top:10px; display:flex; flex-direction:column; gap:8px;"></div>
             </div>
-            <div class="timeline-tracks-wrapper" id="timelineTracksWrapper">
-                <div class="timeline-tracks" id="timelineTracksContainer">
-                    <div id="playheadLine" onmousedown="startDragPlayhead(event)"></div>
-                    <div class="track-row"><div class="track-label">V3 (أعلى)</div><div class="track-lane" id="laneV3" data-track="V3"></div></div>
-                    <div class="track-row"><div class="track-label">V2 (وسط)</div><div class="track-lane" id="laneV2" data-track="V2"></div></div>
-                    <div class="track-row"><div class="track-label" style="background:#007acc;">V1 (أسفل)</div><div class="track-lane" id="laneV1" data-track="V1"></div></div>
+
+            <div class="monitor-workspace">
+                <div class="canvas-container" id="canvasBox3" style="width: 640px; height: 360px;">
+                    <canvas id="renderCanvas3" width="640" height="360"></canvas>
                 </div>
             </div>
+        </div>
+
+        <div class="workspace-footer">
+            <button onclick="goToStep(2)">⬅ السابقة</button>
+            <button onclick="goToStep(4)" class="btn-next">التالي: اللوغو والتصدير ➡</button>
+        </div>
+    </div>
+
+    <!-- ================= المرحلة الرابعة: اللوغو والتصدير النهائي ================= -->
+    <div class="step-content-pane" id="step4Pane">
+        <div class="main-workspace">
+            <div class="sidebar-panel">
+                <h3 style="color:#fff;">إضافة الشعار (اللوغو)</h3>
+                <button onclick="document.getElementById('logoInput').click()" class="btn-primary">رفع ملف اللوغو (صورة)</button>
+                <input type="file" id="logoInput" accept="image/*" style="display:none;">
+
+                <label style="margin-top:15px;">حجم اللوغو:</label>
+                <input type="range" id="logoSizeRange" min="30" max="300" value="100">
+
+                <div style="margin-top: 20px; background: #111; padding: 10px; border-radius: 4px; border:1px solid #333;">
+                    <p style="color:#00ffcc; font-weight:bold; margin-bottom:5px;">💡 إرشادات:</p>
+                    <p style="color:#aaa; font-size:10px; line-height: 1.5;">يمكنك سحب اللوغو بالماوس مباشرة داخل شاشة المعاينة لوضعه في المكان المناسب.</p>
+                </div>
+            </div>
+
+            <div class="monitor-workspace">
+                <div class="canvas-container" id="canvasBox4" style="width: 640px; height: 360px;">
+                    <canvas id="renderCanvas4" width="640" height="360"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="workspace-footer">
+            <button onclick="goToStep(3)">⬅ السابقة</button>
+            <button onclick="exportFinalProject()" class="btn-next" style="background:#00aa63;">💾 الحفظ النهائي والتصدير</button>
         </div>
     </div>
 </div>
