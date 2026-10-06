@@ -24,9 +24,9 @@ let timelineClips = []; // جميع القطع في التايملاين (فيد
 let selectedClipId = null;
 let currentTime = 0;
 let isPlaying = false;
-let timelineDuration = 30; // مدة افتراضية بالثواني للتايملاين قابلة للتمدد
+let timelineDuration = 30; // مدة التايملاين بالثواني
 
-// استيراد الميديا (فيديوهات أو صور)
+// استيراد الميديا
 fileInput.addEventListener('change', (e) => {
     const files = Array.from(e.target.files);
     files.forEach(file => {
@@ -36,7 +36,7 @@ fileInput.addEventListener('change', (e) => {
             name: file.name,
             type: file.type.startsWith('image') ? 'image' : 'video',
             url: url,
-            duration: file.type.startsWith('image') ? 5 : 10 // افتراضي للفيديو 10 ثوان والصورة 5
+            duration: file.type.startsWith('image') ? 5 : 10
         };
         mediaFiles.push(mediaObj);
 
@@ -54,7 +54,7 @@ fileInput.addEventListener('change', (e) => {
     });
 });
 
-// استقبال العناصر عند إفلاتها في مسارات التايملاين
+// التعامل مع السحب والإفلات على المسارات
 function allowDrop(ev) { ev.preventDefault(); }
 
 function dropToTrack(ev, trackName) {
@@ -63,7 +63,6 @@ function dropToTrack(ev, trackName) {
     let media = mediaFiles.find(m => m.id === mediaId);
     if (!media) return;
 
-    // حساب موقع الإفلات بالثواني بناءً على مكان الكلك في المسار
     let rect = ev.currentTarget.getBoundingClientRect();
     let clickX = ev.clientX - rect.left;
     let trackWidth = rect.width;
@@ -81,7 +80,7 @@ function dropToTrack(ev, trackName) {
         speed: 1.0,
         brightness: 100,
         x: 20, y: 20, width: 200, height: 100,
-        text: media.type === 'text' ? 'نص جديد' : '',
+        text: 'نص جديد',
         font: 'Cairo',
         color: '#ffffff',
         fontSize: 24,
@@ -92,13 +91,13 @@ function dropToTrack(ev, trackName) {
     renderTimeline();
 }
 
-// إضافة طبقة نصية جديدة مباشرة للتايملاين
+// إضافة طبقة نصية جديدة
 function addNewTextLayer() {
     let newClip = {
         id: 'clip_' + Math.random().toString(36).substr(2, 9),
         name: 'طبقة نصية',
         type: 'text',
-        track: 'V3', // النصوص افتراضياً في طبقة علوية
+        track: 'V3',
         start: currentTime,
         duration: 5,
         x: 50, y: 50,
@@ -112,7 +111,7 @@ function addNewTextLayer() {
     selectClip(newClip.id);
 }
 
-// إضافة طبقة بلور جديدة للتايملاين
+// إضافة طبقة بلور جديدة
 function addNewBlurLayer(shape) {
     let newClip = {
         id: 'clip_' + Math.random().toString(36).substr(2, 9),
@@ -129,7 +128,7 @@ function addNewBlurLayer(shape) {
     selectClip(newClip.id);
 }
 
-// رسم وترتيب القطع في التايملاين
+// رسم التايملاين والمسارات
 function renderTimeline() {
     laneV1.innerHTML = '';
     laneV2.innerHTML = '';
@@ -191,12 +190,13 @@ function selectClip(id) {
     updateStagePreview();
 }
 
-// التعديل اللحظي للخصائص
+// تعديل الخصائص فورياً
 clipSpeedRange.addEventListener('input', (e) => {
     let clip = timelineClips.find(c => c.id === selectedClipId);
     if (clip && clip.type === 'video') {
         clip.speed = parseFloat(e.target.value);
         document.getElementById('speedVal').textContent = clip.speed;
+        mainPlayer.playbackRate = clip.speed;
     }
 });
 
@@ -205,6 +205,7 @@ brightnessRange.addEventListener('input', (e) => {
     if (clip && clip.type === 'video') {
         clip.brightness = e.target.value;
         document.getElementById('brightVal').textContent = clip.brightness;
+        mainPlayer.style.filter = `brightness(${clip.brightness}%)`;
     }
 });
 
@@ -231,11 +232,10 @@ inspectorFontSize.addEventListener('input', (e) => {
     if (clip && clip.type === 'text') { clip.fontSize = e.target.value; updateStagePreview(); }
 });
 
-// تحديث شاشة المعاينة وعرض الطبقات النشطة عند التوقيت الحالي `currentTime`
+// تحديث شاشة المعاينة والطبقات
 function updateStagePreview() {
     overlaysStage.innerHTML = '';
     
-    // إيجاد الفيديو النشط في التوقيت الحالي (حسب الترتيب V3 ثم V2 ثم V1)
     let activeVideoClip = ['V3', 'V2', 'V1'].map(track => 
         timelineClips.find(c => (c.type === 'video' || c.type === 'image') && c.track === track && currentTime >= c.start && currentTime <= (c.start + c.duration))
     ).find(c => c !== undefined);
@@ -249,7 +249,6 @@ function updateStagePreview() {
             mainPlayer.style.display = 'block';
             mainPlayer.style.filter = `brightness(${activeVideoClip.brightness}%)`;
         } else {
-            // عرض الصورة كخلفية
             mainPlayer.style.display = 'none';
             overlaysStage.innerHTML += `<div style="position:absolute; inset:0; background:url('${activeVideoClip.url}') center/contain no-repeat;"></div>`;
         }
@@ -257,7 +256,6 @@ function updateStagePreview() {
         mainPlayer.style.display = 'none';
     }
 
-    // عرض جميع النصوص، الصور الإضافية، والبلور النشطة في هذا الوقت (مع مراعاة طبقات V1, V2, V3)
     let sortedClips = [...timelineClips].sort((a, b) => {
         let order = { 'V1': 1, 'V2': 2, 'V3': 3 };
         return order[a.track] - order[b.track];
@@ -285,14 +283,13 @@ function updateStagePreview() {
                 el.style.border = '1px dashed rgba(255,255,255,0.4)';
             }
 
-            // جعل العناصر قابلة للسحب بالماوس لتغيير مكانها على الشاشة
             makeDraggableElement(el, clip);
             overlaysStage.appendChild(el);
         }
     });
 }
 
-// تحريك العناصر المرئية بالماوس داخل الشاشة
+// تحريك العناصر بالماوس
 function makeDraggableElement(elm, clipData) {
     let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
     elm.onmousedown = dragMouseDown;
@@ -309,106 +306,4 @@ function makeDraggableElement(elm, clipData) {
         e.preventDefault();
         pos1 = pos3 - e.clientX;
         pos2 = pos4 - e.clientY;
-        pos3 = e.clientX;
-        pos4 = e.clientY;
-        clipData.x = (elm.offsetLeft - pos1);
-        clipData.y = (elm.offsetTop - pos2);
-        elm.style.top = clipData.y + "px";
-        elm.style.left = clipData.x + "px";
-    }
-
-    function closeDragElement() {
-        document.onmouseup = null;
-        document.onmousemove = null;
-    }
-}
-
-// تقطيع الفيديو المحدد عند التوقيت الحالي
-function splitSelectedVideoClip() {
-    let clip = timelineClips.find(c => c.id === selectedClipId && c.type === 'video');
-    if (!clip) {
-        alert('الرجاء تحديد مقطع فيديو في التايملاين لتقطيعه!');
-        return;
-    }
-    if (currentTime <= clip.start + 0.2 || currentTime >= clip.start + clip.duration - 0.2) {
-        alert('مؤشر التوقيت خارج حدود المقطع المحدد.');
-        return;
-    }
-
-    let splitOffset = currentTime - clip.start;
-    let part1Duration = splitOffset;
-    let part2Duration = clip.duration - splitOffset;
-
-    let part2 = {
-        ...clip,
-        id: 'clip_' + Math.random().toString(36).substr(2, 9),
-        start: currentTime,
-        duration: part2Duration
-    };
-
-    clip.duration = part1Duration;
-    timelineClips.push(part2);
-    renderTimeline();
-    alert('تم تقطيع المقطع بنجاح!');
-}
-
-// التقديم والتشغيل
-function togglePlayPlayback() {
-    isPlaying = !isPlaying;
-    document.getElementById('playPauseBtn').textContent = isPlaying ? "إيقاف مؤقت" : "تشغيل / إيقاف";
-    if (isPlaying) playLoop();
-}
-
-function playLoop() {
-    if (!isPlaying) return;
-    currentTime += 0.1;
-    if (currentTime >= timelineDuration) currentTime = 0;
-
-    let percent = (currentTime / timelineDuration) * 100;
-    playheadLine.style.left = percent + '%';
-
-    let hrs = String(Math.floor(currentTime / 3600)).padStart(2, '0');
-    let mins = String(Math.floor((currentTime % 3600) / 60)).padStart(2, '0');
-    let secs = String(Math.floor(currentTime % 60)).padStart(2, '0');
-    timecodeDisplay.textContent = `${hrs}:${mins}:${secs}`;
-
-    updateStagePreview();
-    setTimeout(playLoop, 100);
-}
-
-function seekTimeline(e) {
-    let rect = e.currentTarget.getBoundingClientRect();
-    let clickX = e.clientX - rect.left;
-    currentTime = (clickX / rect.width) * timelineDuration;
-    let percent = (currentTime / timelineDuration) * 100;
-    playheadLine.style.left = percent + '%';
-    updateStagePreview();
-}
-
-function stepFrame(frames) {
-    currentTime += frames * 0.04;
-    updateStagePreview();
-}
-
-function deleteSelectedClip() {
-    if (!selectedClipId) return;
-    timelineClips = timelineClips.filter(c => c.id !== selectedClipId);
-    selectedClipId = null;
-    renderTimeline();
-    updateStagePreview();
-    inspectorTitle.textContent = "لم يتم تحديد عنصر";
-    videoInspectorControls.style.display = 'none';
-    textInspectorControls.style.display = 'none';
-}
-
-function exportFinalVideo() {
-    alert('تم حفظ إعدادات المشروع بنجاح وجاهز لتصدير الفيديو النهائي بكافة الطبقات!');
-}
-
-function resetTimeline() {
-    timelineClips = [];
-    selectedClipId = null;
-    currentTime = 0;
-    renderTimeline();
-    updateStagePreview();
-}
+        pos3 = e.clientX
