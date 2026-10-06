@@ -13,45 +13,46 @@
         .top-menu { background: #1e1e1e; height: 36px; display: flex; align-items: center; justify-content: space-between; padding: 0 12px; border-bottom: 1px solid #2d2d2d; }
         .top-menu .menu-items { display: flex; gap: 15px; color: #aaa; align-items: center; }
         
-        /* زر الحفظ النهائي البارز والواضح جداً */
         .btn-export { background: #008751; color: #fff; font-weight: bold; padding: 6px 16px; border-radius: 4px; border: 1px solid #00aa63; cursor: pointer; font-size: 12px; display: flex; align-items: center; gap: 6px; box-shadow: 0 2px 6px rgba(0,0,0,0.5); }
         .btn-export:hover { background: #00aa63; }
 
-        .workspace { display: grid; grid-template-columns: 280px 1fr 310px; grid-template-rows: 1fr 260px; flex: 1; gap: 1px; background: #2d2d2d; overflow: hidden; }
+        .workspace { display: grid; grid-template-columns: 280px 1fr 310px; grid-template-rows: 1fr 280px; flex: 1; gap: 1px; background: #2d2d2d; overflow: hidden; }
         .panel { background: #1b1b1b; display: flex; flex-direction: column; position: relative; overflow: hidden; }
         .panel-header { background: #252525; height: 26px; display: flex; align-items: center; padding: 0 8px; font-weight: bold; border-bottom: 1px solid #333; color: #ddd; gap: 8px; }
         
         .project-content { padding: 8px; display: flex; gap: 6px; flex-wrap: wrap; align-content: flex-start; overflow-y: auto; flex: 1; }
-        .media-thumb { width: 75px; background: #262626; border: 1px solid #333; padding: 4px; text-align: center; cursor: pointer; border-radius: 3px; }
+        .media-thumb { width: 80px; background: #262626; border: 1px solid #333; padding: 4px; text-align: center; cursor: grab; border-radius: 3px; }
         .media-thumb span { display: block; font-size: 9px; margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #fff; }
 
-        /* شاشة المعاينة المتكيفة تماماً مع أبعاد الفيديو */
+        /* شاشة المعاينة المتكيفة تماماً */
         .monitor-pane { display: flex; flex-direction: column; align-items: center; justify-content: center; background: #080808; flex: 1; position: relative; overflow: hidden; }
-        .canvas-container { position: relative; display: flex; align-items: center; justify-content: center; max-height: 100%; max-width: 100%; box-shadow: 0 0 20px rgba(0,0,0,0.8); }
-        video#mainPlayer { display: block; max-height: calc(100vh - 340px); width: auto; height: auto; object-fit: contain; }
+        .canvas-container { position: relative; display: flex; align-items: center; justify-content: center; max-height: 100%; max-width: 100%; box-shadow: 0 0 20px rgba(0,0,0,0.8); width: 400px; height: 225px; background: #000; }
+        video#mainPlayer { width: 100%; height: 100%; object-fit: contain; display: block; }
         
-        /* عناصر الـ Overlay المتحركة */
-        .movable-overlay { position: absolute; cursor: move; border: 1px dashed transparent; display: flex; align-items: center; justify-content: center; }
-        .movable-overlay:hover { border-color: #007acc; }
+        /* عناصر الـ Overlay المتحركة ديناميكياً */
+        .movable-overlay { position: absolute; cursor: move; border: 1px dashed #007acc; display: flex; align-items: center; justify-content: center; padding: 4px; }
+        .movable-overlay:hover { border-color: #ffcc00; }
         
         .monitor-controls { height: 36px; background: #1e1e1e; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; border-top: 1px solid #2d2d2d; }
         
-        /* التايملاين مع المسطرة ومستويات V1, V2, V3 */
+        /* التايملاين المتعدد المسارات */
         .timeline-pane { grid-column: 1 / 3; background: #181818; display: flex; flex-direction: column; border-top: 1px solid #2d2d2d; }
         .timeline-toolbar { height: 32px; background: #222; display: flex; align-items: center; padding: 0 10px; gap: 8px; border-bottom: 1px solid #333; }
-        .timeline-tracks { flex: 1; overflow-y: auto; display: flex; flex-direction: column; background: #151515; position: relative; }
+        .timeline-tracks { flex: 1; overflow-y: auto; overflow-x: auto; display: flex; flex-direction: column; background: #151515; position: relative; min-width: 800px; }
         
-        /* المسطرة العمودية للتشغيل والتقطيع */
-        #playheadLine { position: absolute; top: 0; bottom: 0; width: 2px; background: #ffcc00; z-index: 10; pointer-events: none; left: 0px; }
+        #playheadLine { position: absolute; top: 0; bottom: 0; width: 2px; background: #ffcc00; z-index: 100; pointer-events: none; left: 0px; }
         #playheadLine::before { content: ''; position: absolute; top: 0; left: -4px; border-width: 5px 5px 0 5px; border-style: solid; border-color: #ffcc00 transparent transparent transparent; }
 
-        .track-row { height: 38px; background: #1f1f1f; border-bottom: 1px solid #282828; display: flex; align-items: center; position: relative; }
-        .track-label { width: 60px; background: #252525; height: 100%; display: flex; align-items: center; justify-content: space-between; padding: 0 6px; border-left: 2px solid #007acc; font-weight: bold; font-size: 10px; color: #fff; }
-        .track-lane { flex: 1; height: 32px; position: relative; margin: 0 4px; background: #111; border-radius: 2px; }
+        .track-row { height: 42px; background: #1f1f1f; border-bottom: 1px solid #282828; display: flex; align-items: center; position: relative; width: 100%; min-width: 800px; }
+        .track-label { width: 65px; background: #252525; height: 100%; display: flex; align-items: center; justify-content: space-between; padding: 0 6px; border-left: 2px solid #007acc; font-weight: bold; font-size: 10px; color: #fff; z-index: 10; flex-shrink: 0; }
+        .track-lane { flex: 1; height: 36px; position: relative; margin: 0 4px; background: #111; border-radius: 2px; }
         
         /* القطع في التايملاين */
-        .clip-item { position: absolute; height: 30px; top: 1px; background: #1c3d5a; border: 1px solid #3178c6; border-radius: 3px; display: flex; align-items: center; padding: 0 8px; font-size: 10px; color: #fff; cursor: grab; overflow: hidden; white-space: nowrap; }
-        .clip-item.selected { border-color: #ffcc00; background: #23527c; box-shadow: 0 0 4px rgba(255,204,0,0.5); }
+        .clip-item { position: absolute; height: 32px; top: 2px; background: #1c3d5a; border: 1px solid #3178c6; border-radius: 3px; display: flex; align-items: center; padding: 0 8px; font-size: 10px; color: #fff; cursor: pointer; overflow: hidden; white-space: nowrap; z-index: 5; }
+        .clip-item.selected { border-color: #ffcc00; background: #23527c; box-shadow: 0 0 4px rgba(255,204,0,0.5); z-index: 6; }
+        .clip-item.text-clip { background: #5a331c; border-color: #d97706; }
+        .clip-item.image-clip { background: #2e5a1c; border-color: #2e8b57; }
+        .clip-item.blur-clip { background: #4a1c5a; border-color: #9932cc; }
 
         button { background: #333; color: #fff; border: 1px solid #444; padding: 3px 8px; border-radius: 2px; cursor: pointer; font-size: 11px; }
         button:hover { background: #444; }
@@ -71,68 +72,59 @@
             <span>File</span><span>Edit</span><span>Sequence</span><span>Window</span>
         </div>
         <div>
-            <!-- زر الحفظ النهائي الواضح جداً -->
             <button class="btn-export" onclick="exportFinalVideo()">💾 الحفظ النهائي والتصدير</button>
         </div>
     </div>
 
     <div class="workspace">
-        <!-- 1. لوحة المشروع والاستيراد -->
+        <!-- 1. لوحة المشروع واستيراد المقاطع والصور -->
         <div class="panel">
             <div class="panel-header">
                 <span>Project Bin</span>
-                <button onclick="document.getElementById('fileInput').click()" style="margin-right: auto; font-size: 10px;">+ استيراد فيديو</button>
-                <input type="file" id="fileInput" accept="video/*" style="display: none;">
+                <button onclick="document.getElementById('fileInput').click()" style="margin-right: auto; font-size: 10px;">+ استيراد ميديا</button>
+                <input type="file" id="fileInput" accept="video/*,image/*" multiple style="display: none;">
             </div>
             <div class="project-content" id="projectBin">
-                <div style="color: #666; font-size: 10px; text-align: center; width: 100%; margin-top: 20px;">قم برفع الفيديو لبدء المونتاج</div>
+                <div style="color: #666; font-size: 10px; text-align: center; width: 100%; margin-top: 20px;">قم برفع عدة مقاطع فيديو أو صور واسحبها للتايملاين</div>
             </div>
         </div>
 
-        <!-- 2. شاشة المعاينة المتكيفة مع أبعاد الفيديو -->
+        <!-- 2. شاشة المعاينة -->
         <div class="panel">
             <div class="panel-header">
-                <span>Program Monitor (متكيف مع أبعاد الفيديو)</span>
-                <span id="timecodeDisplay" style="margin-right: auto; color: #3178c6; font-family: monospace;">00:00:00:00</span>
+                <span>Program Monitor</span>
+                <span id="timecodeDisplay" style="margin-right: auto; color: #3178c6; font-family: monospace;">00:00:00</span>
             </div>
             <div class="monitor-pane">
-                <div class="canvas-container" id="canvasContainer">
+                <div class="canvas-container" id="canvasContainer" onclick="seekTimeline(event)">
                     <video id="mainPlayer" playsinline></video>
-                    <!-- عناصر التراكب المتحركة -->
-                    <div id="textOverlay" class="movable-overlay" style="display:none; color:#fff; font-size:24px; text-shadow:2px 2px 4px #000; top:20px; left:20px;">النص هنا</div>
-                    <div id="logoOverlay" class="movable-overlay" style="display:none; top:20px; right:20px;"><img id="logoImg" style="max-height:80px; pointer-events:none;"></div>
-                    <div id="blurOverlay" class="movable-overlay" style="display:none; backdrop-filter:blur(8px); background:rgba(255,255,255,0.1); width:120px; height:80px; border-radius:4px; top:100px; left:100px;"></div>
+                    <!-- حاوية الطبقات المرئية فوق الفيديو -->
+                    <div id="overlaysStage" style="position:absolute; inset:0; pointer-events:none;"></div>
                 </div>
-                <div id="placeholderText" style="color: #555; position: absolute;">لم يتم تحميل فيديو بعد</div>
             </div>
             <div class="monitor-controls">
                 <button onclick="stepFrame(-1)">◀ 1-</button>
                 <button id="playPauseBtn" onclick="togglePlayPlayback()" style="background: #007acc; font-weight: bold;">تشغيل / إيقاف</button>
                 <button onclick="stepFrame(1)">1+ ▶</button>
-                <button onclick="splitCurrentClip()" style="background: #5a331c;">✂ تقطيع Clip عند المؤشر</button>
+                <button onclick="splitSelectedVideoClip()" style="background: #5a331c;">✂ تقطيع الفيديو الحالي</button>
             </div>
         </div>
 
-        <!-- 3. لوحة التأثيرات وإعدادات الجزء المحدد -->
+        <!-- 3. لوحة الخصائص والتحكم المتقدم (Inspector) -->
         <div class="panel" style="grid-row: span 2;">
-            <div class="panel-header">Effects & Clip Inspector</div>
+            <div class="panel-header">Inspector & Layers Generator</div>
             <div class="effects-content">
                 <div class="effect-group" style="border: 1px solid #007acc; background: #18222b;">
-                    <label style="color: #007acc; font-weight: bold;">إعدادات الجزء المحدد (Clip):</label>
-                    <div style="font-size: 10px; color: #aaa; margin-bottom: 5px;" id="selectedClipInfo">لم يتم تحديد قطعة</div>
-                    <label>سرعة التشغيل (<span id="speedVal">1.0</span>x):</label>
-                    <input type="range" id="clipSpeedRange" min="0.5" max="4.0" step="0.25" value="1.0">
-                    <label style="margin-top:6px;">سطوع الجزء (<span id="brightVal">100</span>%):</label>
-                    <input type="range" id="brightnessRange" min="0" max="200" value="100">
-                    <label style="margin-top:6px;">الشفافية (<span id="opacityVal">100</span>%):</label>
-                    <input type="range" id="opacityRange" min="0" max="100" value="100">
-                </div>
-
-                <div class="effect-group">
-                    <label>التحكم بالنصوص (5 عربية / 5 إنجليزية):</label>
-                    <input type="text" id="customTextInput" placeholder="اكتب النص التوضيحي...">
-                    <div style="display:flex; gap:5px; margin-top:4px;">
-                        <select id="fontFamilySelect">
+                    <label style="color: #007acc; font-weight: bold;" id="inspectorTitle">لم يتم تحديد عنصر</label>
+                    <div id="videoInspectorControls" style="display:none; margin-top:5px;">
+                        <label>سرعة التشغيل (<span id="speedVal">1.0</span>x):</label>
+                        <input type="range" id="clipSpeedRange" min="0.5" max="4.0" step="0.25" value="1.0">
+                        <label style="margin-top:4px;">السطوع (<span id="brightVal">100</span>%):</label>
+                        <input type="range" id="brightnessRange" min="0" max="200" value="100">
+                    </div>
+                    <div id="textInspectorControls" style="display:none; margin-top:5px;">
+                        <input type="text" id="inspectorTextInput" placeholder="نص الطبقة...">
+                        <select id="inspectorFont" style="margin-top:4px;">
                             <optgroup label="عربية">
                                 <option value="Cairo">Cairo</option>
                                 <option value="Amiri">Amiri</option>
@@ -148,41 +140,44 @@
                                 <option value="Courier Prime">Courier Prime</option>
                             </optgroup>
                         </select>
-                        <input type="color" id="textColorPicker" value="#ffffff" style="width: 40px;">
+                        <div style="display:flex; gap:5px; margin-top:4px;">
+                            <input type="color" id="inspectorTextColor" value="#ffffff">
+                            <input type="range" id="inspectorFontSize" min="12" max="80" value="24" title="الحجم">
+                        </div>
                     </div>
-                    <label style="margin-top:4px;">حجم الخط (<span id="fontSizeVal">24</span>px)</label>
-                    <input type="range" id="fontSizeRange" min="14" max="100" value="24">
                 </div>
 
                 <div class="effect-group">
-                    <label>إضافة لوغو / صورة:</label>
-                    <button onclick="document.getElementById('logoInput').click()" style="width:100%; background:#264d73;">+ استيراد لوغو</button>
-                    <input type="file" id="logoInput" accept="image/*" style="display: none;">
+                    <label>إضافة طبقة نص جديدة:</label>
+                    <button onclick="addNewTextLayer()" style="width:100%; background:#734d26;">+ إضافة نص للتايملاين</button>
                 </div>
 
                 <div class="effect-group">
-                    <label>فلتر التغشية (Blur Overlay):</label>
+                    <label>إضافة فلتر البلور (Blur):</label>
                     <div style="display:flex; gap:5px;">
-                        <button onclick="toggleBlur('rect')" style="flex:1;">مستطيل</button>
-                        <button onclick="toggleBlur('circle')" style="flex:1;">دائرة</button>
-                        <button onclick="removeBlur()" style="background:#5a1c1c;">إلغاء</button>
+                        <button onclick="addNewBlurLayer('rect')" style="flex:1; background:#4a1c5a;">مستطيل بلور</button>
+                        <button onclick="addNewBlurLayer('circle')" style="flex:1; background:#4a1c5a;">دائرة بلور</button>
                     </div>
+                </div>
+
+                <div class="effect-group">
+                    <label>إدارة التوقيت والطبقات:</label>
+                    <button onclick="deleteSelectedClip()" style="width:100%; background:#5a1c1c;">حذف العنصر المحدد من التايملاين</button>
                 </div>
             </div>
         </div>
 
-        <!-- 4. التايملاين مع المسطرة والمستويات الثلاثة V1, V2, V3 -->
+        <!-- 4. التايملاين المتعدد المسارات (V3, V2, V1) -->
         <div class="timeline-pane">
             <div class="timeline-toolbar">
-                <span style="color: #fff; font-weight: bold;">Timeline: Sequence 01</span>
-                <button onclick="resetTimeline()" style="background: #5a1c1c; font-size: 10px; margin-right: auto;">إعادة ضبط التايملاين</button>
+                <span style="color: #fff; font-weight: bold;">Timeline (اسحب المقاطع ورتبها بحرية)</span>
+                <button onclick="resetTimeline()" style="background: #5a1c1c; font-size: 10px; margin-right: auto;">تفريغ التايملاين</button>
             </div>
-            <div class="timeline-tracks" id="timelineTracksContainer">
+            <div class="timeline-tracks" id="timelineTracksContainer" ondragover="allowDrop(event)">
                 <div id="playheadLine"></div>
-                <div class="track-row"><div class="track-label">V3</div><div class="track-lane" id="laneV3" ondragover="allowDrop(event)" ondrop="dropClip(event, 'V3')"></div></div>
-                <div class="track-row"><div class="track-label">V2</div><div class="track-lane" id="laneV2" ondragover="allowDrop(event)" ondrop="dropClip(event, 'V2')"></div></div>
-                <div class="track-row"><div class="track-label" style="background:#007acc;">V1</div><div class="track-lane" id="laneV1" ondragover="allowDrop(event)" ondrop="dropClip(event, 'V1')"></div></div>
-                <div class="track-row" style="height: 30px;"><div class="track-label" style="border-left-color: #2e8b57;">A1</div><div class="track-lane" id="laneA1"></div></div>
+                <div class="track-row"><div class="track-label">V3 (أعلى)</div><div class="track-lane" id="laneV3" data-track="V3" ondrop="dropToTrack(event, 'V3')" ondragover="allowDrop(event)"></div></div>
+                <div class="track-row"><div class="track-label">V2 (وسط)</div><div class="track-lane" id="laneV2" data-track="V2" ondrop="dropToTrack(event, 'V2')" ondragover="allowDrop(event)"></div></div>
+                <div class="track-row"><div class="track-label" style="background:#007acc;">V1 (أسفل)</div><div class="track-lane" id="laneV1" data-track="V1" ondrop="dropToTrack(event, 'V1')" ondragover="allowDrop(event)"></div></div>
             </div>
         </div>
     </div>
