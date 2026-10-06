@@ -9,8 +9,8 @@ let logoAsset = { src: null, x: 50, y: 50, size: 100 };
 let selectedClipId = null;
 let currentStep = 1;
 let isPlaying = false;
-let currentTime = 0; // الوقت الحالي بالثواني
-let timelineZoom = 20; // بكسل لكل ثانية (افتراضي)
+let currentTime = 0; 
+let timelineZoom = 20; 
 
 let isDraggingElement = false;
 let draggedElementType = null;
@@ -54,6 +54,7 @@ document.getElementById('fileInput').addEventListener('change', function(e) {
         let asset = { id: 'ast_' + Math.random().toString(36).substr(2,9), type: assetType, name: file.name, src: url };
         mediaAssets.push(asset);
         
+        // إدراج تلقائي للمقطع في مساره المخصص مباشرة
         let clip = { id: 'clp_' + Math.random().toString(36).substr(2,9), type: assetType, src: url, name: asset.name, duration: 15, start: 0 };
         
         if(assetType === 'video' || assetType === 'image') {
@@ -149,13 +150,44 @@ function initCanvasDragListeners(canvas) {
     };
 }
 
-// تصميم وتحديث واجهة التايملاين مع الثلاث مسارات والمسطرة والـ Zoom
+// دالة إضافة مقطع للتايملاين مباشرة عبر الزر
+function addAssetToTrack(assetId, trackName) {
+    let asset = mediaAssets.find(a => a.id === assetId);
+    if(!asset) return;
+
+    let lastStart = timelineTracks[trackName].reduce((acc, c) => Math.max(acc, c.start + c.duration), 0);
+    let clip = {
+        id: 'clp_' + Math.random().toString(36).substr(2,9),
+        type: asset.type,
+        src: asset.src,
+        name: asset.name,
+        duration: 15,
+        start: lastStart
+    };
+
+    timelineTracks[trackName].push(clip);
+    selectedClipId = clip.id;
+    if(asset.type === 'video') {
+        videoElement.src = asset.src;
+        videoElement.load();
+    }
+    renderTimelineUI();
+    drawCanvas();
+}
+
 function renderTimelineUI() {
     const bin = document.getElementById('projectBin1');
     if(bin) {
         bin.innerHTML = '';
         mediaAssets.forEach(a => {
-            bin.innerHTML += `<div class="media-thumb"><${a.type==='image'?'img':'video'} src="${a.src}"></${a.type==='image'?'img':'video'}><span>${a.name}</span></div>`;
+            bin.innerHTML += `
+                <div style="background:#222; padding:8px; border-radius:6px; margin-bottom:8px; border:1px solid #444;">
+                    <div style="color:#fff; font-size:12px; margin-bottom:4px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${a.name}</div>
+                    <div style="display:flex; gap:4px;">
+                        <button onclick="addAssetToTrack('${a.id}', 'video')" style="background:#2563eb; color:#fff; border:none; padding:3px 6px; border-radius:3px; font-size:10px; cursor:pointer;">+ فيديو</button>
+                        <button onclick="addAssetToTrack('${a.id}', 'audio')" style="background:#059669; color:#fff; border:none; padding:3px 6px; border-radius:3px; font-size:10px; cursor:pointer;">+ صوت</button>
+                    </div>
+                </div>`;
         });
     }
 
@@ -172,7 +204,7 @@ function renderTimelineUI() {
         <div id="timelineScrollArea" style="overflow-x:auto; position:relative; background:#18181b; min-height:180px; padding-top:20px;">
             <!-- المسطرة الزمنية والسكين العمودية -->
             <div id="timelineRuler" style="height:25px; background:#222; border-bottom:1px solid #444; position:relative; cursor:pointer; width:3000px;" onclick="seekTimelineByClick(event)">
-                <div id="timelinePlayhead" style="position:absolute; top:0; width:3px; height:100px; background:#ff3b30; z-index:100; left:${currentTime * timelineZoom}px; pointer-events:none;">
+                <div id="timelinePlayhead" style="position:absolute; top:0; width:3px; height:120px; background:#ff3b30; z-index:100; left:${currentTime * timelineZoom}px; pointer-events:none;">
                     <div style="width:11px; height:11px; background:#ff3b30; transform:rotate(45deg); position:absolute; top:-5px; left:-4px;"></div>
                 </div>
             </div>
@@ -180,7 +212,7 @@ function renderTimelineUI() {
             <!-- مسار 1: الفيديو والصور -->
             <div style="display:flex; align-items:center; border-bottom:1px solid #27272a; height:50px; background:#1e1e24; position:relative;">
                 <div style="width:70px; background:#121215; color:#888; font-size:11px; text-align:center; height:100%; display:flex; align-items:center; justify-content:center; border-left:1px solid #333; position:sticky; left:0; z-index:10;">فيديو</div>
-                <div id="trackVideo" style="position:relative; height:100%; width:3000px;" ondragover="event.preventDefault()" ondrop="dropClip(event, 'video')">
+                <div id="trackVideo" style="position:relative; height:100%; width:3000px;">
                     ${renderTrackClips('video')}
                 </div>
             </div>
@@ -188,7 +220,7 @@ function renderTimelineUI() {
             <!-- مسار 2: الصوت -->
             <div style="display:flex; align-items:center; border-bottom:1px solid #27272a; height:50px; background:#1a231e; position:relative;">
                 <div style="width:70px; background:#121215; color:#888; font-size:11px; text-align:center; height:100%; display:flex; align-items:center; justify-content:center; border-left:1px solid #333; position:sticky; left:0; z-index:10;">صوت</div>
-                <div id="trackAudio" style="position:relative; height:100%; width:3000px;" ondragover="event.preventDefault()" ondrop="dropClip(event, 'audio')">
+                <div id="trackAudio" style="position:relative; height:100%; width:3000px;">
                     ${renderTrackClips('audio')}
                 </div>
             </div>
@@ -196,7 +228,7 @@ function renderTimelineUI() {
             <!-- مسار 3: النصوص واللوغو -->
             <div style="display:flex; align-items:center; border-bottom:1px solid #27272a; height:50px; background:#221e24; position:relative;">
                 <div style="width:70px; background:#121215; color:#888; font-size:11px; text-align:center; height:100%; display:flex; align-items:center; justify-content:center; border-left:1px solid #333; position:sticky; left:0; z-index:10;">إضافات</div>
-                <div id="trackOverlay" style="position:relative; height:100%; width:3000px;" ondragover="event.preventDefault()" ondrop="dropClip(event, 'overlay')">
+                <div id="trackOverlay" style="position:relative; height:100%; width:3000px;">
                     ${renderTrackClips('overlay')}
                 </div>
             </div>
@@ -221,7 +253,7 @@ function renderTrackClips(trackName) {
         let widthPx = c.duration * timelineZoom;
         let bgCol = trackName === 'video' ? '#2563eb' : (trackName === 'audio' ? '#059669' : '#d97706');
         html += `
-            <div draggable="true" ondragstart="event.dataTransfer.setData('text/plain', '${c.id}')" onclick="selectClip('${c.id}')"
+            <div onclick="selectClip('${c.id}')"
                  style="position:absolute; left:${leftPx}px; width:${widthPx}px; top:4px; height:40px; background:${bgCol}; border:1px solid rgba(255,255,255,0.3); border-radius:4px; padding:4px 8px; color:#fff; font-size:11px; cursor:pointer; display:flex; align-items:center; overflow:hidden; white-space:nowrap;">
                  ${c.name}
             </div>`;
@@ -250,31 +282,6 @@ function updatePlayheadPosition() {
     }
 }
 
-function dropClip(e, trackName) {
-    e.preventDefault();
-    let id = e.dataTransfer.getData('text/plain');
-    let foundClip = null;
-    let sourceTrack = null;
-
-    for(let t in timelineTracks) {
-        let idx = timelineTracks[t].findIndex(c => c.id === id);
-        if(idx !== -1) {
-            foundClip = timelineTracks[t][idx];
-            sourceTrack = t;
-            timelineTracks[t].splice(idx, 1);
-            break;
-        }
-    }
-
-    if(foundClip) {
-        let rect = e.currentTarget.getBoundingClientRect();
-        let dropX = e.clientX - rect.left;
-        foundClip.start = Math.max(0, dropX / timelineZoom);
-        timelineTracks[trackName].push(foundClip);
-        renderTimelineUI();
-    }
-}
-
 function seekVideoToCurrentTime() {
     let activeClip = timelineTracks.video.find(c => currentTime >= c.start && currentTime <= (c.start + c.duration));
     if(activeClip && activeClip.type === 'video') {
@@ -291,7 +298,6 @@ function selectClip(id) {
     renderTimelineUI();
 }
 
-// التحكم بالألوان وتحديث المعاينة
 ['valBrightness', 'valContrast', 'valSaturation'].forEach(id => {
     let el = document.getElementById(id);
     if(el) el.addEventListener('input', () => { drawCanvas(); });
