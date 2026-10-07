@@ -8,7 +8,7 @@
 <style>
 :root{--bg:#1a1a1a;--panel:#232323;--panel-head:#2b2b2b;--border:#0d0d0d;--text:#c9c9c9;
 --accent:#4a9eff;--accent-hover:#6bb0ff;--video-clip:#3d6b9a;--audio-clip:#3d6b4a;
---selected:#ffcc00;--playhead:#4a9eff;--lane:#1e1e1e;--lane-alt:#202020}
+--selected:#ffcc00;--playhead:#4a9eff;--lane:#1e1e1e;--lane-alt:#202020;--target:#ff9500}
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{width:100vw;height:100vh;overflow:hidden;background:var(--bg);color:var(--text);
 font-family:'Segoe UI','Cairo',Tahoma,sans-serif;font-size:11px;user-select:none}
@@ -23,7 +23,7 @@ font-family:'Segoe UI','Cairo',Tahoma,sans-serif;font-size:11px;user-select:none
 display:flex;align-items:center;padding:0 10px;font-size:11px;font-weight:600;color:#ddd;gap:6px}
 .panel-header .dot{width:7px;height:7px;border-radius:50%;background:var(--accent)}
 .panel-body{flex:1;overflow:auto;position:relative}
-.proj-toolbar{display:flex;align-items:center;gap:4px;padding:5px 8px;background:#212121;border-bottom:1px solid var(--border)}
+.proj-toolbar{display:flex;align-items:center;gap:4px;padding:5px 8px;background:#212121;border-bottom:1px solid var(--border);flex-wrap:wrap}
 .icon-btn{background:transparent;border:1px solid transparent;color:#b8b8b8;padding:3px 7px;border-radius:3px;
 cursor:pointer;font-size:12px;display:flex;align-items:center;gap:4px}
 .icon-btn:hover{background:#2e2e2e;color:#fff;border-color:#3a3a3a}
@@ -60,22 +60,30 @@ display:flex;align-items:center;justify-content:center;gap:8px;padding:0 8px}
 .eff-row input[type=color]{width:28px;height:20px;border:1px solid #444;background:#111;border-radius:3px;padding:0}
 .eff-row input[type=checkbox]{accent-color:var(--accent)}
 .timeline{display:flex;flex-direction:column;background:var(--panel);overflow:hidden}
-.tl-header{height:28px;background:var(--panel-head);border-bottom:1px solid var(--border);
+.tl-header{height:32px;background:var(--panel-head);border-bottom:1px solid var(--border);
 display:flex;align-items:center;padding:0 10px;gap:8px}
 .seq-tab{background:#1e1e1e;border:1px solid #333;border-top:2px solid var(--accent);
 padding:4px 12px;border-radius:3px 3px 0 0;color:#ddd;font-size:11px;font-weight:600}
-.tl-tools{display:flex;gap:2px;margin-left:10px}
-.tool-btn{background:transparent;border:1px solid transparent;color:#999;padding:3px 7px;border-radius:3px;cursor:pointer;font-size:12px}
+.tl-tools{display:flex;gap:2px;margin-left:10px;align-items:center}
+.tool-btn{background:transparent;border:1px solid transparent;color:#999;padding:4px 9px;border-radius:3px;cursor:pointer;font-size:12px;
+display:flex;align-items:center;gap:5px}
 .tool-btn:hover{background:#2e2e2e;color:#fff}
 .tool-btn.active{background:#2b4a75;color:#fff;border-color:var(--accent)}
-.tl-zoom{margin-left:auto;display:flex;align-items:center;gap:6px;color:#888;font-size:10px}
-.tl-zoom input{width:120px;accent-color:var(--accent)}
+.tool-btn.split{background:#8a3a11;color:#fff;border-color:#b04a15;font-weight:700}
+.tool-btn.split:hover{background:#b04a15}
+.tl-hint{margin-left:auto;color:#777;font-size:10px;display:flex;align-items:center;gap:8px}
+.tl-hint b{color:#ff9500}
+.tl-zoom{display:flex;align-items:center;gap:6px;color:#888;font-size:10px;margin-left:12px}
+.tl-zoom input{width:100px;accent-color:var(--accent)}
 .tl-body{flex:1;display:grid;grid-template-columns:170px 1fr;overflow:hidden}
 .th-col{background:#1c1c1c;border-right:1px solid var(--border);overflow:hidden;display:flex;flex-direction:column}
 .th-spacer{height:26px;background:#181818;border-bottom:1px solid var(--border)}
-.th{display:flex;align-items:center;padding:0 8px;gap:4px;border-bottom:1px solid #111}
+.th{display:flex;align-items:center;padding:0 8px;gap:5px;border-bottom:1px solid #111;cursor:pointer;position:relative}
 .th.video{background:#222629}.th.audio{background:#212a23}
-.th .name{font-weight:700;color:#ddd;font-size:11px;min-width:26px}
+.th:hover{background:#2a2f34}
+.th.target{background:#2b4a75;box-shadow:inset 4px 0 0 var(--target)}
+.th.target::after{content:'◆ TARGET';position:absolute;right:6px;top:2px;font-size:8px;color:var(--target);font-weight:800;letter-spacing:.5px}
+.th .name{font-weight:800;color:#ddd;font-size:12px;min-width:26px}
 .th .spacer{flex:1}
 .th .mini-btn{width:18px;height:18px;background:transparent;border:1px solid transparent;border-radius:2px;
 color:#777;font-size:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0}
@@ -91,14 +99,18 @@ font-family:Consolas,monospace;padding:3px 0 0 4px;pointer-events:none}
 .tracks{position:relative;min-width:3000px}
 .lane{height:50px;border-bottom:1px solid #111;position:relative;background:var(--lane)}
 .lane.audio{background:var(--lane-alt)}.lane.locked{opacity:.6}
+.lane.target{background:#233040}
+.lane.target::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--target);z-index:2}
 .clip{position:absolute;top:4px;height:42px;border-radius:3px;overflow:hidden;cursor:pointer;
 border:1px solid transparent;display:flex;flex-direction:column;font-size:10px;color:#eaeaea}
 .clip.video{background:var(--video-clip);border-color:#5a8bc0}
 .clip.audio{background:var(--audio-clip);border-color:#5a8b6a;height:36px;top:7px}
 .clip.selected{box-shadow:0 0 0 2px var(--selected);z-index:5}
 .clip .clip-name{background:rgba(0,0,0,.35);padding:2px 6px;font-weight:600;overflow:hidden;
-white-space:nowrap;text-overflow:ellipsis;font-size:10px}
+white-space:nowrap;text-overflow:ellipsis;font-size:10px;display:flex;align-items:center;gap:4px}
+.clip .clip-name .track-badge{background:rgba(255,255,255,.25);border-radius:2px;padding:0 4px;font-size:9px;font-weight:800}
 .clip .strip{flex:1;background-image:repeating-linear-gradient(90deg,transparent 0,transparent 44px,rgba(0,0,0,.25) 44px,rgba(0,0,0,.25) 45px)}
+.cut-line{position:absolute;top:0;bottom:0;width:1px;background:#ffcc00;z-index:15;pointer-events:none;box-shadow:0 0 3px #ffcc00}
 .playhead{position:absolute;top:0;width:2px;background:var(--playhead);pointer-events:none;z-index:20;
 box-shadow:0 0 4px rgba(74,158,255,.6)}
 .playhead::before{content:'';position:absolute;top:0;left:-5px;width:12px;height:12px;background:var(--playhead);
@@ -111,11 +123,17 @@ clip-path:polygon(0 0,100% 0,50% 100%);pointer-events:auto;cursor:ew-resize}
 padding:10px 20px;border-radius:6px;font-size:12px;z-index:9999;max-width:80vw;box-shadow:0 4px 20px rgba(0,0,0,.5);
 display:none;font-family:Consolas,monospace}
 .err-banner.show{display:block}
+.info-banner{position:fixed;top:30px;left:50%;transform:translateX(-50%);background:#1c4a7a;color:#fff;
+padding:10px 20px;border-radius:6px;font-size:12px;z-index:9999;max-width:80vw;box-shadow:0 4px 20px rgba(0,0,0,.5);
+display:none;font-family:'Segoe UI',Tahoma,sans-serif}
+.info-banner.show{display:block}
 .drop-active{outline:2px dashed #4a9eff !important;outline-offset:-6px;background:rgba(74,158,255,.08) !important}
+select.track-select{background:#1c1c1c;color:#ddd;border:1px solid #444;border-radius:3px;padding:3px 6px;font-size:11px}
 </style>
 </head>
 <body>
 <div class="err-banner" id="errBanner"></div>
+<div class="info-banner" id="infoBanner"></div>
 <div class="app">
   <div class="menubar">
     <div class="logo">Pr</div>
@@ -131,7 +149,17 @@ display:none;font-family:Consolas,monospace}
       <div class="proj-toolbar">
         <button class="icon-btn primary" id="importBtn" type="button">⬆ Import</button>
         <button class="icon-btn" id="deleteBtn" title="Delete" type="button">🗑</button>
-        <button class="icon-btn" id="addToTLBtn" title="Add to Timeline" style="margin-left:auto;background:#2b4a75;color:#fff;padding:4px 10px" type="button">＋ Add to Timeline</button>
+        <button class="icon-btn" id="addToTLBtn" title="Add to Timeline" style="margin-left:auto;background:#2b4a75;color:#fff;padding:4px 10px" type="button">＋ Add</button>
+      </div>
+      <div style="padding:5px 10px;background:#1c1c1c;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:6px;font-size:10px;color:#888">
+        <span>إلى المسار:</span>
+        <select class="track-select" id="targetTrackSelect">
+          <option value="auto">تلقائي</option>
+          <option value="V1">V1 (فيديو 1)</option>
+          <option value="V2">V2 (فيديو 2)</option>
+          <option value="A1">A1 (صوت 1)</option>
+          <option value="A2">A2 (صوت 2)</option>
+        </select>
       </div>
       <div class="proj-cols"><div>Name</div><div>Duration</div></div>
       <div class="proj-list" id="projList"></div>
@@ -203,9 +231,12 @@ display:none;font-family:Consolas,monospace}
     <div class="tl-header">
       <div class="seq-tab">Sequence 01</div>
       <div class="tl-tools">
-        <button class="tool-btn active" data-tool="select" type="button">➤</button>
-        <button class="tool-btn" data-tool="razor" type="button">✂</button>
-        <button class="tool-btn" data-tool="hand" type="button">✋</button>
+        <button class="tool-btn active" data-tool="select" type="button" title="Selection (V)">➤ Select</button>
+        <button class="tool-btn" data-tool="hand" type="button" title="Hand (H)">✋ Hand</button>
+        <button class="tool-btn split" id="splitBtn" type="button" title="Split at Playhead (Ctrl+K)">✂ Split</button>
+      </div>
+      <div class="tl-hint">
+        المسار المستهدف: <b id="targetLabel">V1</b> — انقر على اسم مسار لتغييره
       </div>
       <div class="tl-zoom"><span>Zoom</span><input type="range" id="zoomRange" min="15" max="200" value="60"></div>
     </div>
@@ -221,15 +252,20 @@ display:none;font-family:Consolas,monospace}
 </div>
 
 <script>
-/* ================ GLOBAL ERROR SHOW ================ */
+/* ================ GLOBAL ERROR ================ */
 const errBanner = document.getElementById('errBanner');
+const infoBanner = document.getElementById('infoBanner');
 function showError(msg){
   console.error('[Pr FATAL]', msg);
   errBanner.textContent = '⚠ ' + msg;
   errBanner.classList.add('show');
   setTimeout(()=>errBanner.classList.remove('show'), 6000);
-  const s = document.getElementById('statusBar');
-  if(s) s.textContent = '⚠ error: ' + msg.slice(0,50);
+}
+function showInfo(msg){
+  infoBanner.textContent = msg;
+  infoBanner.classList.add('show');
+  clearTimeout(showInfo._t);
+  showInfo._t = setTimeout(()=>infoBanner.classList.remove('show'), 2500);
 }
 window.addEventListener('error', e => showError(e.message));
 window.addEventListener('unhandledrejection', e => showError('Promise: ' + (e.reason?.message || e.reason)));
@@ -252,6 +288,7 @@ const state = {
   project: [], tracks:{V2:[],V1:[],A1:[],A2:[]},
   playhead:0, zoom:60, selection:null, selectedAsset:null,
   tool:'select', playing:false,
+  targetTrack:'V1',           // ★ المسار المستهدف
   locked:{V2:false,V1:false,A1:false,A2:false},
   visible:{V2:true,V1:true}, muted:{A1:false,A2:false}, solo:{A1:false,A2:false},
   chroma:{on:false,color:'#00ff00',tol:40},
@@ -264,7 +301,6 @@ function getVideo(src){
   if(!videoPool[src]){
     const v = document.createElement('video');
     v.src = src; v.preload = 'auto'; v.muted = true; v.playsInline = true;
-    v.onerror = () => console.error('[Pr] video error:', src, v.error);
     videoPool[src] = v;
   }
   return videoPool[src];
@@ -286,15 +322,13 @@ function detectKind(file){
   if(['png','jpg','jpeg','gif','webp','bmp','svg'].includes(ext)) return 'image';
   return null;
 }
-
 function probeVideo(src){
   return new Promise(resolve => {
     const v = document.createElement('video');
     v.preload = 'metadata'; v.muted = true; v.playsInline = true;
     let done = false;
     const finish = (dur, thumb) => {
-      if(done) return; done = true;
-      clearTimeout(timer);
+      if(done) return; done = true; clearTimeout(timer);
       resolve({ duration: dur||5, thumb: thumb||null });
     };
     const timer = setTimeout(()=>{ LOG('probe timeout'); finish(5, null); }, 6000);
@@ -315,7 +349,6 @@ function probeVideo(src){
     v.src = src;
   });
 }
-
 function probeAudio(src){
   return new Promise(resolve => {
     const a = document.createElement('audio');
@@ -328,33 +361,23 @@ function probeAudio(src){
     a.src = src;
   });
 }
-
 async function importFiles(files){
-  if(!files || !files.length){ LOG('no files to import'); return; }
-  LOG('importing', files.length, 'file(s)');
+  if(!files || !files.length) return;
   for(const f of files){
     const kind = detectKind(f);
-    LOG('  →', f.name, '| type:', f.type || '(empty)', '| kind:', kind);
-    if(!kind){ console.warn('[Pr] unsupported file:', f.name); continue; }
-
+    if(!kind){ console.warn('[Pr] unsupported:', f.name); continue; }
     const src = URL.createObjectURL(f);
     const asset = { id:'a_'+Math.random().toString(36).slice(2,9),
                     name:f.name, src, kind, duration:5, thumb:null, status:'loading' };
-
-    if(kind === 'image'){
-      asset.duration = 5; asset.thumb = src; asset.status = 'ready';
-    } else if(kind === 'video'){
+    if(kind === 'image'){ asset.duration = 5; asset.thumb = src; asset.status = 'ready'; }
+    else if(kind === 'video'){
       const { duration, thumb } = await probeVideo(src);
       asset.duration = duration; asset.thumb = thumb; asset.status = 'ready';
-      LOG('    duration:', duration.toFixed(2), 'thumb:', !!thumb);
-    } else {
-      asset.duration = await probeAudio(src); asset.status = 'ready';
-    }
+    } else { asset.duration = await probeAudio(src); asset.status = 'ready'; }
     state.project.push(asset);
     renderProject();
     updateStatus();
   }
-  LOG('project now has', state.project.length, 'item(s)');
 }
 
 /* ================ PROJECT PANEL ================ */
@@ -363,8 +386,8 @@ function renderProject(){
   list.innerHTML = '';
   if(!state.project.length){
     list.innerHTML = `<div class="empty-hint">
-      اسحب ملفات الفيديو هنا<br>أو اضغط <b>Import</b> في الأعلى<br><br>
-      <span style="font-size:10px;color:#555">الصيغ المدعومة: MP4, WebM, MOV, JPG, PNG, MP3…</span>
+      اسحب ملفات الفيديو هنا<br>أو اضغط <b>Import</b><br><br>
+      <span style="font-size:10px;color:#555">MP4, WebM, MOV, JPG, PNG, MP3…</span>
     </div>`;
     return;
   }
@@ -377,7 +400,7 @@ function renderProject(){
       <div class="proj-name" title="${a.name}">${a.name}</div>
       <div class="proj-dur">${a.status==='loading'?'…':tc(a.duration)}</div>`;
     row.onclick = () => { state.selectedAsset = a.id; showInSource(a); renderProject(); updateStatus(); };
-    row.ondblclick = () => { LOG('dblclick on', a.name); addAssetToTimeline(a); };
+    row.ondblclick = () => { addAssetToTimeline(a); };
     list.appendChild(row);
   });
 }
@@ -411,23 +434,110 @@ function drawContain(ctx, src, W, H){
 }
 
 /* ================ ADD TO TIMELINE ================ */
+function resolveTargetTrack(asset){
+  // 1) من قائمة "إلى المسار"
+  const sel = $('#targetTrackSelect').value;
+  if(sel !== 'auto'){
+    const t = TRACK_INFO[sel];
+    const compatible = (asset.kind==='audio' && t.type==='audio') ||
+                       (asset.kind!=='audio' && t.type==='video');
+    if(compatible) return sel;
+  }
+  // 2) من المسار المستهدف
+  if(state.targetTrack){
+    const t = TRACK_INFO[state.targetTrack];
+    const compatible = (asset.kind==='audio' && t.type==='audio') ||
+                       (asset.kind!=='audio' && t.type==='video');
+    if(compatible) return state.targetTrack;
+  }
+  // 3) تلقائي
+  if(asset.kind === 'audio') return state.tracks.A1.length <= state.tracks.A2.length ? 'A1' : 'A2';
+  return state.tracks.V1.length <= state.tracks.V2.length ? 'V1' : 'V2';
+}
+
 function addAssetToTimeline(asset){
   if(!asset){ alert('اختر ملفًا من Project أولاً'); return; }
-  const trackName = asset.kind==='audio'
-    ? (state.tracks.A1.length <= state.tracks.A2.length ? 'A1' : 'A2')
-    : asset.kind==='image' ? 'V2' : 'V1';
+  const trackName = resolveTargetTrack(asset);
   const lane = state.tracks[trackName];
+  // نضع المقطع بعد آخر مقطع في نفس المسار
   const start = lane.reduce((m,c)=>Math.max(m, c.start + c.duration), 0);
   const clip = {
     id:'c_'+Math.random().toString(36).slice(2,9),
     assetId:asset.id, name:asset.name, src:asset.src, kind:asset.kind,
+    track:trackName,
     start, duration: asset.duration || 5
   };
   lane.push(clip);
   state.selection = clip.id;
-  LOG('added to', trackName, ':', clip.name, '(', clip.duration.toFixed(2), 's )');
+  showInfo(`✅ أضيف "${asset.name}" إلى ${trackName} عند ${tc(start)}`);
+  LOG('added to', trackName, ':', clip.name);
   renderTimeline(); renderProgram(); updateStatus();
 }
+
+/* ================ SPLIT (فقط بزر) ================ */
+function splitAtPlayhead(){
+  LOG('=== SPLIT requested ===');
+  LOG('playhead =', state.playhead.toFixed(3), '| selection =', state.selection);
+  LOG('targetTrack =', state.targetTrack);
+
+  // 1) تحديد المسار والمقطع
+  let targetClip = null, targetTrack = null;
+
+  // أولاً: المقطع المحدد
+  if(state.selection){
+    for(const tname of TRACKS){
+      const c = state.tracks[tname].find(x => x.id === state.selection);
+      if(c){ targetClip = c; targetTrack = tname; break; }
+    }
+  }
+  // ثانياً: المسار المستهدف — ابحث عن مقطع تحت المؤشر
+  if(!targetClip){
+    const lane = state.tracks[state.targetTrack] || [];
+    targetClip = lane.find(c =>
+      state.playhead > c.start + 0.05 &&
+      state.playhead < c.start + c.duration - 0.05
+    );
+    if(targetClip) targetTrack = state.targetTrack;
+  }
+  // ثالثاً: أي مسار فيه مقطع تحت المؤشر
+  if(!targetClip){
+    for(const tname of TRACKS){
+      const c = state.tracks[tname].find(x =>
+        state.playhead > x.start + 0.05 &&
+        state.playhead < x.start + x.duration - 0.05);
+      if(c){ targetClip = c; targetTrack = tname; break; }
+    }
+  }
+
+  if(!targetClip){
+    showError('لا يوجد مقطع تحت خط التشغيل. حرّك خط التشغيل داخل مقطع ثم اضغط Split.');
+    return;
+  }
+
+  // 2) التحقق من أن المؤشر داخل المقطع
+  const localTime = state.playhead - targetClip.start;
+  if(localTime <= 0.05 || localTime >= targetClip.duration - 0.05){
+    showError(`المؤشر عند حافة المقطع. حرّكه داخل المقطع قليلاً.`);
+    return;
+  }
+
+  // 3) التقطيع
+  const first  = { ...targetClip, duration: localTime };
+  const second = { ...targetClip,
+    id:'c_'+Math.random().toString(36).slice(2,9),
+    start: state.playhead,
+    duration: targetClip.duration - localTime
+  };
+  const lane = state.tracks[targetTrack];
+  const i = lane.findIndex(c => c.id === targetClip.id);
+  lane.splice(i, 1, first, second);
+  state.selection = second.id;
+
+  LOG('✓ SPLIT at', tc(state.playhead), 'on', targetTrack);
+  showInfo(`✂ تم التقطيع على ${targetTrack} عند ${tc(state.playhead)}`);
+  renderTimeline(); renderProgram(); updateStatus();
+}
+$('#splitBtn').addEventListener('click', splitAtPlayhead);
 
 /* ================ TIMELINE RENDER ================ */
 function renderTimeline(){
@@ -437,7 +547,9 @@ function renderTimeline(){
   TRACKS.forEach(name => {
     const info = TRACK_INFO[name];
     const h = document.createElement('div');
-    h.className = 'th ' + info.type; h.style.height = '50px';
+    h.className = 'th ' + info.type + (state.targetTrack===name ? ' target' : '');
+    h.style.height = '50px';
+    h.dataset.track = name;
     const eye = info.type==='video'
       ? `<button class="mini-btn ${state.visible[name]?'on':''}" data-act="eye" data-t="${name}" type="button">👁</button>` : '';
     const lock = `<button class="mini-btn ${state.locked[name]?'on':''}" data-act="lock" data-t="${name}" type="button">🔒</button>`;
@@ -449,13 +561,23 @@ function renderTimeline(){
     thCol.appendChild(h);
   });
   thCol.querySelectorAll('.mini-btn').forEach(b => {
-    b.onclick = () => {
+    b.onclick = ev => {
+      ev.stopPropagation();
       const { act, t } = b.dataset;
       if(act==='eye') state.visible[t] = !state.visible[t];
       if(act==='lock') state.locked[t] = !state.locked[t];
       if(act==='mute') state.muted[t] = !state.muted[t];
       if(act==='solo') state.solo[t] = !state.solo[t];
       renderTimeline(); renderProgram();
+    };
+  });
+  thCol.querySelectorAll('.th').forEach(h => {
+    h.onclick = () => {
+      const t = h.dataset.track;
+      state.targetTrack = t;
+      $('#targetLabel').textContent = t;
+      LOG('target track →', t);
+      renderTimeline();
     };
   });
 
@@ -466,7 +588,8 @@ function renderTimeline(){
   TRACKS.forEach(name => {
     const info = TRACK_INFO[name];
     const lane = document.createElement('div');
-    lane.className = 'lane ' + (info.type==='audio'?'audio':'');
+    lane.className = 'lane ' + (info.type==='audio'?'audio':'') +
+                     (state.targetTrack===name ? ' target' : '');
     lane.style.height = '50px';
     lane.dataset.track = name;
     if(state.locked[name]) lane.classList.add('locked');
@@ -475,31 +598,50 @@ function renderTimeline(){
       const el = document.createElement('div');
       el.className = 'clip ' + (info.type==='audio'?'audio':'video');
       el.dataset.id = clip.id;
+      el.dataset.track = name;
       el.style.left = (clip.start * state.zoom) + 'px';
       el.style.width = Math.max(6, clip.duration * state.zoom) + 'px';
       if(state.selection === clip.id) el.classList.add('selected');
-      el.innerHTML = `<div class="clip-name">${clip.name}</div><div class="strip"></div>`;
+      el.innerHTML = `
+        <div class="clip-name"><span class="track-badge">${name}</span>${clip.name}</div>
+        <div class="strip"></div>`;
       bindClipEvents(el, clip, name);
       lane.appendChild(el);
     });
 
-    lane.addEventListener('dragover', e => { e.preventDefault(); e.dataTransfer.dropEffect='copy'; });
-    lane.addEventListener('drop', e => {
+    // استقبال السحب من Project Panel — يجب أن يكون المسار متوافقًا
+    lane.addEventListener('dragover', e => {
       e.preventDefault();
       if(state.selectedAsset){
         const a = state.project.find(x=>x.id===state.selectedAsset);
         if(a){
-          const rect = tracks.getBoundingClientRect();
-          const start = Math.max(0, (e.clientX - rect.left) / state.zoom);
-          state.tracks[name].push({
-            id:'c_'+Math.random().toString(36).slice(2,9),
-            assetId:a.id, name:a.name, src:a.src, kind:a.kind,
-            start, duration:a.duration||5
-          });
-          renderTimeline(); renderProgram(); updateStatus();
+          const compatible = (a.kind==='audio' && info.type==='audio') ||
+                             (a.kind!=='audio' && info.type==='video');
+          e.dataTransfer.dropEffect = compatible ? 'copy' : 'none';
         }
       }
     });
+    lane.addEventListener('drop', e => {
+      e.preventDefault();
+      if(!state.selectedAsset) return;
+      const a = state.project.find(x=>x.id===state.selectedAsset);
+      if(!a) return;
+      const compatible = (a.kind==='audio' && info.type==='audio') ||
+                         (a.kind!=='audio' && info.type==='video');
+      if(!compatible){
+        showError(`لا يمكن وضع ${a.kind} في مسار ${info.type==='audio'?'صوت':'فيديو'}`);
+        return;
+      }
+      const rect = tracks.getBoundingClientRect();
+      const start = Math.max(0, (e.clientX - rect.left) / state.zoom);
+      state.tracks[name].push({
+        id:'c_'+Math.random().toString(36).slice(2,9),
+        assetId:a.id, name:a.name, src:a.src, kind:a.kind,
+        track:name, start, duration:a.duration||5
+      });
+      renderTimeline(); renderProgram(); updateStatus();
+    });
+
     tracks.appendChild(lane);
   });
 
@@ -523,7 +665,7 @@ function renderRuler(){
   }
 }
 
-/* ================ CLIP DRAG ================ */
+/* ================ CLIP DRAG / SELECT ================ */
 let activeDrag = null;
 document.addEventListener('mousemove', e => {
   if(!activeDrag) return;
@@ -539,27 +681,13 @@ function bindClipEvents(el, clip, trackName){
   el.addEventListener('mousedown', e => {
     if(state.locked[trackName]) return;
     e.stopPropagation();
-    if(state.tool === 'razor'){ splitClip(trackName, clip, e); return; }
     state.selection = clip.id;
+    state.targetTrack = trackName;
+    $('#targetLabel').textContent = trackName;
     activeDrag = { clip, startX:e.clientX, origStart:clip.start };
     renderTimeline();
     document.body.style.cursor = 'grabbing';
   });
-}
-
-function splitClip(trackName, clip, e){
-  const el = e.target.closest('.clip');
-  const rect = el.getBoundingClientRect();
-  const at = clip.start + (e.clientX - rect.left) / state.zoom;
-  if(at <= clip.start + 0.05 || at >= clip.start + clip.duration - 0.05) return;
-  const first = { ...clip, duration: at - clip.start };
-  const second = { ...clip, id:'c_'+Math.random().toString(36).slice(2,9),
-                   start: at, duration: clip.duration - (at - clip.start) };
-  const lane = state.tracks[trackName];
-  const i = lane.findIndex(c => c.id === clip.id);
-  lane.splice(i, 1, first, second);
-  state.selection = second.id;
-  renderTimeline();
 }
 
 /* ================ RULER SCRUB ================ */
@@ -587,22 +715,26 @@ function updateTC(){ $('#progTC').textContent = tc(state.playhead); }
 /* ================ TOOLS ================ */
 function setTool(t){
   state.tool = t;
-  document.querySelectorAll('.tool-btn').forEach(b =>
+  document.querySelectorAll('.tool-btn[data-tool]').forEach(b =>
     b.classList.toggle('active', b.dataset.tool === t));
 }
-document.querySelectorAll('.tool-btn').forEach(b =>
+document.querySelectorAll('.tool-btn[data-tool]').forEach(b =>
   b.addEventListener('click', () => setTool(b.dataset.tool)));
 
 document.addEventListener('keydown', e => {
-  if(e.target.matches('input,textarea')) return;
+  if(e.target.matches('input,textarea,select')) return;
   if(e.key==='v'||e.key==='V') setTool('select');
-  if(e.key==='c'||e.key==='C') setTool('razor');
   if(e.key==='h'||e.key==='H') setTool('hand');
   if(e.key===' '){ e.preventDefault(); togglePlay(); }
+  // Ctrl+K أو Ctrl+B للتقطيع (مثل Premiere)
+  if((e.ctrlKey||e.metaKey) && (e.key==='k'||e.key==='K'||e.key==='b'||e.key==='B')){
+    e.preventDefault();
+    splitAtPlayhead();
+  }
   if(e.key==='Delete' && state.selection){
     TRACKS.forEach(n => state.tracks[n] = state.tracks[n].filter(c=>c.id!==state.selection));
     state.selection = null;
-    renderTimeline(); renderProgram();
+    renderTimeline(); renderProgram(); updateStatus();
   }
 });
 
@@ -622,30 +754,38 @@ function renderProgram(){
   const W = progCanvas.width, H = progCanvas.height;
   progCtx.fillStyle = '#000'; progCtx.fillRect(0,0,W,H);
 
-  const active = state.tracks.V1.concat(state.tracks.V2)
-    .find(c => state.playhead >= c.start && state.playhead <= c.start + c.duration);
-  if(!active) return;
+  // V2 فوق V1 (طبقة عليا)
+  const allVideoClips = []
+    .concat(state.tracks.V1.map(c=>({...c, _t:'V1'})))
+    .concat(state.tracks.V2.map(c=>({...c, _t:'V2'})))
+    .filter(c => state.visible[c._t] !== false)
+    .filter(c => state.playhead >= c.start && state.playhead <= c.start + c.duration)
+    .sort((a,b) => (a._t==='V2'?1:0) - (b._t==='V2'?1:0));
+
+  if(!allVideoClips.length) return;
 
   progCtx.save();
   const fx = state.effects;
   progCtx.globalAlpha = fx.opacity / 100;
   progCtx.filter = `brightness(${fx.brightness}%) contrast(${fx.contrast}%) saturate(${fx.saturation}%)`;
 
-  if(active.kind === 'image'){
-    const img = getImage(active.src);
-    if(img.complete) drawContain(progCtx, img, W, H);
-    else img.onload = () => drawContain(progCtx, img, W, H);
-  } else if(active.kind === 'video'){
-    const v = getVideo(active.src);
-    const local = state.playhead - active.start;
-    if(v.readyState >= 1 && Math.abs(v.currentTime - local) > 0.15){
-      try { v.currentTime = local; } catch(_) {}
+  allVideoClips.forEach(active => {
+    if(active.kind === 'image'){
+      const img = getImage(active.src);
+      const draw = () => drawContain(progCtx, img, W, H);
+      img.complete ? draw() : (img.onload = draw);
+    } else if(active.kind === 'video'){
+      const v = getVideo(active.src);
+      const local = state.playhead - active.start;
+      if(v.readyState >= 1 && Math.abs(v.currentTime - local) > 0.15){
+        try { v.currentTime = local; } catch(_) {}
+      }
+      if(v.readyState >= 2){
+        if(state.chroma.on) drawWithChroma(progCtx, v, W, H);
+        else drawContain(progCtx, v, W, H);
+      }
     }
-    if(v.readyState >= 2){
-      if(state.chroma.on) drawWithChroma(progCtx, v, W, H);
-      else drawContain(progCtx, v, W, H);
-    }
-  }
+  });
   progCtx.restore();
 
   if(state.logo.img){
@@ -671,10 +811,9 @@ function drawWithChroma(ctx, video, W, H){
   ctx.drawImage(chromaCanvas, 0, 0, W, H);
 }
 
-/* ================ EFFECTS BINDING ================ */
+/* ================ EFFECTS ================ */
 function bindEff(id, valId, key, suffix){
-  const el = $(id), v = $(valId);
-  if(!el) return;
+  const el = $(id), v = $(valId); if(!el) return;
   el.addEventListener('input', () => {
     state.effects[key] = +el.value;
     if(v) v.textContent = el.value + (suffix||'');
@@ -713,9 +852,8 @@ function togglePlay(){
   state.playing = !state.playing;
   $('#progPlay').textContent = state.playing ? '⏸' : '▶';
   if(state.playing){
-    const active = state.tracks.V1.concat(state.tracks.V2)
-      .find(c => state.playhead >= c.start && state.playhead <= c.start + c.duration);
-    if(active && active.kind === 'video') getVideo(active.src).play().catch(()=>{});
+    const all = state.tracks.V1.concat(state.tracks.V2);
+    all.forEach(c => { if(c.kind==='video') getVideo(c.src).play().catch(()=>{}); });
     lastT = performance.now();
     rafId = requestAnimationFrame(loop);
   } else {
@@ -735,21 +873,14 @@ function loop(t){
 }
 $('#progPlay').addEventListener('click', togglePlay);
 
-/* ================ IMPORT BUTTONS ================ */
+/* ================ BUTTONS ================ */
 const fileInput = $('#fileInput');
-$('#importBtn').addEventListener('click', () => {
-  LOG('Import clicked');
-  fileInput.value = '';
-  fileInput.click();
-});
-fileInput.addEventListener('change', e => {
-  LOG('input change:', e.target.files.length, 'file(s)');
-  importFiles([...e.target.files]);
-});
+$('#importBtn').addEventListener('click', () => { fileInput.value=''; fileInput.click(); });
+fileInput.addEventListener('change', e => importFiles([...e.target.files]));
+
 $('#addToTLBtn').addEventListener('click', () => {
-  LOG('Add-to-Timeline clicked. selectedAsset =', state.selectedAsset);
   const a = state.project.find(x => x.id === state.selectedAsset) || state.project[0];
-  if(!a){ alert('لا يوجد ملف في Project — استورد أولاً'); return; }
+  if(!a){ alert('لا يوجد ملف في Project'); return; }
   state.selectedAsset = a.id;
   addAssetToTimeline(a);
 });
@@ -760,21 +891,15 @@ $('#deleteBtn').addEventListener('click', () => {
   renderProject(); updateStatus();
 });
 
-/* ================ DESKTOP DRAG-DROP ================ */
+/* ================ DESKTOP DROP ================ */
 const projPanel = $('#projectPanel');
 ['dragenter','dragover'].forEach(ev =>
-  projPanel.addEventListener(ev, e => {
-    e.preventDefault(); e.stopPropagation();
-    projPanel.classList.add('drop-active');
-  }));
+  projPanel.addEventListener(ev, e => { e.preventDefault(); e.stopPropagation(); projPanel.classList.add('drop-active'); }));
 ['dragleave','dragend'].forEach(ev =>
-  projPanel.addEventListener(ev, e => {
-    if(e.target === projPanel) projPanel.classList.remove('drop-active');
-  }));
+  projPanel.addEventListener(ev, e => { if(e.target === projPanel) projPanel.classList.remove('drop-active'); }));
 projPanel.addEventListener('drop', e => {
   e.preventDefault(); e.stopPropagation();
   projPanel.classList.remove('drop-active');
-  LOG('drop event — files:', e.dataTransfer.files.length);
   importFiles([...e.dataTransfer.files]);
 });
 document.addEventListener('dragover', e => e.preventDefault());
@@ -784,18 +909,18 @@ document.addEventListener('drop', e => e.preventDefault());
 function updateStatus(){
   const total = TRACKS.reduce((s,n) => s + state.tracks[n].length, 0);
   $('#statusBar').textContent =
-    `Project: ${state.project.length} | Timeline clips: ${total} | Ready`;
+    `Project: ${state.project.length} | Clips: ${total} | Target: ${state.targetTrack} | Playhead: ${tc(state.playhead)}`;
 }
 
 /* ================ INIT ================ */
 function init(){
-  LOG('init start');
+  LOG('init');
+  $('#targetLabel').textContent = state.targetTrack;
   renderProject();
   renderTimeline();
   renderProgram();
   updateStatus();
-  LOG('init done — app ready ✓');
-  setTimeout(() => LOG('TIPS: اضغط Import أو اسحب ملفات على Project Panel ثم دبل كليك لإضافتها للتايملاين'), 500);
+  LOG('ready ✓ — جرّب: اختر مقطعًا، حرّك الخط الأزرق، ثم اضغط ✂ Split');
 }
 document.readyState === 'loading'
   ? document.addEventListener('DOMContentLoaded', init)
