@@ -11,7 +11,7 @@
 --accent:#4a9eff;--accent-hover:#6bb0ff;
 --video-clip:#3d6b9a;--audio-clip:#3d6b4a;--text-clip:#8a4a9a;--logo-clip:#b06a1a;
 --selected:#ffcc00;--playhead:#4a9eff;--lane:#1e1e1e;--lane-alt:#202020;--target:#ff9500;
---brand:#c9a961;--brand-dark:#8a7530;--export:#22a85c;--export-hover:#2dc46e;--transition:#ffb020}
+--brand:#c9a961;--brand-dark:#8a7530;--export:#22a85c;--export-hover:#2dc46e;--transition:#ffb020;--reverse:#e63946}
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{width:100vw;height:100vh;overflow:hidden;background:var(--bg);color:var(--text);
 font-family:'Segoe UI','Cairo',Tahoma,sans-serif;font-size:11px;user-select:none}
@@ -121,7 +121,9 @@ font-family:'Segoe UI','Cairo',Tahoma,sans-serif;font-size:11px;user-select:none
 .lane.target::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--target);z-index:2}
 .clip{position:absolute;top:3px;height:38px;border-radius:3px;overflow:hidden;cursor:pointer;border:1px solid transparent;display:flex;flex-direction:column;font-size:10px;color:#eaeaea}
 .clip.video{background:var(--video-clip);border-color:#5a8bc0}
+.clip.video.rev{background:linear-gradient(90deg,#6b3a5a,#8a3a4a);border-color:#c05a6a}
 .clip.audio{background:var(--audio-clip);border-color:#5a8b6a;height:34px;top:5px}
+.clip.audio.rev{background:linear-gradient(90deg,#6b5a3a,#8a4a3a);border-color:#c07a5a}
 .clip.text{background:var(--text-clip);border-color:#b06ac0}
 .clip.logo{background:var(--logo-clip);border-color:#e0a04a}
 .clip.selected{box-shadow:0 0 0 2px var(--selected);z-index:5}
@@ -134,7 +136,6 @@ font-family:'Segoe UI','Cairo',Tahoma,sans-serif;font-size:11px;user-select:none
 .clip.logo .strip{background-image:repeating-linear-gradient(45deg,transparent 0,transparent 8px,rgba(255,255,255,.1) 8px,rgba(255,255,255,.1) 16px)}
 .clip.audio .strip{background:transparent}
 .clip .waveform-canvas{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none}
-/* Transition markers between adjacent video clips */
 .transition-marker{position:absolute;top:8px;height:30px;width:22px;background:linear-gradient(180deg,var(--transition),#c98a10);border-radius:2px;cursor:pointer;z-index:6;display:flex;align-items:center;justify-content:center;color:#1a1a1a;font-size:11px;font-weight:900;box-shadow:0 2px 4px rgba(0,0,0,.4);border:1px solid #8a6a10}
 .transition-marker:hover{background:#ffc940;transform:scale(1.05)}
 .transition-marker.empty{background:#3a3020;color:#ffb020;border-color:#5a4020;opacity:.7}
@@ -193,7 +194,7 @@ select.track-select{background:#1c1c1c;color:#ddd;border:1px solid #444;border-r
     <div class="menu">File</div><div class="menu">Edit</div><div class="menu">Clip</div>
     <div class="menu">Sequence</div><div class="menu">Window</div><div class="menu">Help</div>
     <div class="spacer"></div>
-    <div class="version">Studio v3.0</div>
+    <div class="version">Studio v4.1</div>
     <div class="status" id="statusBar">loading…</div>
   </div>
 
@@ -295,7 +296,6 @@ const LOG=(...a)=>console.log('[Hanta]',...a);
 const pad2=n=>String(n).padStart(2,'0');
 function tc(sec){sec=Math.max(0,sec||0);const h=Math.floor(sec/3600),m=Math.floor((sec%3600)/60),s=Math.floor(sec%60),f=Math.floor((sec%1)*30);return `${pad2(h)}:${pad2(m)}:${pad2(s)}:${pad2(f)}`;}
 const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
-const lerp=(a,b,t)=>a+(b-a)*t;
 function uid(p){return p+Math.random().toString(36).slice(2,9);}
 
 /* ========================================================
@@ -305,25 +305,15 @@ const TRACKS=['T1','L1','V2','V1','A1','A2'];
 const TRACK_INFO={T1:{type:'text'},L1:{type:'logo'},V2:{type:'video'},V1:{type:'video'},A1:{type:'audio'},A2:{type:'audio'}};
 
 const TRANSITIONS=[
-  {id:'none',name:'بدون'},
-  {id:'fade',name:'تلاشي'},
-  {id:'dissolve',name:'دمج'},
-  {id:'slide-left',name:'انزلاق ←'},
-  {id:'slide-right',name:'انزلاق →'},
-  {id:'zoom',name:'تكبير'},
-  {id:'wipe',name:'مسح'}
+  {id:'none',name:'بدون'},{id:'fade',name:'تلاشي'},{id:'dissolve',name:'دمج'},
+  {id:'slide-left',name:'انزلاق ←'},{id:'slide-right',name:'انزلاق →'},
+  {id:'zoom',name:'تكبير'},{id:'wipe',name:'مسح'}
 ];
 const TEXT_ANIMATIONS=[
-  {id:'none',name:'بدون'},
-  {id:'typewriter',name:'آلة كاتبة'},
-  {id:'fade',name:'ظهور تدريجي'},
-  {id:'slide-left',name:'دخول من اليسار'},
-  {id:'slide-right',name:'دخول من اليمين'},
-  {id:'slide-up',name:'دخول من الأسفل'},
-  {id:'slide-down',name:'دخول من الأعلى'},
-  {id:'zoom',name:'تكبير'},
-  {id:'bounce',name:'نبض'},
-  {id:'rotate',name:'دوران'}
+  {id:'none',name:'بدون'},{id:'typewriter',name:'آلة كاتبة'},{id:'fade',name:'ظهور تدريجي'},
+  {id:'slide-left',name:'دخول من اليسار'},{id:'slide-right',name:'دخول من اليمين'},
+  {id:'slide-up',name:'دخول من الأسفل'},{id:'slide-down',name:'دخول من الأعلى'},
+  {id:'zoom',name:'تكبير'},{id:'bounce',name:'نبض'},{id:'rotate',name:'دوران'}
 ];
 
 const state={
@@ -335,16 +325,13 @@ const state={
   muted:{A1:false,A2:false},solo:{A1:false,A2:false},
   chroma:{on:false,color:'#00ff00',tol:40},
   effects:{opacity:100,brightness:100,contrast:100,saturation:100},
-  masterVideoVolume:100,
-  masterMusicVolume:100
+  masterVideoVolume:100,masterMusicVolume:100
 };
 
 /* ========================================================
    MEDIA POOLS & WAVEFORMS
    ======================================================== */
-const videoPool={},audioPool={};
-const waveformCache={}; // src -> array of peaks
-
+const videoPool={},audioPool={},waveformCache={};
 function getVideo(src){
   if(!videoPool[src]){
     const v=document.createElement('video');
@@ -376,35 +363,27 @@ async function computeWaveform(src,peaks=180){
     const block=Math.floor(data.length/peaks);
     const result=[];
     for(let i=0;i<peaks;i++){
-      let max=0;
-      const start=i*block;
-      const end=Math.min(start+block,data.length);
-      for(let j=start;j<end;j+=4){
-        const v=Math.abs(data[j]);
-        if(v>max)max=v;
-      }
+      let max=0;const start=i*block;const end=Math.min(start+block,data.length);
+      for(let j=start;j<end;j+=4){const v=Math.abs(data[j]);if(v>max)max=v;}
       result.push(max);
     }
-    waveformCache[src]=result;
-    return result;
+    waveformCache[src]=result;return result;
   }catch(e){console.warn('waveform fail',e);return null;}
 }
-
-function drawWaveform(canvas,peaks,color='#a8e6b8'){
+function drawWaveform(canvas,peaks,color='#a8e6b8',reverse=false){
   if(!peaks)return;
   const ctx=canvas.getContext('2d');
   const W=canvas.width,H=canvas.height;
   ctx.clearRect(0,0,W,H);
   const midY=H/2;
-  ctx.strokeStyle=color;
-  ctx.lineWidth=1;
+  ctx.strokeStyle=color;ctx.lineWidth=1;
   ctx.beginPath();
   const step=W/peaks.length;
   for(let i=0;i<peaks.length;i++){
     const x=i*step;
-    const amp=(peaks[i]||0)*midY*0.9;
-    ctx.moveTo(x,midY-amp);
-    ctx.lineTo(x,midY+amp);
+    const idx=reverse?(peaks.length-1-i):i;
+    const amp=(peaks[idx]||0)*midY*0.9;
+    ctx.moveTo(x,midY-amp);ctx.lineTo(x,midY+amp);
   }
   ctx.stroke();
 }
@@ -421,10 +400,8 @@ function ensureAudioGraph(){
     videoGain=audioCtx.createGain();
     musicGain=audioCtx.createGain();
     exportDest=audioCtx.createMediaStreamDestination();
-    videoGain.connect(audioCtx.destination);
-    videoGain.connect(exportDest);
-    musicGain.connect(audioCtx.destination);
-    musicGain.connect(exportDest);
+    videoGain.connect(audioCtx.destination);videoGain.connect(exportDest);
+    musicGain.connect(audioCtx.destination);musicGain.connect(exportDest);
     videoGain.gain.value=state.masterVideoVolume/100;
     musicGain.gain.value=state.masterMusicVolume/100;
     Object.values(videoPool).forEach(v=>hookAudio(v,'video'));
@@ -432,13 +409,11 @@ function ensureAudioGraph(){
   }catch(e){console.warn('audio graph failed',e);}
 }
 function hookAudio(el,kind){
-  if(!audioCtx)return;
-  if(hookedElements.has(el))return;
+  if(!audioCtx||hookedElements.has(el))return;
   try{
     const src=audioCtx.createMediaElementSource(el);
     const gain=kind==='video'?videoGain:musicGain;
-    src.connect(gain);
-    hookedElements.add(el);
+    src.connect(gain);hookedElements.add(el);
   }catch(e){}
 }
 
@@ -496,7 +471,6 @@ async function importFiles(files){
     else if(kind==='video'){const{duration,thumb}=await probeVideo(src);asset.duration=duration;asset.thumb=thumb;asset.status='ready';}
     else{
       asset.duration=await probeAudio(src);asset.status='ready';
-      // Compute waveform in background
       computeWaveform(src).then(()=>{renderTimeline();});
     }
     state.project.push(asset);renderProject();updateStatus();
@@ -548,10 +522,10 @@ function addAssetToTimeline(asset){
   const trackName=resolveTargetTrack(asset);
   const lane=state.tracks[trackName];
   const start=lane.reduce((m,c)=>Math.max(m,c.start+c.duration),0);
+  const srcDur=asset.duration||5;
   const clip={id:uid('c_'),assetId:asset.id,name:asset.name,src:asset.src,
-    kind:asset.kind,type:asset.kind,track:trackName,start,duration:asset.duration||5,
-    volume:100,
-    // Transition (for video clips): fade in at start, fade out at end
+    kind:asset.kind,type:asset.kind,track:trackName,start,duration:srcDur,
+    sourceDuration:srcDur,speed:1.0,reverse:false,volume:100,
     transIn:{type:'none',duration:0.5},
     transOut:{type:'none',duration:0.5}
   };
@@ -634,22 +608,26 @@ function renderTimeline(){
     state.tracks[name].forEach(clip=>{
       const el=document.createElement('div');
       el.className='clip '+info.type;el.dataset.id=clip.id;el.dataset.track=name;
+      if(clip.reverse)el.classList.add('rev');
       el.style.left=(clip.start*state.zoom)+'px';el.style.width=Math.max(6,clip.duration*state.zoom)+'px';
       if(state.selection===clip.id)el.classList.add('selected');
       const animBadge=clip.animation&&clip.animation.type!=='none'
         ?`<span class="anim-badge">✨ ${TEXT_ANIMATIONS.find(a=>a.id===clip.animation.type)?.name||''}</span>`:'';
       const transBadge=clip.transIn&&clip.transIn.type!=='none'
         ?`<span class="trans-badge">⇄ ${TRANSITIONS.find(t=>t.id===clip.transIn.type)?.name||''}</span>`:'';
+      const speedBadge=(clip.speed&&clip.speed!==1)
+        ?`<span class="trans-badge" style="background:#22a85c;color:#fff">⚡ ${clip.speed.toFixed(2)}x</span>`:'';
+      const reverseBadge=clip.reverse
+        ?`<span class="trans-badge" style="background:var(--reverse);color:#fff">🔄 معكوس</span>`:'';
       let dn=clip.name;
       if(clip.type==='text')dn='📝 '+clip.text;
       else if(clip.type==='logo')dn='🖼 لوغو';
       else if(info.type==='audio')dn='♫ '+clip.name;
-      el.innerHTML=`<div class="clip-name"><span class="track-badge">${name}</span>${dn}${transBadge}${animBadge}</div>
+      el.innerHTML=`<div class="clip-name"><span class="track-badge">${name}</span>${dn}${transBadge}${speedBadge}${reverseBadge}${animBadge}</div>
         <div class="strip">${info.type==='audio'?'<canvas class="waveform-canvas"></canvas>':''}</div>`;
       bindClipEvents(el,clip,name);
       lane.appendChild(el);
     });
-    // Transition markers between adjacent video clips
     if(info.type==='video'){
       const sorted=state.tracks[name].slice().sort((a,b)=>a.start-b.start);
       for(let i=0;i<sorted.length-1;i++){
@@ -676,14 +654,14 @@ function renderTimeline(){
       const ok=(a.kind==='audio'&&info.type==='audio')||(a.kind!=='audio'&&info.type==='video');
       if(!ok){showError(`لا يمكن وضع ${a.kind} في مسار ${info.type}`);return;}
       const rect=tracks.getBoundingClientRect();const start=Math.max(0,(e.clientX-rect.left)/state.zoom);
+      const sd=a.duration||5;
       state.tracks[name].push({id:uid('c_'),assetId:a.id,name:a.name,src:a.src,kind:a.kind,type:a.kind,
-        track:name,start,duration:a.duration||5,volume:100,
+        track:name,start,duration:sd,sourceDuration:sd,speed:1.0,reverse:false,volume:100,
         transIn:{type:'none',duration:0.5},transOut:{type:'none',duration:0.5}});
       renderTimeline();renderProgram();updateStatus();});
     tracks.appendChild(lane);
   });
   updatePlayhead();updateTC();
-  // Draw waveforms after DOM update
   requestAnimationFrame(()=>{
     state.tracks.A1.concat(state.tracks.A2).forEach(clip=>{
       const el=tracks.querySelector(`.clip[data-id="${clip.id}"] canvas`);
@@ -691,8 +669,8 @@ function renderTimeline(){
         const rect=el.parentElement.getBoundingClientRect();
         el.width=rect.width;el.height=rect.height;
         const peaks=waveformCache[clip.src];
-        if(peaks)drawWaveform(el,peaks,clip.track==='A1'?'#a8e6b8':'#7ad4a0');
-        else computeWaveform(clip.src).then(p=>{if(p)drawWaveform(el,p);});
+        if(peaks)drawWaveform(el,peaks,clip.track==='A1'?'#a8e6b8':'#7ad4a0',clip.reverse);
+        else computeWaveform(clip.src).then(p=>{if(p)drawWaveform(el,p,'#a8e6b8',clip.reverse);});
       }
     });
   });
@@ -714,11 +692,10 @@ function renderRuler(){
 let activeDrag=null;
 document.addEventListener('mousemove',e=>{
   if(!activeDrag)return;const dx=e.clientX-activeDrag.startX;
-  activeClipUpdate(activeDrag.clip,Math.max(0,activeDrag.origStart+dx/state.zoom));
+  activeDrag.clip.start=Math.max(0,activeDrag.origStart+dx/state.zoom);
   renderTimeline();updateStatus();
 });
 document.addEventListener('mouseup',()=>{if(activeDrag){activeDrag=null;document.body.style.cursor='';}});
-function activeClipUpdate(clip,newStart){clip.start=newStart;}
 function bindClipEvents(el,clip,trackName){
   el.addEventListener('mousedown',e=>{
     if(state.locked[trackName])return;e.stopPropagation();
@@ -801,7 +778,6 @@ function renderEffectControls(){
 
   body.innerHTML=html;
 
-  // Mixer
   $('#masterVideoVol')?.addEventListener('input',e=>{state.masterVideoVolume=+e.target.value;$('#masterVideoVal').textContent=e.target.value+'%';
     if(videoGain)videoGain.gain.value=state.masterVideoVolume/100;});
   $('#masterMusicVol')?.addEventListener('input',e=>{state.masterMusicVolume=+e.target.value;$('#masterMusicVal').textContent=e.target.value+'%';
@@ -819,6 +795,9 @@ function renderVideoControls(clip){
   const transOut=clip.transOut||{type:'none',duration:0.5};
   const inButtons=TRANSITIONS.map(t=>`<button data-trans="in" data-type="${t.id}" class="${transIn.type===t.id?'active':''}" type="button">${t.name}</button>`).join('');
   const outButtons=TRANSITIONS.map(t=>`<button data-trans="out" data-type="${t.id}" class="${transOut.type===t.id?'active':''}" type="button">${t.name}</button>`).join('');
+  const sp=clip.speed||1;
+  const srcDur=clip.sourceDuration||clip.duration;
+  const speedPresets=[0.25,0.5,1,1.5,2,3].map(s=>`<button data-speed="${s}" type="button" class="${Math.abs(sp-s)<0.01?'active':''}">${s}x</button>`).join('');
   return `
     <div class="eff-item"><div class="eff-title">الشفافية</div>
       <div class="eff-ctrl"><div class="eff-row"><label>Opacity</label>
@@ -837,6 +816,32 @@ function renderVideoControls(clip){
         <div class="eff-row"><label>تفعيل</label><input type="checkbox" id="chromaToggle" ${state.chroma.on?'checked':''}></div>
         <div class="eff-row"><label>اللون</label><input type="color" id="chromaColorPicker" value="${state.chroma.color}"></div>
         <div class="eff-row"><label>الحساسية</label><input type="range" id="chromaTolRange" min="10" max="150" value="${state.chroma.tol}"><span class="val" id="chromaTolVal">${state.chroma.tol}</span></div>
+      </div>
+    </div>
+    <div class="eff-item">
+      <div class="eff-title" style="background:linear-gradient(90deg,#1a3a2a,#242424);color:#5ee89f;border-bottom:1px solid #1f5c3a">⚡ السرعة (Speed)</div>
+      <div class="eff-ctrl">
+        <div class="eff-row"><label>المعامل</label>
+          <input type="range" id="vidSpeed" min="0.25" max="3" step="0.05" value="${sp}">
+          <span class="val" style="color:#5ee89f" id="vidSpeedVal">${sp.toFixed(2)}x</span>
+        </div>
+        <div class="eff-grid" id="vidSpeedPresets">${speedPresets}</div>
+        <div style="color:#7ad4a0;font-size:10px;margin-top:4px;line-height:1.5">
+          المدة على التايملاين: <b id="vidSpeedDur">${clip.duration.toFixed(2)}s</b><br>
+          <span style="color:#666">الأصل: ${srcDur.toFixed(2)}s ← مقسوم على ${sp.toFixed(2)}</span>
+        </div>
+      </div>
+    </div>
+    <div class="eff-item">
+      <div class="eff-title" style="background:linear-gradient(90deg,#3a1a1a,#242424);color:#ff7a7a;border-bottom:1px solid #5c1f1f">🔄 التشغيل المعكوس <span class="badge" style="background:var(--reverse)">REVERSE</span></div>
+      <div class="eff-ctrl">
+        <div class="eff-row"><label>تفعيل</label>
+          <input type="checkbox" id="vidReverse" ${clip.reverse?'checked':''}>
+          <span style="color:${clip.reverse?'#ff7a7a':'#666'};font-size:10px;margin-right:8px">${clip.reverse?'▶◀ يعمل معكوسًا':'▶ يعمل طبيعيًا'}</span>
+        </div>
+        <div style="color:#888;font-size:10px;margin-top:4px;line-height:1.5">
+          العكس قد يبدو متقطعًا قليلًا لأن المتصفح يعيد ترتيب الإطارات لحظيًا.
+        </div>
       </div>
     </div>
     <div class="eff-item">
@@ -875,6 +880,37 @@ function bindVideoControls(clip){
   $('#chromaColorPicker').addEventListener('input',e=>{state.chroma.color=e.target.value;renderProgram();});
   $('#chromaTolRange').addEventListener('input',e=>{state.chroma.tol=+e.target.value;$('#chromaTolVal').textContent=e.target.value;renderProgram();});
 
+  // Speed
+  const applySpeed=(spd)=>{
+    spd=clamp(spd,0.1,4);
+    const srcDur=clip.sourceDuration||(clip.duration*(clip.speed||1));
+    clip.sourceDuration=srcDur;
+    clip.speed=spd;
+    clip.duration=srcDur/spd;
+    const v=getVideo(clip.src);
+    v.playbackRate=clamp(spd,0.25,4);
+    renderTimeline();renderProgram();
+    if(state.selection===clip.id)renderEffectControls();
+  };
+  $('#vidSpeed').addEventListener('input',e=>{
+    const spd=+e.target.value;
+    $('#vidSpeedVal').textContent=spd.toFixed(2)+'x';
+    const srcDur=clip.sourceDuration||(clip.duration*(clip.speed||1));
+    $('#vidSpeedDur').textContent=(srcDur/spd).toFixed(2)+'s';
+    $$('#effBody [data-speed]').forEach(b=>b.classList.toggle('active',Math.abs(+b.dataset.speed-spd)<0.01));
+    applySpeed(spd);
+  });
+  $$('#effBody [data-speed]').forEach(b=>b.addEventListener('click',()=>applySpeed(+b.dataset.speed)));
+
+  // Reverse
+  $('#vidReverse').addEventListener('change',e=>{
+    clip.reverse=e.target.checked;
+    if(clip.reverse){const v=getVideo(clip.src);try{v.pause();}catch(_){}}
+    renderTimeline();renderProgram();syncAudioPlayback();
+    renderEffectControls();
+  });
+
+  // Transitions
   $$('#effBody [data-trans="in"]').forEach(b=>b.addEventListener('click',()=>{
     clip.transIn={type:b.dataset.type,duration:clip.transIn.duration};
     renderEffectControls();renderTimeline();renderProgram();
@@ -982,6 +1018,9 @@ function bindLogoControls(clip){
 
 /* ---- AUDIO ---- */
 function renderAudioControls(clip){
+  const sp=clip.speed||1;
+  const srcDur=clip.sourceDuration||clip.duration;
+  const speedPresets=[0.25,0.5,1,1.5,2,3].map(s=>`<button data-speed="${s}" type="button" class="${Math.abs(sp-s)<0.01?'active':''}">${s}x</button>`).join('');
   return `
     <div class="eff-item"><div class="eff-title">♫ صوت <span class="badge" style="background:#2dc46e">${clip.track}</span></div>
       <div class="eff-ctrl"><div style="color:#aaa;font-size:10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${clip.name}">${clip.name}</div></div>
@@ -998,6 +1037,32 @@ function renderAudioControls(clip){
         </div>
       </div>
     </div>
+    <div class="eff-item">
+      <div class="eff-title" style="background:linear-gradient(90deg,#1a3a2a,#242424);color:#5ee89f;border-bottom:1px solid #1f5c3a">⚡ السرعة (Speed)</div>
+      <div class="eff-ctrl">
+        <div class="eff-row"><label>المعامل</label>
+          <input type="range" id="audSpeed" min="0.25" max="3" step="0.05" value="${sp}">
+          <span class="val" style="color:#5ee89f" id="audSpeedVal">${sp.toFixed(2)}x</span>
+        </div>
+        <div class="eff-grid" id="audSpeedPresets">${speedPresets}</div>
+        <div style="color:#7ad4a0;font-size:10px;margin-top:4px;line-height:1.5">
+          المدة على التايملاين: <b id="audSpeedDur">${clip.duration.toFixed(2)}s</b><br>
+          <span style="color:#666">الأصل: ${srcDur.toFixed(2)}s ← مقسوم على ${sp.toFixed(2)}</span>
+        </div>
+      </div>
+    </div>
+    <div class="eff-item">
+      <div class="eff-title" style="background:linear-gradient(90deg,#3a1a1a,#242424);color:#ff7a7a;border-bottom:1px solid #5c1f1f">🔄 التشغيل المعكوس <span class="badge" style="background:var(--reverse)">REVERSE</span></div>
+      <div class="eff-ctrl">
+        <div class="eff-row"><label>تفعيل</label>
+          <input type="checkbox" id="audReverse" ${clip.reverse?'checked':''}>
+          <span style="color:${clip.reverse?'#ff7a7a':'#666'};font-size:10px;margin-right:8px">${clip.reverse?'▶◀ يعمل معكوسًا':'▶ يعمل طبيعيًا'}</span>
+        </div>
+        <div style="color:#888;font-size:10px;margin-top:4px;line-height:1.5">
+          الصوت المعكوس قد يكون متقطعًا.
+        </div>
+      </div>
+    </div>
     <div class="eff-item"><div class="eff-title">المدة والموضع</div>
       <div class="eff-ctrl">
         <div class="eff-row"><label>البداية</label><input type="range" id="audStart" min="0" max="300" step="0.1" value="${clip.start.toFixed(1)}"><span class="val" id="audStartVal">${tc(clip.start)}</span></div>
@@ -1011,12 +1076,42 @@ function bindAudioControls(clip){
   $$('#effBody [data-vol]').forEach(b=>b.addEventListener('click',()=>{
     clip.volume=+b.dataset.vol;$('#clipVol').value=clip.volume;$('#clipVolVal').textContent=clip.volume+'%';
     const a=getAudio(clip.src);a.volume=Math.min(1,(clip.volume||100)/100);}));
+
+  const applySpeed=(spd)=>{
+    spd=clamp(spd,0.1,4);
+    const srcDur=clip.sourceDuration||(clip.duration*(clip.speed||1));
+    clip.sourceDuration=srcDur;
+    clip.speed=spd;
+    clip.duration=srcDur/spd;
+    const a=getAudio(clip.src);
+    a.playbackRate=clamp(spd,0.25,4);
+    renderTimeline();renderProgram();
+    if(state.selection===clip.id)renderEffectControls();
+  };
+  $('#audSpeed').addEventListener('input',e=>{
+    const spd=+e.target.value;
+    $('#audSpeedVal').textContent=spd.toFixed(2)+'x';
+    const srcDur=clip.sourceDuration||(clip.duration*(clip.speed||1));
+    $('#audSpeedDur').textContent=(srcDur/spd).toFixed(2)+'s';
+    $$('#effBody [data-speed]').forEach(b=>b.classList.toggle('active',Math.abs(+b.dataset.speed-spd)<0.01));
+    applySpeed(spd);
+  });
+  $$('#effBody [data-speed]').forEach(b=>b.addEventListener('click',()=>applySpeed(+b.dataset.speed)));
+
+  $('#audReverse').addEventListener('change',e=>{
+    clip.reverse=e.target.checked;
+    const a=getAudio(clip.src);
+    if(clip.reverse){try{a.pause();}catch(_){}}
+    renderTimeline();renderProgram();syncAudioPlayback();
+    renderEffectControls();
+  });
+
   $('#audStart').addEventListener('input',e=>{clip.start=+e.target.value;$('#audStartVal').textContent=tc(clip.start);renderTimeline();renderProgram();});
   $('#audDur').addEventListener('input',e=>{clip.duration=+e.target.value;$('#audDurVal').textContent=(+e.target.value).toFixed(1)+'s';renderTimeline();renderProgram();});
 }
 
 /* ========================================================
-   PROGRAM MONITOR — RENDER (with transitions & animations)
+   PROGRAM MONITOR
    ======================================================== */
 const progCanvas=$('#programCanvas');const progCtx=progCanvas.getContext('2d');
 const chromaCanvas=document.createElement('canvas');const chromaCtx=chromaCanvas.getContext('2d',{willReadFrequently:true});
@@ -1025,11 +1120,10 @@ function getActiveClips(trackName){
   return state.tracks[trackName].filter(c=>state.playhead>=c.start&&state.playhead<=c.start+c.duration);
 }
 function getActiveVideoClipsIncludingTransitions(trackName){
-  // Return active clips + any nearby clips whose transition covers current time
   const all=state.tracks[trackName];
   return all.filter(c=>{
     if(state.playhead>=c.start&&state.playhead<=c.start+c.duration)return true;
-    // Include clip if we're in its transition window
+    if(c.reverse&&state.playhead>=c.start-0.1&&state.playhead<=c.start+c.duration+0.1)return true;
     const tin=c.transIn||{type:'none',duration:0};
     const tout=c.transOut||{type:'none',duration:0};
     if(tin.type!=='none'&&state.playhead>=c.start-tin.duration&&state.playhead<c.start)return true;
@@ -1045,10 +1139,18 @@ function drawVideoClipToCanvas(targetCtx,W,H,clip){
     else img.onload=()=>drawContain(targetCtx,img,W,H);
   }else if(clip.kind==='video'){
     const v=getVideo(clip.src);
-    const local=state.playhead-clip.start;
+    const speed=clip.speed||1;
+    const srcDur=clip.sourceDuration||clip.duration;
+    const elapsed=state.playhead-clip.start;
+
+    let local;
+    if(clip.reverse){local=srcDur-(elapsed*speed);}
+    else{local=elapsed*speed;}
+
     if(v.readyState>=1){
-      const target=clamp(local,0,clip.duration);
-      if(Math.abs(v.currentTime-target)>0.15){try{v.currentTime=target;}catch(_){}}
+      const target=clamp(local,0,srcDur);
+      const threshold=clip.reverse?0.08:0.15;
+      if(Math.abs(v.currentTime-target)>threshold){try{v.currentTime=target;}catch(_){}}
     }
     if(v.readyState>=2){
       if(state.chroma.on)drawWithChroma(targetCtx,v,W,H);
@@ -1066,7 +1168,6 @@ function renderProgram(){
   progCtx.globalAlpha=fx.opacity/100;
   progCtx.filter=`brightness(${fx.brightness}%) contrast(${fx.contrast}%) saturate(${fx.saturation}%)`;
 
-  // Render V1 and V2 separately (V2 on top)
   const layers=[];
   if(state.visible.V1)layers.push({name:'V1',z:1});
   if(state.visible.V2)layers.push({name:'V2',z:2});
@@ -1079,25 +1180,19 @@ function renderProgram(){
       const transOut=clip.transOut||{type:'none',duration:0};
       const clipEnd=clip.start+clip.duration;
 
-      // Check if we're in transIn window
       if(transIn.type!=='none'&&state.playhead<clip.start&&state.playhead>=clip.start-transIn.duration){
         const p=clamp((state.playhead-(clip.start-transIn.duration))/transIn.duration,0,1);
         drawTransition(progCtx,W,H,clip,transIn.type,p,true);
-      }
-      // Check if in transOut window
-      else if(transOut.type!=='none'&&state.playhead>clipEnd&&state.playhead<=clipEnd+transOut.duration){
+      }else if(transOut.type!=='none'&&state.playhead>clipEnd&&state.playhead<=clipEnd+transOut.duration){
         const p=clamp((state.playhead-clipEnd)/transOut.duration,0,1);
         drawTransition(progCtx,W,H,clip,transOut.type,p,false);
-      }
-      // Normal active
-      else if(state.playhead>=clip.start&&state.playhead<=clipEnd){
+      }else if(state.playhead>=clip.start&&state.playhead<=clipEnd){
         drawVideoClipToCanvas(progCtx,W,H,clip);
       }
     });
   });
   progCtx.restore();
 
-  // Logo
   if(state.visible.L1){
     getActiveClips('L1').forEach(clip=>{
       const img=clip.img||getImage(clip.src);
@@ -1114,7 +1209,6 @@ function renderProgram(){
       if(img.complete)draw();else img.onload=draw;
     });
   }
-  // Text
   if(state.visible.T1){
     getActiveClips('T1').forEach(clip=>{
       const anim=getAnimState(clip,state.playhead);
@@ -1146,36 +1240,27 @@ function renderProgram(){
 }
 
 function drawTransition(ctx,W,H,clip,type,p,entering){
-  // p=0 means hidden, p=1 means fully visible
   const alpha=entering?p:1-p;
   ctx.save();
   ctx.globalAlpha*=alpha;
-
   if(type==='fade'||type==='dissolve'){
     drawVideoClipToCanvas(ctx,W,H,clip);
   }else if(type==='slide-left'){
     const offset=entering?(1-p)*W:-p*W;
-    ctx.translate(offset,0);
-    drawVideoClipToCanvas(ctx,W,H,clip);
+    ctx.translate(offset,0);drawVideoClipToCanvas(ctx,W,H,clip);
   }else if(type==='slide-right'){
     const offset=entering?-(1-p)*W:p*W;
-    ctx.translate(offset,0);
-    drawVideoClipToCanvas(ctx,W,H,clip);
+    ctx.translate(offset,0);drawVideoClipToCanvas(ctx,W,H,clip);
   }else if(type==='zoom'){
     const scale=entering?0.3+p*0.7:1-(1-p)*0.7;
-    ctx.translate(W/2,H/2);
-    ctx.scale(scale,scale);
-    ctx.translate(-W/2,-H/2);
+    ctx.translate(W/2,H/2);ctx.scale(scale,scale);ctx.translate(-W/2,-H/2);
     drawVideoClipToCanvas(ctx,W,H,clip);
   }else if(type==='wipe'){
     const w=W*p;
     ctx.beginPath();
     if(entering){ctx.rect(0,0,w,H);}else{ctx.rect(0,0,W*(1-p),H);}
-    ctx.clip();
-    drawVideoClipToCanvas(ctx,W,H,clip);
-  }else{
-    drawVideoClipToCanvas(ctx,W,H,clip);
-  }
+    ctx.clip();drawVideoClipToCanvas(ctx,W,H,clip);
+  }else{drawVideoClipToCanvas(ctx,W,H,clip);}
   ctx.restore();
 }
 
@@ -1196,10 +1281,7 @@ function getAnimState(clip,time){
     case 'slide-up': s.offsetY=150*(1-ease); s.opacity=ease; break;
     case 'slide-down': s.offsetY=-150*(1-ease); s.opacity=ease; break;
     case 'zoom': s.scale=0.3+ease*0.7; s.opacity=ease; break;
-    case 'bounce':
-      s.scale=1+Math.sin(p*Math.PI*2)*0.15*(1-p);
-      s.opacity=Math.min(1,p*3);
-      break;
+    case 'bounce': s.scale=1+Math.sin(p*Math.PI*2)*0.15*(1-p); s.opacity=Math.min(1,p*3); break;
     case 'rotate': s.rotation=(1-ease)*-Math.PI*2; s.scale=0.3+ease*0.7; s.opacity=ease; break;
   }
   return s;
@@ -1222,7 +1304,7 @@ function drawWithChroma(ctx,video,W,H){
 }
 
 /* ========================================================
-   CANVAS DRAG (text/logo)
+   CANVAS DRAG
    ======================================================== */
 let canvasDrag=null;
 progCanvas.addEventListener('mousedown',e=>{
@@ -1272,7 +1354,17 @@ function syncAudioPlayback(){
       const isActive=state.playhead>=clip.start&&state.playhead<=clip.start+clip.duration;
       const isMain=trackName==='V1';
       v.muted=!isMain||state.muted[trackName];
-      const local=state.playhead-clip.start;
+      const speed=clip.speed||1;
+      const srcDur=clip.sourceDuration||clip.duration;
+      const elapsed=state.playhead-clip.start;
+      const reverse=clip.reverse===true;
+      if(reverse){
+        if(!v.paused){try{v.pause();}catch(_){}}
+        return;
+      }
+      const local=elapsed*speed;
+      const targetRate=clamp(speed,0.25,4);
+      if(Math.abs(v.playbackRate-targetRate)>0.01)v.playbackRate=targetRate;
       if(isActive){
         if(Math.abs(v.currentTime-local)>0.25){try{v.currentTime=local;}catch(_){}}
         if(state.playing&&v.paused)v.play().catch(()=>{});
@@ -1285,8 +1377,23 @@ function syncAudioPlayback(){
       const a=getAudio(clip.src);
       a.volume=Math.min(1,(clip.volume??100)/100);
       a.muted=state.muted[trackName];
+      const speed=clip.speed||1;
+      const srcDur=clip.sourceDuration||clip.duration;
+      const elapsed=state.playhead-clip.start;
       const isActive=state.playhead>=clip.start&&state.playhead<=clip.start+clip.duration;
-      const local=state.playhead-clip.start;
+      if(clip.reverse){
+        const reverseLocal=srcDur-(elapsed*speed);
+        if(isActive){
+          const target=clamp(reverseLocal,0,srcDur);
+          if(Math.abs(a.currentTime-target)>0.12){try{a.currentTime=target;}catch(_){}}
+          if(state.playing&&a.paused)a.play().catch(()=>{});
+          if(!state.playing&&!a.paused)a.pause();
+        }else{if(!a.paused)a.pause();}
+        return;
+      }
+      const targetRate=clamp(speed,0.25,4);
+      if(Math.abs(a.playbackRate-targetRate)>0.01)a.playbackRate=targetRate;
+      const local=elapsed*speed;
       if(isActive){
         if(Math.abs(a.currentTime-local)>0.25){try{a.currentTime=local;}catch(_){}}
         if(state.playing&&a.paused)a.play().catch(()=>{});
@@ -1361,7 +1468,7 @@ function updateStatus(){
 }
 
 /* ========================================================
-   EXPORT — WebM first, then MP4 via ffmpeg.wasm
+   EXPORT
    ======================================================== */
 $('#exportBtn').addEventListener('click',exportFinalProject);
 
@@ -1483,11 +1590,11 @@ function downloadBlob(blob,ext){
    INIT
    ======================================================== */
 function init(){
-  LOG('init v3.0');
+  LOG('init v4.1');
   $('#targetLabel').textContent=state.targetTrack;
   renderProject();renderTimeline();renderProgram();renderEffectControls();updateStatus();
   if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>renderProgram());
-  LOG('ready ✓ — جرّب: أضف فيديو، انقر على ⇄ لانتقال، أو ✨ لحركة نص');
+  LOG('ready ✓ — Speed ⚡ + Reverse 🔄 متوفرة الآن');
 }
 document.readyState==='loading'?document.addEventListener('DOMContentLoaded',init):init();
 </script>
