@@ -880,7 +880,6 @@ function bindVideoControls(clip){
   $('#chromaColorPicker').addEventListener('input',e=>{state.chroma.color=e.target.value;renderProgram();});
   $('#chromaTolRange').addEventListener('input',e=>{state.chroma.tol=+e.target.value;$('#chromaTolVal').textContent=e.target.value;renderProgram();});
 
-  // Speed
   const applySpeed=(spd)=>{
     spd=clamp(spd,0.1,4);
     const srcDur=clip.sourceDuration||(clip.duration*(clip.speed||1));
@@ -902,7 +901,6 @@ function bindVideoControls(clip){
   });
   $$('#effBody [data-speed]').forEach(b=>b.addEventListener('click',()=>applySpeed(+b.dataset.speed)));
 
-  // Reverse
   $('#vidReverse').addEventListener('change',e=>{
     clip.reverse=e.target.checked;
     if(clip.reverse){const v=getVideo(clip.src);try{v.pause();}catch(_){}}
@@ -910,7 +908,6 @@ function bindVideoControls(clip){
     renderEffectControls();
   });
 
-  // Transitions
   $$('#effBody [data-trans="in"]').forEach(b=>b.addEventListener('click',()=>{
     clip.transIn={type:b.dataset.type,duration:clip.transIn.duration};
     renderEffectControls();renderTimeline();renderProgram();
