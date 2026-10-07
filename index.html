@@ -3,75 +3,79 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Premiere Studio v2.0 - Tarek Ibrahim</title>
+<title>استوديو حنطة - جمعية حنطة الخيرية التنموية</title>
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&family=Tajawal:wght@400;700;900&family=El+Messiri:wght@400;700&family=Changa:wght@400;700;800&family=Amiri:wght@400;700&family=Almarai:wght@400;700;800&family=Roboto:wght@400;700;900&family=Montserrat:wght@400;700;900&family=Poppins:wght@400;700;900&family=Oswald:wght@400;700&family=Bebas+Neue&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#1a1a1a;--panel:#232323;--panel-head:#2b2b2b;--border:#0d0d0d;--text:#c9c9c9;
 --accent:#4a9eff;--accent-hover:#6bb0ff;
 --video-clip:#3d6b9a;--audio-clip:#3d6b4a;--text-clip:#8a4a9a;--logo-clip:#b06a1a;
---selected:#ffcc00;--playhead:#4a9eff;--lane:#1e1e1e;--lane-alt:#202020;--target:#ff9500}
+--selected:#ffcc00;--playhead:#4a9eff;--lane:#1e1e1e;--lane-alt:#202020;--target:#ff9500;
+--brand:#c9a961;--brand-dark:#8a7530;--export:#22a85c;--export-hover:#2dc46e}
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{width:100vw;height:100vh;overflow:hidden;background:var(--bg);color:var(--text);
 font-family:'Segoe UI','Cairo',Tahoma,sans-serif;font-size:11px;user-select:none}
-.app{display:grid;grid-template-rows:26px 1fr 340px;width:100vw;height:100vh;gap:1px;background:var(--border)}
-.menubar{background:#181818;display:flex;align-items:center;padding:0 8px;gap:14px;font-size:11px;color:#b8b8b8}
-.menubar .logo{background:#4a9eff;color:#0a0a0a;font-weight:800;padding:2px 7px;border-radius:3px}
-.menubar .menu{padding:3px 7px;border-radius:3px;cursor:pointer}.menubar .menu:hover{background:#2a2a2a;color:#fff}
-.menubar .spacer{flex:1}.menubar .status{color:#4a9eff;font-size:10px;font-family:Consolas,monospace}
-.middle{display:grid;grid-template-columns:250px 1fr 1fr 260px;gap:1px;background:var(--border);overflow:hidden}
+.app{display:grid;grid-template-rows:28px 1fr 340px;width:100vw;height:100vh;gap:1px;background:var(--border)}
+.menubar{background:#151515;display:flex;align-items:center;padding:0 12px;gap:6px;font-size:11px;color:#b8b8b8;border-bottom:1px solid #0a0a0a}
+.brand{display:flex;align-items:center;gap:8px;padding:3px 10px;background:linear-gradient(135deg,#2b2419,#1a1a1a);
+border:1px solid var(--brand-dark);border-radius:3px;cursor:default}
+.brand .logo-circle{width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,var(--brand),#e8c87a);
+display:flex;align-items:center;justify-content:center;color:#1a1a1a;font-weight:900;font-size:12px;font-family:'Cairo',sans-serif;box-shadow:0 0 8px rgba(201,169,97,.4)}
+.brand .brand-text{color:var(--brand);font-weight:800;font-size:12px;font-family:'Cairo',sans-serif;letter-spacing:.3px;line-height:1.1}
+.brand .brand-sub{color:#7a6a45;font-size:9px;font-weight:400;font-family:'Tajawal',sans-serif;display:block;margin-top:-1px}
+.menu{padding:4px 8px;border-radius:3px;cursor:pointer}.menu:hover{background:#2a2a2a;color:#fff}
+.menubar .spacer{flex:1}
+.menubar .status{color:var(--accent);font-size:10px;font-family:Consolas,monospace}
+.menubar .version{color:#5a5a5a;font-size:10px;font-family:Consolas,monospace}
+.middle{display:grid;grid-template-columns:250px 1fr 270px;gap:1px;background:var(--border);overflow:hidden}
 .panel{display:flex;flex-direction:column;background:var(--panel);overflow:hidden}
-.panel-header{height:26px;background:var(--panel-head);border-bottom:1px solid var(--border);
-display:flex;align-items:center;padding:0 10px;font-size:11px;font-weight:600;color:#ddd;gap:6px}
+.panel-header{height:26px;background:var(--panel-head);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 10px;font-size:11px;font-weight:600;color:#ddd;gap:6px}
 .panel-header .dot{width:7px;height:7px;border-radius:50%;background:var(--accent)}
+.panel-header .dot.brand{background:var(--brand)}
 .panel-body{flex:1;overflow:auto;position:relative}
 .proj-toolbar{display:flex;align-items:center;gap:4px;padding:5px 8px;background:#212121;border-bottom:1px solid var(--border);flex-wrap:wrap}
-.icon-btn{background:transparent;border:1px solid transparent;color:#b8b8b8;padding:3px 7px;border-radius:3px;
-cursor:pointer;font-size:12px;display:flex;align-items:center;gap:4px}
+.icon-btn{background:transparent;border:1px solid transparent;color:#b8b8b8;padding:3px 7px;border-radius:3px;cursor:pointer;font-size:12px;display:flex;align-items:center;gap:4px}
 .icon-btn:hover{background:#2e2e2e;color:#fff;border-color:#3a3a3a}
 .icon-btn.primary{background:var(--accent);color:#fff;border-color:#2b7de9;font-size:11px;padding:4px 10px}
 .icon-btn.primary:hover{background:var(--accent-hover)}
-.proj-cols{display:grid;grid-template-columns:1fr 70px;gap:8px;padding:5px 10px;background:#1c1c1c;
-border-bottom:1px solid var(--border);color:#777;font-size:10px;font-weight:600;text-transform:uppercase}
+.proj-cols{display:grid;grid-template-columns:1fr 70px;gap:8px;padding:5px 10px;background:#1c1c1c;border-bottom:1px solid var(--border);color:#777;font-size:10px;font-weight:600;text-transform:uppercase}
 .proj-list{overflow-y:auto;height:100%;min-height:100px}
-.proj-item{display:grid;grid-template-columns:32px 1fr 70px;gap:8px;padding:5px 8px;align-items:center;
-cursor:pointer;border-bottom:1px solid #1c1c1c}
+.proj-item{display:grid;grid-template-columns:32px 1fr 70px;gap:8px;padding:5px 8px;align-items:center;cursor:pointer;border-bottom:1px solid #1c1c1c}
 .proj-item:hover{background:#2a2a2a}.proj-item.selected{background:#2b4a75}
-.proj-thumb{width:32px;height:22px;background:#111;border:1px solid #333;border-radius:2px;
-display:flex;align-items:center;justify-content:center;font-size:12px;color:#777;overflow:hidden}
+.proj-thumb{width:32px;height:22px;background:#111;border:1px solid #333;border-radius:2px;display:flex;align-items:center;justify-content:center;font-size:12px;color:#777;overflow:hidden}
 .proj-thumb img{width:100%;height:100%;object-fit:cover}
 .proj-name{font-size:11px;color:#ddd;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .proj-dur{font-size:10px;color:#888;text-align:right;font-family:Consolas,monospace}
 .empty-hint{padding:20px 12px;text-align:center;color:#666;font-size:11px;line-height:1.9}
-.empty-hint b{color:#4a9eff}
+.empty-hint b{color:var(--accent)}
 .monitor-wrap{display:flex;flex-direction:column;flex:1;background:#0f0f0f;overflow:hidden}
 .monitor-canvas-wrap{flex:1;display:flex;align-items:center;justify-content:center;padding:8px;overflow:hidden}
 .monitor-canvas-wrap canvas{max-width:100%;max-height:100%;background:#000;border:1px solid #111;box-shadow:0 0 12px rgba(0,0,0,.9);cursor:crosshair}
-.monitor-ctrl{height:36px;background:var(--panel-head);border-top:1px solid var(--border);
-display:flex;align-items:center;justify-content:center;gap:8px;padding:0 8px}
+.monitor-ctrl{height:36px;background:var(--panel-head);border-top:1px solid var(--border);display:flex;align-items:center;justify-content:center;gap:8px;padding:0 8px}
 .monitor-ctrl button{background:transparent;border:none;color:#c9c9c9;cursor:pointer;padding:4px 8px;border-radius:3px;font-size:13px}
 .monitor-ctrl button:hover{background:#3a3a3a;color:#fff}
-.tc-display{font-family:Consolas,monospace;font-size:11px;color:#4a9eff;letter-spacing:.5px;margin-left:8px}
+.tc-display{font-family:Consolas,monospace;font-size:11px;color:var(--accent);letter-spacing:.5px;margin-left:8px}
 .eff-item{background:#1c1c1c;border-bottom:1px solid #111}
 .eff-title{padding:6px 10px;background:#242424;color:#ddd;font-weight:600;font-size:11px;display:flex;align-items:center;gap:6px}
 .eff-title .badge{background:var(--accent);color:#fff;font-size:9px;padding:1px 6px;border-radius:6px;margin-left:auto}
+.eff-title.mixer{background:linear-gradient(90deg,#1a3a2a,#242424);color:#2dc46e;border-bottom:1px solid #1f5c3a}
 .eff-ctrl{padding:8px 10px;display:flex;flex-direction:column;gap:7px}
 .eff-row{display:flex;align-items:center;gap:6px}
 .eff-row label{color:#aaa;font-size:10px;min-width:65px}
 .eff-row input[type=range]{flex:1;accent-color:var(--accent);height:3px}
+.eff-row input[type=range].vol-video{accent-color:#4a9eff}
+.eff-row input[type=range].vol-music{accent-color:#2dc46e}
 .eff-row input[type=text]{flex:1;background:#111;color:#fff;border:1px solid #444;border-radius:3px;padding:4px 6px;font-size:11px}
 .eff-row textarea{flex:1;background:#111;color:#fff;border:1px solid #444;border-radius:3px;padding:4px 6px;font-size:11px;resize:vertical;min-height:36px;font-family:inherit}
 .eff-row select{flex:1;background:#111;color:#fff;border:1px solid #444;border-radius:3px;padding:4px 6px;font-size:11px}
-.eff-row .val{font-family:Consolas,monospace;color:#4a9eff;font-size:10px;min-width:38px;text-align:right}
+.eff-row .val{font-family:Consolas,monospace;color:var(--accent);font-size:10px;min-width:38px;text-align:right}
+.eff-row .val.video{color:#4a9eff}.eff-row .val.music{color:#2dc46e}
 .eff-row input[type=color]{width:32px;height:24px;border:1px solid #444;background:#111;border-radius:3px;padding:0;cursor:pointer}
 .eff-row input[type=checkbox]{accent-color:var(--accent)}
 .timeline{display:flex;flex-direction:column;background:var(--panel);overflow:hidden}
-.tl-header{height:32px;background:var(--panel-head);border-bottom:1px solid var(--border);
-display:flex;align-items:center;padding:0 10px;gap:8px}
-.seq-tab{background:#1e1e1e;border:1px solid #333;border-top:2px solid var(--accent);
-padding:4px 12px;border-radius:3px 3px 0 0;color:#ddd;font-size:11px;font-weight:600}
+.tl-header{height:32px;background:var(--panel-head);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 10px;gap:8px}
+.seq-tab{background:#1e1e1e;border:1px solid #333;border-top:2px solid var(--brand);padding:4px 12px;border-radius:3px 3px 0 0;color:#ddd;font-size:11px;font-weight:600}
 .tl-tools{display:flex;gap:2px;margin-left:10px;align-items:center}
-.tool-btn{background:transparent;border:1px solid transparent;color:#999;padding:4px 9px;border-radius:3px;cursor:pointer;font-size:11px;
-display:flex;align-items:center;gap:5px}
+.tool-btn{background:transparent;border:1px solid transparent;color:#999;padding:4px 9px;border-radius:3px;cursor:pointer;font-size:11px;display:flex;align-items:center;gap:5px}
 .tool-btn:hover{background:#2e2e2e;color:#fff}
 .tool-btn.active{background:#2b4a75;color:#fff;border-color:var(--accent)}
 .tool-btn.split{background:#8a3a11;color:#fff;border-color:#b04a15;font-weight:700}
@@ -80,8 +84,10 @@ display:flex;align-items:center;gap:5px}
 .tool-btn.txt:hover{background:#8a4a9a}
 .tool-btn.lgo{background:#8a4a11;color:#fff;border-color:#b06a1a;font-weight:700}
 .tool-btn.lgo:hover{background:#b06a1a}
+.tool-btn.export{background:var(--export);color:#fff;border-color:#1a8a48;font-weight:800;font-size:12px;padding:5px 14px;box-shadow:0 0 10px rgba(34,168,92,.4)}
+.tool-btn.export:hover{background:var(--export-hover);box-shadow:0 0 14px rgba(45,196,110,.7)}
 .tl-hint{margin-left:auto;color:#777;font-size:10px;display:flex;align-items:center;gap:8px}
-.tl-hint b{color:#ff9500}
+.tl-hint b{color:var(--target)}
 .tl-zoom{display:flex;align-items:center;gap:6px;color:#888;font-size:10px;margin-left:12px}
 .tl-zoom input{width:100px;accent-color:var(--accent)}
 .tl-body{flex:1;display:grid;grid-template-columns:170px 1fr;overflow:hidden}
@@ -95,70 +101,75 @@ display:flex;align-items:center;gap:5px}
 .th.target::after{content:'◆';position:absolute;right:6px;top:3px;font-size:9px;color:var(--target);font-weight:800}
 .th .name{font-weight:800;color:#ddd;font-size:12px;min-width:26px}
 .th .spacer{flex:1}
-.th .mini-btn{width:18px;height:18px;background:transparent;border:1px solid transparent;border-radius:2px;
-color:#777;font-size:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0}
+.th .mini-btn{width:18px;height:18px;background:transparent;border:1px solid transparent;border-radius:2px;color:#777;font-size:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0}
 .th .mini-btn:hover{background:#333;color:#fff}
-.th .mini-btn.on{color:#4a9eff;background:#1c2a3d}
+.th .mini-btn.on{color:var(--accent);background:#1c2a3d}
 .th .mini-btn.mute-on{color:#ff5a5a;background:#3a1c1c}
 .lanes-col{position:relative;overflow:auto;background:#181818}
-.ruler{height:26px;background:#1c1c1c;border-bottom:1px solid var(--border);position:relative;
-min-width:3000px;cursor:pointer;overflow:hidden}
-.ruler .tick{position:absolute;top:0;height:100%;border-left:1px solid #2a2a2a;color:#888;font-size:9px;
-font-family:Consolas,monospace;padding:3px 0 0 4px;pointer-events:none}
+.ruler{height:26px;background:#1c1c1c;border-bottom:1px solid var(--border);position:relative;min-width:3000px;cursor:pointer;overflow:hidden}
+.ruler .tick{position:absolute;top:0;height:100%;border-left:1px solid #2a2a2a;color:#888;font-size:9px;font-family:Consolas,monospace;padding:3px 0 0 4px;pointer-events:none}
 .ruler .tick.major{border-left-color:#4a4a4a;color:#c9c9c9}
 .tracks{position:relative;min-width:3000px}
 .lane{height:46px;border-bottom:1px solid #111;position:relative;background:var(--lane)}
 .lane.text{background:#231a28}.lane.logo{background:#241c14}
 .lane.audio{background:var(--lane-alt)}.lane.locked{opacity:.6}
 .lane.target::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--target);z-index:2}
-.clip{position:absolute;top:3px;height:38px;border-radius:3px;overflow:hidden;cursor:pointer;
-border:1px solid transparent;display:flex;flex-direction:column;font-size:10px;color:#eaeaea}
+.clip{position:absolute;top:3px;height:38px;border-radius:3px;overflow:hidden;cursor:pointer;border:1px solid transparent;display:flex;flex-direction:column;font-size:10px;color:#eaeaea}
 .clip.video{background:var(--video-clip);border-color:#5a8bc0}
 .clip.audio{background:var(--audio-clip);border-color:#5a8b6a;height:34px;top:5px}
 .clip.text{background:var(--text-clip);border-color:#b06ac0}
 .clip.logo{background:var(--logo-clip);border-color:#e0a04a}
 .clip.selected{box-shadow:0 0 0 2px var(--selected);z-index:5}
-.clip .clip-name{background:rgba(0,0,0,.35);padding:2px 6px;font-weight:600;overflow:hidden;
-white-space:nowrap;text-overflow:ellipsis;font-size:10px;display:flex;align-items:center;gap:4px}
+.clip .clip-name{background:rgba(0,0,0,.35);padding:2px 6px;font-weight:600;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;font-size:10px;display:flex;align-items:center;gap:4px}
 .clip .clip-name .track-badge{background:rgba(255,255,255,.25);border-radius:2px;padding:0 4px;font-size:9px;font-weight:800}
 .clip .strip{flex:1;background-image:repeating-linear-gradient(90deg,transparent 0,transparent 44px,rgba(0,0,0,.25) 44px,rgba(0,0,0,.25) 45px)}
 .clip.text .strip{background-image:repeating-linear-gradient(90deg,transparent 0,transparent 22px,rgba(255,255,255,.15) 22px,rgba(255,255,255,.15) 23px)}
 .clip.logo .strip{background-image:repeating-linear-gradient(45deg,transparent 0,transparent 8px,rgba(255,255,255,.1) 8px,rgba(255,255,255,.1) 16px)}
-.playhead{position:absolute;top:0;width:2px;background:var(--playhead);pointer-events:none;z-index:20;
-box-shadow:0 0 4px rgba(74,158,255,.6)}
-.playhead::before{content:'';position:absolute;top:0;left:-5px;width:12px;height:12px;background:var(--playhead);
-clip-path:polygon(0 0,100% 0,50% 100%);pointer-events:auto;cursor:ew-resize}
+.clip.audio .strip{background-image:repeating-linear-gradient(90deg,transparent 0,transparent 3px,rgba(255,255,255,.35) 3px,transparent 4px,transparent 6px,rgba(255,255,255,.2) 6px,transparent 7px,transparent 12px)}
+.playhead{position:absolute;top:0;width:2px;background:var(--playhead);pointer-events:none;z-index:20;box-shadow:0 0 4px rgba(74,158,255,.6)}
+.playhead::before{content:'';position:absolute;top:0;left:-5px;width:12px;height:12px;background:var(--playhead);clip-path:polygon(0 0,100% 0,50% 100%);pointer-events:auto;cursor:ew-resize}
 ::-webkit-scrollbar{width:10px;height:10px}
 ::-webkit-scrollbar-track{background:#1a1a1a}
 ::-webkit-scrollbar-thumb{background:#3a3a3a;border-radius:2px}
 ::-webkit-scrollbar-thumb:hover{background:#4a4a4a}
-.err-banner{position:fixed;top:30px;left:50%;transform:translateX(-50%);background:#7a1f1f;color:#fff;
-padding:10px 20px;border-radius:6px;font-size:12px;z-index:9999;max-width:80vw;box-shadow:0 4px 20px rgba(0,0,0,.5);
-display:none;font-family:Consolas,monospace}
+.err-banner{position:fixed;top:36px;left:50%;transform:translateX(-50%);background:#7a1f1f;color:#fff;padding:10px 20px;border-radius:6px;font-size:12px;z-index:9999;max-width:80vw;box-shadow:0 4px 20px rgba(0,0,0,.5);display:none;font-family:Consolas,monospace}
 .err-banner.show{display:block}
-.info-banner{position:fixed;top:30px;left:50%;transform:translateX(-50%);background:#1c4a7a;color:#fff;
-padding:10px 20px;border-radius:6px;font-size:12px;z-index:9999;max-width:80vw;box-shadow:0 4px 20px rgba(0,0,0,.5);
-display:none}
+.info-banner{position:fixed;top:36px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#2b2419,#3d3420);color:#e8c87a;border:1px solid var(--brand-dark);padding:10px 20px;border-radius:6px;font-size:12px;z-index:9999;max-width:80vw;box-shadow:0 4px 20px rgba(0,0,0,.5);display:none;font-family:'Cairo',sans-serif}
 .info-banner.show{display:block}
-.drop-active{outline:2px dashed #4a9eff !important;outline-offset:-6px;background:rgba(74,158,255,.08) !important}
+.progress-banner{position:fixed;top:36px;left:50%;transform:translateX(-50%);background:#0d3a5c;color:#fff;border:1px solid #1c4a7a;padding:14px 24px;border-radius:6px;font-size:13px;z-index:9999;max-width:80vw;box-shadow:0 4px 20px rgba(0,0,0,.5);display:none;font-family:'Cairo',sans-serif;text-align:center;min-width:320px}
+.progress-banner.show{display:block}
+.progress-bar{width:100%;height:6px;background:#1a2a3a;border-radius:3px;margin-top:10px;overflow:hidden}
+.progress-bar > div{height:100%;background:linear-gradient(90deg,#2dc46e,#4a9eff);width:0%;transition:width .2s}
+.drop-active{outline:2px dashed var(--accent) !important;outline-offset:-6px;background:rgba(74,158,255,.08) !important}
 select.track-select{background:#1c1c1c;color:#ddd;border:1px solid #444;border-radius:3px;padding:3px 6px;font-size:11px}
 </style>
 </head>
 <body>
 <div class="err-banner" id="errBanner"></div>
 <div class="info-banner" id="infoBanner"></div>
+<div class="progress-banner" id="progressBanner">
+  <div id="progressText">جاري التصدير…</div>
+  <div class="progress-bar"><div id="progressFill"></div></div>
+</div>
 <div class="app">
   <div class="menubar">
-    <div class="logo">Pr</div>
+    <div class="brand">
+      <div class="logo-circle">ح</div>
+      <div>
+        <div class="brand-text">جمعية حنطة الخيرية التنموية</div>
+        <span class="brand-sub">Hanta Charitable Development Association</span>
+      </div>
+    </div>
     <div class="menu">File</div><div class="menu">Edit</div><div class="menu">Clip</div>
     <div class="menu">Sequence</div><div class="menu">Window</div><div class="menu">Help</div>
     <div class="spacer"></div>
+    <div class="version">Studio v2.2</div>
     <div class="status" id="statusBar">loading…</div>
   </div>
 
   <div class="middle">
     <div class="panel" id="projectPanel">
-      <div class="panel-header"><span class="dot"></span>Project: Tarek.prproj</div>
+      <div class="panel-header"><span class="dot brand"></span>Project: Hanta.prproj</div>
       <div class="proj-toolbar">
         <button class="icon-btn primary" id="importBtn" type="button">⬆ Import</button>
         <button class="icon-btn" id="deleteBtn" title="Delete" type="button">🗑</button>
@@ -180,23 +191,11 @@ select.track-select{background:#1c1c1c;color:#ddd;border:1px solid #444;border-r
     </div>
 
     <div class="panel">
-      <div class="panel-header"><span class="dot" style="background:#888"></span>Source: <span id="sourceTitle" style="color:#888;font-weight:400">no clip selected</span></div>
-      <div class="monitor-wrap">
-        <div class="monitor-canvas-wrap"><canvas id="sourceCanvas" width="640" height="360"></canvas></div>
-        <div class="monitor-ctrl">
-          <button>⏮</button><button>◀◀</button><button id="srcPlay">▶</button>
-          <button>▶▶</button><button>⏭</button>
-          <span class="tc-display" id="srcTC">00:00:00:00</span>
-        </div>
-      </div>
-    </div>
-
-    <div class="panel">
       <div class="panel-header"><span class="dot"></span>Program: Sequence 01</div>
       <div class="monitor-wrap">
         <div class="monitor-canvas-wrap"><canvas id="programCanvas" width="640" height="360"></canvas></div>
         <div class="monitor-ctrl">
-          <button>⏮</button><button>◀◀</button><button id="progPlay">▶</button>
+          <button id="skipStart">⏮</button><button>◀◀</button><button id="progPlay">▶</button>
           <button>▶▶</button><button>⏭</button>
           <span class="tc-display" id="progTC">00:00:00:00</span>
         </div>
@@ -215,13 +214,12 @@ select.track-select{background:#1c1c1c;color:#ddd;border:1px solid #444;border-r
       <div class="tl-tools">
         <button class="tool-btn active" data-tool="select" type="button" title="Selection (V)">➤</button>
         <button class="tool-btn" data-tool="hand" type="button" title="Hand (H)">✋</button>
-        <button class="tool-btn txt" id="addTextBtn" type="button" title="Add Text at Playhead">＋ نص</button>
-        <button class="tool-btn lgo" id="addLogoBtn" type="button" title="Add Logo at Playhead">＋ لوغو</button>
-        <button class="tool-btn split" id="splitBtn" type="button" title="Split at Playhead (Ctrl+K)">✂ Split</button>
+        <button class="tool-btn txt" id="addTextBtn" type="button">＋ نص</button>
+        <button class="tool-btn lgo" id="addLogoBtn" type="button">＋ لوغو</button>
+        <button class="tool-btn split" id="splitBtn" type="button">✂ Split</button>
+        <button class="tool-btn export" id="exportBtn" type="button">🎬 تصدير نهائي</button>
       </div>
-      <div class="tl-hint">
-        Target: <b id="targetLabel">V1</b>
-      </div>
+      <div class="tl-hint">Target: <b id="targetLabel">V1</b></div>
       <div class="tl-zoom"><span>Zoom</span><input type="range" id="zoomRange" min="15" max="200" value="60"></div>
     </div>
     <div class="tl-body">
@@ -237,74 +235,106 @@ select.track-select{background:#1c1c1c;color:#ddd;border:1px solid #444;border-r
 <input type="file" id="logoFileInput" accept="image/*" hidden>
 
 <script>
-/* ================ GLOBAL ERROR ================ */
-const errBanner = document.getElementById('errBanner');
-const infoBanner = document.getElementById('infoBanner');
-function showError(msg){console.error('[Pr FATAL]',msg);errBanner.textContent='⚠ '+msg;errBanner.classList.add('show');
-  setTimeout(()=>errBanner.classList.remove('show'),6000);}
-function showInfo(msg){infoBanner.textContent=msg;infoBanner.classList.add('show');
-  clearTimeout(showInfo._t);showInfo._t=setTimeout(()=>infoBanner.classList.remove('show'),2500);}
+/* ================ ERROR UI ================ */
+const errBanner=document.getElementById('errBanner');
+const infoBanner=document.getElementById('infoBanner');
+const progressBanner=document.getElementById('progressBanner');
+const progressText=document.getElementById('progressText');
+const progressFill=document.getElementById('progressFill');
+function showError(m){console.error('[Hanta]',m);errBanner.textContent='⚠ '+m;errBanner.classList.add('show');setTimeout(()=>errBanner.classList.remove('show'),6000);}
+function showInfo(m){infoBanner.textContent=m;infoBanner.classList.add('show');clearTimeout(showInfo._t);showInfo._t=setTimeout(()=>infoBanner.classList.remove('show'),2800);}
+function showProgress(m,pct){progressBanner.classList.add('show');progressText.textContent=m;progressFill.style.width=pct+'%';}
+function hideProgress(){progressBanner.classList.remove('show');}
 window.addEventListener('error',e=>showError(e.message));
 window.addEventListener('unhandledrejection',e=>showError('Promise: '+(e.reason?.message||e.reason)));
 
 /* ================ HELPERS ================ */
 const $=s=>document.querySelector(s);
 const $$=s=>[...document.querySelectorAll(s)];
-const LOG=(...a)=>console.log('[Pr]',...a);
+const LOG=(...a)=>console.log('[Hanta]',...a);
 const pad2=n=>String(n).padStart(2,'0');
-function tc(sec){sec=Math.max(0,sec||0);
-  const h=Math.floor(sec/3600),m=Math.floor((sec%3600)/60),s=Math.floor(sec%60),f=Math.floor((sec%1)*30);
-  return `${pad2(h)}:${pad2(m)}:${pad2(s)}:${pad2(f)}`;}
+function tc(sec){sec=Math.max(0,sec||0);const h=Math.floor(sec/3600),m=Math.floor((sec%3600)/60),s=Math.floor(sec%60),f=Math.floor((sec%1)*30);return `${pad2(h)}:${pad2(m)}:${pad2(s)}:${pad2(f)}`;}
 
 /* ================ STATE ================ */
-const TRACKS = ['T1','L1','V2','V1','A1','A2'];
-const TRACK_INFO = {
-  T1:{type:'text',label:'T1',name:'نصوص'},
-  L1:{type:'logo',label:'L1',name:'لوغو'},
-  V2:{type:'video',label:'V2',name:'فيديو 2'},
-  V1:{type:'video',label:'V1',name:'فيديو 1'},
-  A1:{type:'audio',label:'A1',name:'صوت 1'},
-  A2:{type:'audio',label:'A2',name:'صوت 2'}
+const TRACKS=['T1','L1','V2','V1','A1','A2'];
+const TRACK_INFO={
+  T1:{type:'text'},L1:{type:'logo'},V2:{type:'video'},V1:{type:'video'},A1:{type:'audio'},A2:{type:'audio'}
 };
-const state = {
-  project:[], tracks:{T1:[],L1:[],V2:[],V1:[],A1:[],A2:[]},
-  playhead:0, zoom:60, selection:null, selectedAsset:null,
-  tool:'select', playing:false,
-  targetTrack:'V1',
+const state={
+  project:[],tracks:{T1:[],L1:[],V2:[],V1:[],A1:[],A2:[]},
+  playhead:0,zoom:60,selection:null,selectedAsset:null,
+  tool:'select',playing:false,targetTrack:'V1',
   locked:{T1:false,L1:false,V2:false,V1:false,A1:false,A2:false},
   visible:{T1:true,L1:true,V2:true,V1:true},
-  muted:{A1:false,A2:false}, solo:{A1:false,A2:false},
+  muted:{A1:false,A2:false},solo:{A1:false,A2:false},
   chroma:{on:false,color:'#00ff00',tol:40},
-  effects:{opacity:100,brightness:100,contrast:100,saturation:100}
+  effects:{opacity:100,brightness:100,contrast:100,saturation:100},
+  masterVideoVolume:100,
+  masterMusicVolume:100
 };
 
-const videoPool={};
+/* ================ MEDIA POOLS ================ */
+const videoPool={},audioPool={};
 function getVideo(src){
-  if(!videoPool[src]){const v=document.createElement('video');
-    v.src=src;v.preload='auto';v.muted=true;v.playsInline=true;videoPool[src]=v;}
+  if(!videoPool[src]){
+    const v=document.createElement('video');
+    v.src=src;v.preload='auto';v.playsInline=true;v.muted=false;
+    videoPool[src]=v;hookAudio(v,'video');
+  }
   return videoPool[src];
 }
+function getAudio(src){
+  if(!audioPool[src]){
+    const a=document.createElement('audio');
+    a.src=src;a.preload='auto';a.loop=false;
+    audioPool[src]=a;hookAudio(a,'music');
+  }
+  return audioPool[src];
+}
 const imageCache={};
-function getImage(src){
-  if(!imageCache[src]){const i=new Image();i.src=src;imageCache[src]=i;}
-  return imageCache[src];
+function getImage(src){if(!imageCache[src]){const i=new Image();i.src=src;imageCache[src]=i;}return imageCache[src];}
+
+/* ================ AUDIO GRAPH ================ */
+let audioCtx=null,videoGain=null,musicGain=null,exportDest=null;
+const hookedElements=new WeakSet();
+
+function ensureAudioGraph(){
+  if(audioCtx)return;
+  try{
+    audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+    videoGain=audioCtx.createGain();
+    musicGain=audioCtx.createGain();
+    exportDest=audioCtx.createMediaStreamDestination();
+    videoGain.connect(audioCtx.destination);
+    videoGain.connect(exportDest);
+    musicGain.connect(audioCtx.destination);
+    musicGain.connect(exportDest);
+    videoGain.gain.value=state.masterVideoVolume/100;
+    musicGain.gain.value=state.masterMusicVolume/100;
+    Object.values(videoPool).forEach(v=>hookAudio(v,'video'));
+    Object.values(audioPool).forEach(a=>hookAudio(a,'music'));
+  }catch(e){console.warn('audio graph failed',e);}
+}
+function hookAudio(el,kind){
+  if(!audioCtx)return;
+  if(hookedElements.has(el))return;
+  try{
+    const src=audioCtx.createMediaElementSource(el);
+    const gain=kind==='video'?videoGain:musicGain;
+    src.connect(gain);
+    hookedElements.add(el);
+  }catch(e){/* already hooked */}
 }
 
-/* ================ FONT LIST ================ */
+/* ================ FONTS ================ */
 const ARABIC_FONTS=[
-  {id:'Cairo',name:'القاهرة (Cairo)'},
-  {id:'Tajawal',name:'تجوال (Tajawal)'},
-  {id:'El Messiri',name:'المسيري (El Messiri)'},
-  {id:'Changa',name:'شنغا (Changa)'},
-  {id:'Amiri',name:'أميري (Amiri) - كلاسيكي'},
-  {id:'Almarai',name:'المراعي (Almarai)'}
+  {id:'Cairo',name:'القاهرة (Cairo)'},{id:'Tajawal',name:'تجوال (Tajawal)'},
+  {id:'El Messiri',name:'المسيري (El Messiri)'},{id:'Changa',name:'شنغا (Changa)'},
+  {id:'Amiri',name:'أميري (Amiri) - كلاسيكي'},{id:'Almarai',name:'المراعي (Almarai)'}
 ];
 const ENGLISH_FONTS=[
-  {id:'Roboto',name:'Roboto'},
-  {id:'Montserrat',name:'Montserrat'},
-  {id:'Poppins',name:'Poppins'},
-  {id:'Oswald',name:'Oswald'},
-  {id:'Bebas Neue',name:'Bebas Neue'}
+  {id:'Roboto',name:'Roboto'},{id:'Montserrat',name:'Montserrat'},
+  {id:'Poppins',name:'Poppins'},{id:'Oswald',name:'Oswald'},{id:'Bebas Neue',name:'Bebas Neue'}
 ];
 
 /* ================ IMPORT ================ */
@@ -318,36 +348,32 @@ function detectKind(file){
   if(['png','jpg','jpeg','gif','webp','bmp','svg'].includes(ext))return 'image';
   return null;
 }
-function probeVideo(src){return new Promise(resolve=>{
+function probeVideo(src){return new Promise(res=>{
   const v=document.createElement('video');v.preload='metadata';v.muted=true;v.playsInline=true;
-  let done=false;const finish=(dur,thumb)=>{if(done)return;done=true;clearTimeout(timer);
-    resolve({duration:dur||5,thumb:thumb||null});};
-  const timer=setTimeout(()=>finish(5,null),6000);
+  let done=false;const fin=(d,t)=>{if(done)return;done=true;clearTimeout(timer);res({duration:d||5,thumb:t||null});};
+  const timer=setTimeout(()=>fin(5,null),6000);
   v.onloadedmetadata=()=>{const dur=(isFinite(v.duration)&&v.duration>0)?v.duration:5;
-    try{v.currentTime=Math.min(0.5,dur/2);}catch(_){finish(dur,null);}
-    setTimeout(()=>finish(dur,null),1500);};
+    try{v.currentTime=Math.min(0.5,dur/2);}catch(_){fin(dur,null);}
+    setTimeout(()=>fin(dur,null),1500);};
   v.onseeked=()=>{try{const c=document.createElement('canvas');c.width=80;c.height=45;
-    c.getContext('2d').drawImage(v,0,0,80,45);
-    finish(v.duration||5,c.toDataURL('image/jpeg',.6));}catch(_){finish(v.duration||5,null);}};
-  v.onerror=()=>finish(5,null);v.src=src;
+    c.getContext('2d').drawImage(v,0,0,80,45);fin(v.duration||5,c.toDataURL('image/jpeg',.6));}catch(_){fin(v.duration||5,null);}};
+  v.onerror=()=>fin(5,null);v.src=src;
 });}
-function probeAudio(src){return new Promise(resolve=>{
+function probeAudio(src){return new Promise(res=>{
   const a=document.createElement('audio');a.preload='metadata';let done=false;
-  const finish=d=>{if(done)return;done=true;clearTimeout(t);resolve(d||5);};
-  const t=setTimeout(()=>finish(5),4000);
-  a.onloadedmetadata=()=>finish(a.duration);a.onerror=()=>finish(5);a.src=src;
+  const fin=d=>{if(done)return;done=true;clearTimeout(t);res(d||5);};
+  const t=setTimeout(()=>fin(5),4000);
+  a.onloadedmetadata=()=>fin(a.duration);a.onerror=()=>fin(5);a.src=src;
 });}
 async function importFiles(files){
   if(!files||!files.length)return;
   for(const f of files){
     const kind=detectKind(f);
-    if(!kind){console.warn('[Pr] unsupported:',f.name);continue;}
+    if(!kind){console.warn('[Hanta] unsupported:',f.name);continue;}
     const src=URL.createObjectURL(f);
-    const asset={id:'a_'+Math.random().toString(36).slice(2,9),
-      name:f.name,src,kind,duration:5,thumb:null,status:'loading'};
+    const asset={id:'a_'+Math.random().toString(36).slice(2,9),name:f.name,src,kind,duration:5,thumb:null,status:'loading'};
     if(kind==='image'){asset.duration=5;asset.thumb=src;asset.status='ready';}
-    else if(kind==='video'){const{duration,thumb}=await probeVideo(src);
-      asset.duration=duration;asset.thumb=thumb;asset.status='ready';}
+    else if(kind==='video'){const{duration,thumb}=await probeVideo(src);asset.duration=duration;asset.thumb=thumb;asset.status='ready';}
     else{asset.duration=await probeAudio(src);asset.status='ready';}
     state.project.push(asset);renderProject();updateStatus();
   }
@@ -357,65 +383,34 @@ async function importFiles(files){
 function renderProject(){
   const list=$('#projList');list.innerHTML='';
   if(!state.project.length){
-    list.innerHTML=`<div class="empty-hint">
-      اسحب ملفات الفيديو هنا<br>أو اضغط <b>Import</b><br><br>
-      <span style="font-size:10px;color:#555">MP4, WebM, MOV, JPG, PNG, MP3…</span>
-    </div>`;return;
+    list.innerHTML=`<div class="empty-hint">اسحب ملفات الفيديو هنا<br>أو اضغط <b>Import</b><br><br><span style="font-size:10px;color:#555">MP4, WebM, MOV, JPG, PNG, MP3…</span></div>`;
+    return;
   }
   state.project.forEach(a=>{
     const row=document.createElement('div');
     row.className='proj-item'+(state.selectedAsset===a.id?' selected':'');
     const icon=a.kind==='audio'?'♫':a.kind==='image'?'🖼':'🎬';
-    row.innerHTML=`
-      <div class="proj-thumb">${a.thumb?`<img src="${a.thumb}" alt="">`:icon}</div>
+    row.innerHTML=`<div class="proj-thumb">${a.thumb?`<img src="${a.thumb}">`:icon}</div>
       <div class="proj-name" title="${a.name}">${a.name}</div>
       <div class="proj-dur">${a.status==='loading'?'…':tc(a.duration)}</div>`;
-    row.onclick=()=>{state.selectedAsset=a.id;showInSource(a);renderProject();updateStatus();
-      state.selection=null;renderEffectControls();};
+    row.onclick=()=>{state.selectedAsset=a.id;state.selection=null;renderProject();renderEffectControls();updateStatus();};
     row.ondblclick=()=>addAssetToTimeline(a);
     list.appendChild(row);
   });
 }
 
-/* ================ SOURCE MONITOR ================ */
-function showInSource(asset){
-  $('#sourceTitle').textContent=asset.name;
-  const c=$('#sourceCanvas'),ctx=c.getContext('2d');
-  ctx.fillStyle='#000';ctx.fillRect(0,0,c.width,c.height);
-  if(asset.kind==='image'){
-    const img=getImage(asset.src);
-    const draw=()=>drawContain(ctx,img,c.width,c.height);
-    img.complete?draw():(img.onload=draw);
-  }else if(asset.kind==='video'){
-    const v=getVideo(asset.src);
-    const draw=()=>{if(v.readyState>=2)drawContain(ctx,v,c.width,c.height);};
-    v.onseeked=draw;v.onloadeddata=draw;
-    try{v.currentTime=0;}catch(_){}
-  }else{
-    ctx.fillStyle='#666';ctx.font='14px Tahoma';ctx.textAlign='center';
-    ctx.fillText('♪ '+asset.name,c.width/2,c.height/2);
-  }
-}
-function drawContain(ctx,src,W,H){
-  ctx.fillStyle='#000';ctx.fillRect(0,0,W,H);
-  const sw=src.videoWidth||src.width,sh=src.videoHeight||src.height;
-  if(!sw||!sh)return;
-  const r=Math.min(W/sw,H/sh);const w=sw*r,h=sh*r;
-  ctx.drawImage(src,(W-w)/2,(H-h)/2,w,h);
-}
-
-/* ================ ADD ASSET TO TIMELINE ================ */
+/* ================ ADD ASSET ================ */
 function resolveTargetTrack(asset){
   const sel=$('#targetTrackSelect').value;
   if(sel!=='auto'){
     const t=TRACK_INFO[sel];
-    const compatible=(asset.kind==='audio'&&t.type==='audio')||(asset.kind!=='audio'&&t.type==='video');
-    if(compatible)return sel;
+    const ok=(asset.kind==='audio'&&t.type==='audio')||(asset.kind!=='audio'&&t.type==='video');
+    if(ok)return sel;
   }
   if(state.targetTrack){
     const t=TRACK_INFO[state.targetTrack];
-    const compatible=(asset.kind==='audio'&&t.type==='audio')||(asset.kind!=='audio'&&t.type==='video');
-    if(compatible)return state.targetTrack;
+    const ok=(asset.kind==='audio'&&t.type==='audio')||(asset.kind!=='audio'&&t.type==='video');
+    if(ok)return state.targetTrack;
   }
   if(asset.kind==='audio')return state.tracks.A1.length<=state.tracks.A2.length?'A1':'A2';
   return state.tracks.V1.length<=state.tracks.V2.length?'V1':'V2';
@@ -425,60 +420,30 @@ function addAssetToTimeline(asset){
   const trackName=resolveTargetTrack(asset);
   const lane=state.tracks[trackName];
   const start=lane.reduce((m,c)=>Math.max(m,c.start+c.duration),0);
-  const clip={id:'c_'+Math.random().toString(36).slice(2,9),
-    assetId:asset.id,name:asset.name,src:asset.src,kind:asset.kind,
-    type:asset.kind,track:trackName,start,duration:asset.duration||5};
-  lane.push(clip);
-  state.selection=clip.id;
+  const clip={id:'c_'+Math.random().toString(36).slice(2,9),assetId:asset.id,name:asset.name,src:asset.src,
+    kind:asset.kind,type:asset.kind,track:trackName,start,duration:asset.duration||5,volume:100};
+  lane.push(clip);state.selection=clip.id;
   showInfo(`✅ أضيف "${asset.name}" إلى ${trackName} عند ${tc(start)}`);
   renderTimeline();renderProgram();renderEffectControls();updateStatus();
 }
 
-/* ================ ADD TEXT ================ */
+/* ================ ADD TEXT / LOGO ================ */
 function addTextClip(){
-  const lane=state.tracks.T1;
-  const start=state.playhead;
-  const clip={
-    id:'t_'+Math.random().toString(36).slice(2,9),
-    type:'text', track:'T1',
-    name:'نص جديد',
-    start, duration:5,
-    text:'أدخل النص هنا',
-    fontFamily:'Cairo',
-    fontSize:36,
-    color:'#ffffff',
-    bold:true,
-    shadow:true,
-    x:320, y:300
-  };
-  lane.push(clip);
-  state.selection=clip.id;
-  state.targetTrack='T1';
-  $('#targetLabel').textContent='T1';
-  showInfo(`✅ أضيف نص على T1 عند ${tc(start)} — عدّله من لوحة Effect Controls`);
+  const clip={id:'t_'+Math.random().toString(36).slice(2,9),type:'text',track:'T1',name:'نص جديد',
+    start:state.playhead,duration:5,text:'جمعية حنطة الخيرية التنموية',
+    fontFamily:'Cairo',fontSize:36,color:'#ffffff',bold:true,shadow:true,x:320,y:300};
+  state.tracks.T1.push(clip);state.selection=clip.id;
+  state.targetTrack='T1';$('#targetLabel').textContent='T1';
+  showInfo(`✅ أضيف نص على T1 عند ${tc(state.playhead)}`);
   renderTimeline();renderProgram();renderEffectControls();updateStatus();
 }
-
-/* ================ ADD LOGO ================ */
-function addLogoClip(src, img){
-  const lane=state.tracks.L1;
-  const start=state.playhead;
-  const aspect=(img.width/img.height)||1;
-  const width=140;
-  const height=Math.round(width/aspect);
-  const clip={
-    id:'l_'+Math.random().toString(36).slice(2,9),
-    type:'logo', track:'L1',
-    name:'لوغو',
-    start, duration:5,
-    src, img,
-    x:480, y:20, width, height
-  };
-  lane.push(clip);
-  state.selection=clip.id;
-  state.targetTrack='L1';
-  $('#targetLabel').textContent='L1';
-  showInfo(`✅ أضيف اللوغو على L1 عند ${tc(start)} — اسحبه داخل المعاينة لتغيير مكانه`);
+function addLogoClip(src,img){
+  const aspect=(img.width/img.height)||1;const width=140;
+  const clip={id:'l_'+Math.random().toString(36).slice(2,9),type:'logo',track:'L1',name:'لوغو',
+    start:state.playhead,duration:5,src,img,x:480,y:20,width,height:Math.round(width/aspect),opacity:100};
+  state.tracks.L1.push(clip);state.selection=clip.id;
+  state.targetTrack='L1';$('#targetLabel').textContent='L1';
+  showInfo(`✅ أضيف اللوغو على L1`);
   renderTimeline();renderProgram();renderEffectControls();updateStatus();
 }
 
@@ -486,154 +451,98 @@ function addLogoClip(src, img){
 function splitAtPlayhead(){
   let targetClip=null,targetTrack=null;
   if(state.selection){
-    for(const tname of TRACKS){
-      const c=state.tracks[tname].find(x=>x.id===state.selection);
-      if(c){targetClip=c;targetTrack=tname;break;}
-    }
+    for(const tname of TRACKS){const c=state.tracks[tname].find(x=>x.id===state.selection);if(c){targetClip=c;targetTrack=tname;break;}}
   }
-  if(!targetClip){
-    const lane=state.tracks[state.targetTrack]||[];
+  if(!targetClip){const lane=state.tracks[state.targetTrack]||[];
     targetClip=lane.find(c=>state.playhead>c.start+0.05&&state.playhead<c.start+c.duration-0.05);
-    if(targetClip)targetTrack=state.targetTrack;
-  }
-  if(!targetClip){
-    for(const tname of TRACKS){
-      const c=state.tracks[tname].find(x=>
-        state.playhead>x.start+0.05&&state.playhead<x.start+x.duration-0.05);
-      if(c){targetClip=c;targetTrack=tname;break;}
-    }
-  }
+    if(targetClip)targetTrack=state.targetTrack;}
+  if(!targetClip){for(const tname of TRACKS){const c=state.tracks[tname].find(x=>state.playhead>x.start+0.05&&state.playhead<x.start+x.duration-0.05);if(c){targetClip=c;targetTrack=tname;break;}}}
   if(!targetClip){showError('لا يوجد مقطع تحت خط التشغيل');return;}
   const localTime=state.playhead-targetClip.start;
-  if(localTime<=0.05||localTime>=targetClip.duration-0.05){
-    showError('المؤشر عند حافة المقطع — حرّكه للداخل قليلًا');return;}
+  if(localTime<=0.05||localTime>=targetClip.duration-0.05){showError('المؤشر عند حافة المقطع');return;}
   const first={...targetClip,duration:localTime};
-  const second={...targetClip,
-    id:(targetClip.type==='text'?'t_':targetClip.type==='logo'?'l_':'c_')+Math.random().toString(36).slice(2,9),
-    start:state.playhead,
-    duration:targetClip.duration-localTime};
-  const lane=state.tracks[targetTrack];
-  const i=lane.findIndex(c=>c.id===targetClip.id);
-  lane.splice(i,1,first,second);
-  state.selection=second.id;
-  showInfo(`✂ تم التقطيع على ${targetTrack} عند ${tc(state.playhead)}`);
+  const second={...targetClip,id:(targetClip.type==='text'?'t_':targetClip.type==='logo'?'l_':'c_')+Math.random().toString(36).slice(2,9),start:state.playhead,duration:targetClip.duration-localTime};
+  const lane=state.tracks[targetTrack];const i=lane.findIndex(c=>c.id===targetClip.id);
+  lane.splice(i,1,first,second);state.selection=second.id;
+  showInfo(`✂ تم التقطيع على ${targetTrack}`);
   renderTimeline();renderProgram();renderEffectControls();updateStatus();
 }
 $('#splitBtn').addEventListener('click',splitAtPlayhead);
 
 /* ================ TIMELINE RENDER ================ */
 function renderTimeline(){
-  const thCol=$('#thCol');
-  thCol.innerHTML='<div class="th-spacer"></div>';
+  const thCol=$('#thCol');thCol.innerHTML='<div class="th-spacer"></div>';
   TRACKS.forEach(name=>{
-    const info=TRACK_INFO[name];
-    const h=document.createElement('div');
-    h.className='th '+info.type+(state.targetTrack===name?' target':'');
-    h.dataset.track=name;
+    const info=TRACK_INFO[name];const h=document.createElement('div');
+    h.className='th '+info.type+(state.targetTrack===name?' target':'');h.dataset.track=name;
     const eye=(info.type==='video'||info.type==='text'||info.type==='logo')
-      ?`<button class="mini-btn ${state.visible[name]?'on':''}" data-act="eye" data-t="${name}" type="button">👁</button>`:'';
-    const lock=`<button class="mini-btn ${state.locked[name]?'on':''}" data-act="lock" data-t="${name}" type="button">🔒</button>`;
+      ?`<button class="mini-btn ${state.visible[name]?'on':''}" data-act="eye" data-t="${name}">👁</button>`:'';
+    const lock=`<button class="mini-btn ${state.locked[name]?'on':''}" data-act="lock" data-t="${name}">🔒</button>`;
     const mute=info.type==='audio'
-      ?`<button class="mini-btn ${state.muted[name]?'mute-on':''}" data-act="mute" data-t="${name}" type="button">M</button>`:'';
+      ?`<button class="mini-btn ${state.muted[name]?'mute-on':''}" data-act="mute" data-t="${name}">M</button>`:'';
     const solo=info.type==='audio'
-      ?`<button class="mini-btn ${state.solo[name]?'on':''}" data-act="solo" data-t="${name}" type="button">S</button>`:'';
+      ?`<button class="mini-btn ${state.solo[name]?'on':''}" data-act="solo" data-t="${name}">S</button>`:'';
     h.innerHTML=`<span class="name">${name}</span><span class="spacer"></span>${eye}${lock}${mute}${solo}`;
     thCol.appendChild(h);
   });
-  thCol.querySelectorAll('.mini-btn').forEach(b=>{
-    b.onclick=ev=>{ev.stopPropagation();const{act,t}=b.dataset;
-      if(act==='eye')state.visible[t]=!state.visible[t];
-      if(act==='lock')state.locked[t]=!state.locked[t];
-      if(act==='mute')state.muted[t]=!state.muted[t];
-      if(act==='solo')state.solo[t]=!state.solo[t];
-      renderTimeline();renderProgram();};
-  });
-  thCol.querySelectorAll('.th').forEach(h=>{
-    h.onclick=()=>{state.targetTrack=h.dataset.track;
-      $('#targetLabel').textContent=h.dataset.track;renderTimeline();};
-  });
+  thCol.querySelectorAll('.mini-btn').forEach(b=>{b.onclick=ev=>{ev.stopPropagation();const{act,t}=b.dataset;
+    if(act==='eye')state.visible[t]=!state.visible[t];
+    if(act==='lock')state.locked[t]=!state.locked[t];
+    if(act==='mute')state.muted[t]=!state.muted[t];
+    if(act==='solo')state.solo[t]=!state.solo[t];
+    renderTimeline();renderProgram();};});
+  thCol.querySelectorAll('.th').forEach(h=>{h.onclick=()=>{state.targetTrack=h.dataset.track;$('#targetLabel').textContent=h.dataset.track;renderTimeline();};});
 
   renderRuler();
-
   const tracks=$('#tracks');tracks.innerHTML='';
   TRACKS.forEach(name=>{
-    const info=TRACK_INFO[name];
-    const lane=document.createElement('div');
-    lane.className='lane '+info.type+(state.targetTrack===name?' target':'');
-    lane.dataset.track=name;
+    const info=TRACK_INFO[name];const lane=document.createElement('div');
+    lane.className='lane '+info.type+(state.targetTrack===name?' target':'');lane.dataset.track=name;
     if(state.locked[name])lane.classList.add('locked');
-
     state.tracks[name].forEach(clip=>{
       const el=document.createElement('div');
-      el.className='clip '+info.type;
-      el.dataset.id=clip.id;el.dataset.track=name;
-      el.style.left=(clip.start*state.zoom)+'px';
-      el.style.width=Math.max(6,clip.duration*state.zoom)+'px';
+      el.className='clip '+info.type;el.dataset.id=clip.id;el.dataset.track=name;
+      el.style.left=(clip.start*state.zoom)+'px';el.style.width=Math.max(6,clip.duration*state.zoom)+'px';
       if(state.selection===clip.id)el.classList.add('selected');
-      const displayName=clip.type==='text'?('📝 '+clip.text):(clip.type==='logo'?'🖼 لوغو':clip.name);
-      el.innerHTML=`
-        <div class="clip-name"><span class="track-badge">${name}</span>${displayName}</div>
-        <div class="strip"></div>`;
-      bindClipEvents(el,clip,name);
-      lane.appendChild(el);
+      const dn=clip.type==='text'?('📝 '+clip.text):(clip.type==='logo'?'🖼 لوغو':(info.type==='audio'?'♫ ':'')+clip.name);
+      el.innerHTML=`<div class="clip-name"><span class="track-badge">${name}</span>${dn}</div><div class="strip"></div>`;
+      bindClipEvents(el,clip,name);lane.appendChild(el);
     });
-
-    lane.addEventListener('dragover',e=>{e.preventDefault();});
-    lane.addEventListener('drop',e=>{
-      e.preventDefault();
-      if(!state.selectedAsset)return;
-      const a=state.project.find(x=>x.id===state.selectedAsset);
-      if(!a)return;
-      const compatible=(a.kind==='audio'&&info.type==='audio')||(a.kind!=='audio'&&info.type==='video');
-      if(!compatible){showError(`لا يمكن وضع ${a.kind} في مسار ${info.type}`);return;}
-      const rect=tracks.getBoundingClientRect();
-      const start=Math.max(0,(e.clientX-rect.left)/state.zoom);
-      state.tracks[name].push({
-        id:'c_'+Math.random().toString(36).slice(2,9),
-        assetId:a.id,name:a.name,src:a.src,kind:a.kind,type:a.kind,
-        track:name,start,duration:a.duration||5});
-      renderTimeline();renderProgram();updateStatus();
-    });
+    lane.addEventListener('dragover',e=>e.preventDefault());
+    lane.addEventListener('drop',e=>{e.preventDefault();
+      if(!state.selectedAsset)return;const a=state.project.find(x=>x.id===state.selectedAsset);if(!a)return;
+      const ok=(a.kind==='audio'&&info.type==='audio')||(a.kind!=='audio'&&info.type==='video');
+      if(!ok){showError(`لا يمكن وضع ${a.kind} في مسار ${info.type}`);return;}
+      const rect=tracks.getBoundingClientRect();const start=Math.max(0,(e.clientX-rect.left)/state.zoom);
+      state.tracks[name].push({id:'c_'+Math.random().toString(36).slice(2,9),assetId:a.id,name:a.name,src:a.src,
+        kind:a.kind,type:a.kind,track:name,start,duration:a.duration||5,volume:100});
+      renderTimeline();renderProgram();updateStatus();});
     tracks.appendChild(lane);
   });
-
   updatePlayhead();updateTC();
 }
-
 function renderRuler(){
-  const ruler=$('#ruler');
-  const w=Math.max(state.zoom*60+400,3000);
+  const ruler=$('#ruler');const w=Math.max(state.zoom*60+400,3000);
   ruler.style.width=w+'px';ruler.innerHTML='';
   const step=state.zoom>=80?1:state.zoom>=40?2:state.zoom>=20?5:10;
   const loops=Math.floor(w/state.zoom/step);
-  for(let i=0;i<=loops;i++){
-    const s=i*step;
-    const t=document.createElement('div');
-    t.className='tick'+(s%(step*5)===0?' major':'');
-    t.style.left=(s*state.zoom)+'px';
-    if(s%(step*5)===0)t.textContent=tc(s);
-    ruler.appendChild(t);
-  }
+  for(let i=0;i<=loops;i++){const s=i*step;const t=document.createElement('div');
+    t.className='tick'+(s%(step*5)===0?' major':'');t.style.left=(s*state.zoom)+'px';
+    if(s%(step*5)===0)t.textContent=tc(s);ruler.appendChild(t);}
 }
 
 /* ================ CLIP DRAG ================ */
 let activeDrag=null;
 document.addEventListener('mousemove',e=>{
-  if(!activeDrag)return;
-  const dx=e.clientX-activeDrag.startX;
+  if(!activeDrag)return;const dx=e.clientX-activeDrag.startX;
   activeDrag.clip.start=Math.max(0,activeDrag.origStart+dx/state.zoom);
   renderTimeline();updateStatus();
 });
-document.addEventListener('mouseup',()=>{
-  if(activeDrag){activeDrag=null;document.body.style.cursor='';}
-});
+document.addEventListener('mouseup',()=>{if(activeDrag){activeDrag=null;document.body.style.cursor='';}});
 function bindClipEvents(el,clip,trackName){
   el.addEventListener('mousedown',e=>{
-    if(state.locked[trackName])return;
-    e.stopPropagation();
-    state.selection=clip.id;
-    state.targetTrack=trackName;
-    $('#targetLabel').textContent=trackName;
+    if(state.locked[trackName])return;e.stopPropagation();
+    state.selection=clip.id;state.targetTrack=trackName;$('#targetLabel').textContent=trackName;
     activeDrag={clip,startX:e.clientX,origStart:clip.start};
     renderTimeline();renderEffectControls();
     document.body.style.cursor='grabbing';
@@ -641,36 +550,23 @@ function bindClipEvents(el,clip,trackName){
 }
 
 /* ================ RULER SCRUB ================ */
-const ruler=$('#ruler');
-let scrubbing=false;
-ruler.addEventListener('mousedown',e=>{
-  scrubbing=true;const rect=ruler.getBoundingClientRect();
-  seekToPx(e.clientX-rect.left);
-});
-window.addEventListener('mousemove',e=>{
-  if(!scrubbing)return;const rect=ruler.getBoundingClientRect();
-  seekToPx(e.clientX-rect.left);
-});
+const ruler=$('#ruler');let scrubbing=false;
+ruler.addEventListener('mousedown',e=>{scrubbing=true;const rect=ruler.getBoundingClientRect();seekToPx(e.clientX-rect.left);});
+window.addEventListener('mousemove',e=>{if(!scrubbing)return;const rect=ruler.getBoundingClientRect();seekToPx(e.clientX-rect.left);});
 window.addEventListener('mouseup',()=>{scrubbing=false;});
-
-function seekToPx(px){state.playhead=Math.max(0,px/state.zoom);
-  updatePlayhead();updateTC();renderProgram();updateStatus();}
+function seekToPx(px){state.playhead=Math.max(0,px/state.zoom);updatePlayhead();updateTC();renderProgram();syncAudioPlayback();updateStatus();}
 function updatePlayhead(){$('#playhead').style.left=(state.playhead*state.zoom)+'px';}
 function updateTC(){$('#progTC').textContent=tc(state.playhead);}
 
 /* ================ TOOLS ================ */
-function setTool(t){state.tool=t;
-  $$('.tool-btn[data-tool]').forEach(b=>b.classList.toggle('active',b.dataset.tool===t));}
+function setTool(t){state.tool=t;$$('.tool-btn[data-tool]').forEach(b=>b.classList.toggle('active',b.dataset.tool===t));}
 $$('.tool-btn[data-tool]').forEach(b=>b.addEventListener('click',()=>setTool(b.dataset.tool)));
 $('#addTextBtn').addEventListener('click',addTextClip);
 $('#addLogoBtn').addEventListener('click',()=>$('#logoFileInput').click());
-$('#logoFileInput').addEventListener('change',e=>{
-  const f=e.target.files[0];if(!f)return;
-  const img=new Image();
-  img.onload=()=>addLogoClip(URL.createObjectURL(f),img);
-  img.src=URL.createObjectURL(f);
-  e.target.value='';
-});
+$('#logoFileInput').addEventListener('change',e=>{const f=e.target.files[0];if(!f)return;
+  const img=new Image();const url=URL.createObjectURL(f);
+  img.onload=()=>addLogoClip(url,img);img.src=url;e.target.value='';});
+$('#skipStart').addEventListener('click',()=>{state.playhead=0;updatePlayhead();updateTC();renderProgram();syncAudioPlayback();updateStatus();});
 
 document.addEventListener('keydown',e=>{
   if(e.target.matches('input,textarea,select'))return;
@@ -678,12 +574,10 @@ document.addEventListener('keydown',e=>{
   if(e.key==='h'||e.key==='H')setTool('hand');
   if(e.key==='t'||e.key==='T'){e.preventDefault();addTextClip();}
   if(e.key===' '){e.preventDefault();togglePlay();}
-  if((e.ctrlKey||e.metaKey)&&(e.key==='k'||e.key==='K'||e.key==='b'||e.key==='B')){
-    e.preventDefault();splitAtPlayhead();}
+  if((e.ctrlKey||e.metaKey)&&(e.key==='k'||e.key==='K'||e.key==='b'||e.key==='B')){e.preventDefault();splitAtPlayhead();}
   if(e.key==='Delete'&&state.selection){
     TRACKS.forEach(n=>state.tracks[n]=state.tracks[n].filter(c=>c.id!==state.selection));
-    state.selection=null;
-    renderTimeline();renderProgram();renderEffectControls();updateStatus();}
+    state.selection=null;renderTimeline();renderProgram();renderEffectControls();updateStatus();}
 });
 
 /* ================ ZOOM ================ */
@@ -692,23 +586,50 @@ $('#zoomRange').addEventListener('input',e=>{state.zoom=+e.target.value;renderTi
 /* ================ EFFECT CONTROLS ================ */
 function getSelectedClip(){
   if(!state.selection)return null;
-  for(const t of TRACKS){
-    const c=state.tracks[t].find(x=>x.id===state.selection);
-    if(c)return c;
-  }
+  for(const t of TRACKS){const c=state.tracks[t].find(x=>x.id===state.selection);if(c)return c;}
   return null;
 }
 function renderEffectControls(){
-  const body=$('#effBody');
-  const sel=getSelectedClip();
-  if(sel&&sel.type==='text'){renderTextControls(body,sel);}
-  else if(sel&&sel.type==='logo'){renderLogoControls(body,sel);}
-  else{renderVideoControls(body);}
+  const body=$('#effBody');const sel=getSelectedClip();
+  // Master Mixer always at top
+  let html=`
+    <div class="eff-item">
+      <div class="eff-title mixer">🎚 Mixer <span class="badge" style="background:#2dc46e">MASTER</span></div>
+      <div class="eff-ctrl">
+        <div class="eff-row"><label>🔊 صوت الفيديو</label>
+          <input type="range" class="vol-video" id="masterVideoVol" min="0" max="200" value="${state.masterVideoVolume}">
+          <span class="val video" id="masterVideoVal">${state.masterVideoVolume}%</span></div>
+        <div class="eff-row"><label>🎵 صوت الموسيقى</label>
+          <input type="range" class="vol-music" id="masterMusicVol" min="0" max="200" value="${state.masterMusicVolume}">
+          <span class="val music" id="masterMusicVal">${state.masterMusicVolume}%</span></div>
+      </div>
+    </div>`;
+
+  if(sel&&sel.type==='text'){html+=renderTextControls(sel);}
+  else if(sel&&sel.type==='logo'){html+=renderLogoControls(sel);}
+  else if(sel&&(sel.kind==='audio')){html+=renderAudioControls(sel);}
+  else if(sel&&(sel.kind==='video'||sel.kind==='image')){html+=renderVideoControls();}
+  else{
+    html+=`<div class="eff-item"><div class="eff-title" style="color:#888;font-weight:400;font-size:10px;line-height:1.6;padding:14px 10px">
+      حدّد مقطعًا من التايملاين لعرض خياراته هنا.<br>• نص (T1) → خط، حجم، لون، موضع<br>• لوغو (L1) → حجم، موضع، شفافية<br>• صوت (A1/A2) → مستوى صوت المقطع<br>• فيديو (V1/V2) → ألوان، كروما، شفافية
+    </div></div>`;
+  }
+  body.innerHTML=html;
+  // bind mixer
+  const mv=$('#masterVideoVol'),mm=$('#masterMusicVol');
+  if(mv)mv.addEventListener('input',e=>{state.masterVideoVolume=+e.target.value;$('#masterVideoVal').textContent=e.target.value+'%';
+    if(videoGain)videoGain.gain.value=state.masterVideoVolume/100;});
+  if(mm)mm.addEventListener('input',e=>{state.masterMusicVolume=+e.target.value;$('#masterMusicVal').textContent=e.target.value+'%';
+    if(musicGain)musicGain.gain.value=state.masterMusicVolume/100;});
+
+  if(sel&&sel.type==='text')bindTextControls(sel);
+  if(sel&&sel.type==='logo')bindLogoControls(sel);
+  if(sel&&sel.kind==='audio')bindAudioControls(sel);
+  if(sel&&(sel.kind==='video'||sel.kind==='image'))bindVideoControls();
 }
 
-/* ---- Video Controls ---- */
-function renderVideoControls(body){
-  body.innerHTML=`
+function renderVideoControls(){
+  return `
     <div class="eff-item">
       <div class="eff-title">Opacity</div>
       <div class="eff-ctrl"><div class="eff-row"><label>Opacity</label>
@@ -730,363 +651,298 @@ function renderVideoControls(body){
         <div class="eff-row"><label>Key Color</label><input type="color" id="chromaColorPicker" value="${state.chroma.color}"></div>
         <div class="eff-row"><label>Tolerance</label><input type="range" id="chromaTolRange" min="10" max="150" value="${state.chroma.tol}"><span class="val" id="chromaTolVal">${state.chroma.tol}</span></div>
       </div>
-    </div>
-    <div class="eff-item">
-      <div class="eff-title" style="color:#888;font-weight:400;font-size:10px;line-height:1.6">
-        حدّد مقطع نص (T1) أو لوغو (L1) لعرض خياراته هنا.
-      </div>
     </div>`;
-  const bind=(id,valId,key,suffix)=>{
-    const el=$(id),v=$(valId);if(!el)return;
-    el.addEventListener('input',()=>{state.effects[key]=+el.value;
-      if(v)v.textContent=el.value+(suffix||'');renderProgram();});
-  };
+}
+function bindVideoControls(){
+  const bind=(id,valId,key,suffix)=>{const el=$(id),v=$(valId);if(!el)return;
+    el.addEventListener('input',()=>{state.effects[key]=+el.value;if(v)v.textContent=el.value+(suffix||'');renderProgram();});};
   bind('#effOpacity','#effOpacityVal','opacity','%');
   bind('#effBright','#effBrightVal','brightness','');
   bind('#effContrast','#effContrastVal','contrast','');
   bind('#effSat','#effSatVal','saturation','');
   $('#chromaToggle').addEventListener('change',e=>{state.chroma.on=e.target.checked;renderProgram();});
   $('#chromaColorPicker').addEventListener('input',e=>{state.chroma.color=e.target.value;renderProgram();});
-  $('#chromaTolRange').addEventListener('input',e=>{state.chroma.tol=+e.target.value;
-    $('#chromaTolVal').textContent=e.target.value;renderProgram();});
+  $('#chromaTolRange').addEventListener('input',e=>{state.chroma.tol=+e.target.value;$('#chromaTolVal').textContent=e.target.value;renderProgram();});
 }
 
-/* ---- Text Controls ---- */
-function renderTextControls(body,clip){
-  const arabicOpts=ARABIC_FONTS.map(f=>`<option value="${f.id}" ${clip.fontFamily===f.id?'selected':''}>${f.name}</option>`).join('');
-  const englishOpts=ENGLISH_FONTS.map(f=>`<option value="${f.id}" ${clip.fontFamily===f.id?'selected':''}>${f.name}</option>`).join('');
-  body.innerHTML=`
-    <div class="eff-item">
-      <div class="eff-title">📝 Text <span class="badge">T1</span></div>
-      <div class="eff-ctrl">
-        <div class="eff-row"><label>النص</label>
-          <textarea id="txtText" rows="2" placeholder="اكتب النص...">${clip.text}</textarea></div>
-      </div>
+function renderTextControls(clip){
+  const aOpts=ARABIC_FONTS.map(f=>`<option value="${f.id}" ${clip.fontFamily===f.id?'selected':''}>${f.name}</option>`).join('');
+  const eOpts=ENGLISH_FONTS.map(f=>`<option value="${f.id}" ${clip.fontFamily===f.id?'selected':''}>${f.name}</option>`).join('');
+  return `
+    <div class="eff-item"><div class="eff-title">📝 نص <span class="badge">T1</span></div>
+      <div class="eff-ctrl"><div class="eff-row"><label>النص</label>
+        <textarea id="txtText" rows="2">${clip.text}</textarea></div></div>
     </div>
-    <div class="eff-item">
-      <div class="eff-title">الخط والحجم</div>
+    <div class="eff-item"><div class="eff-title">الخط والحجم</div>
       <div class="eff-ctrl">
         <div class="eff-row"><label>الخط</label>
-          <select id="txtFont">
-            <optgroup label="🇸🇦 خطوط عربية">${arabicOpts}</optgroup>
-            <optgroup label="🇬🇧 English Fonts">${englishOpts}</optgroup>
-          </select>
-        </div>
-        <div class="eff-row"><label>الحجم</label>
-          <input type="range" id="txtSize" min="12" max="140" value="${clip.fontSize}">
-          <span class="val" id="txtSizeVal">${clip.fontSize}</span>
-        </div>
-        <div class="eff-row"><label>اللون</label>
-          <input type="color" id="txtColor" value="${clip.color}">
-          <label style="min-width:auto;margin-left:8px">عريض</label>
-          <input type="checkbox" id="txtBold" ${clip.bold?'checked':''}>
-          <label style="min-width:auto;margin-left:8px">ظل</label>
-          <input type="checkbox" id="txtShadow" ${clip.shadow?'checked':''}>
-        </div>
+          <select id="txtFont"><optgroup label="🇸🇦 عربية">${aOpts}</optgroup><optgroup label="🇬🇧 English">${eOpts}</optgroup></select></div>
+        <div class="eff-row"><label>الحجم</label><input type="range" id="txtSize" min="12" max="140" value="${clip.fontSize}"><span class="val" id="txtSizeVal">${clip.fontSize}</span></div>
+        <div class="eff-row"><label>اللون</label><input type="color" id="txtColor" value="${clip.color}">
+          <label style="min-width:auto;margin-left:8px">عريض</label><input type="checkbox" id="txtBold" ${clip.bold?'checked':''}>
+          <label style="min-width:auto;margin-left:8px">ظل</label><input type="checkbox" id="txtShadow" ${clip.shadow?'checked':''}></div>
       </div>
     </div>
-    <div class="eff-item">
-      <div class="eff-title">الموقع والمدة</div>
+    <div class="eff-item"><div class="eff-title">الموقع والمدة</div>
       <div class="eff-ctrl">
-        <div class="eff-row"><label>الموضع X</label>
-          <input type="range" id="txtX" min="0" max="640" value="${Math.round(clip.x)}">
-          <span class="val" id="txtXVal">${Math.round(clip.x)}</span>
-        </div>
-        <div class="eff-row"><label>الموضع Y</label>
-          <input type="range" id="txtY" min="0" max="360" value="${Math.round(clip.y)}">
-          <span class="val" id="txtYVal">${Math.round(clip.y)}</span>
-        </div>
-        <div class="eff-row"><label>البداية</label>
-          <input type="range" id="txtStart" min="0" max="300" step="0.1" value="${clip.start.toFixed(1)}">
-          <span class="val" id="txtStartVal">${tc(clip.start)}</span>
-        </div>
-        <div class="eff-row"><label>المدة</label>
-          <input type="range" id="txtDur" min="0.5" max="60" step="0.5" value="${clip.duration.toFixed(1)}">
-          <span class="val" id="txtDurVal">${clip.duration.toFixed(1)}s</span>
-        </div>
-        <div style="color:#666;font-size:10px;margin-top:2px;line-height:1.5">
-          💡 يمكنك أيضًا سحب النص مباشرة داخل شاشة المعاينة.
-        </div>
+        <div class="eff-row"><label>X</label><input type="range" id="txtX" min="0" max="640" value="${Math.round(clip.x)}"><span class="val" id="txtXVal">${Math.round(clip.x)}</span></div>
+        <div class="eff-row"><label>Y</label><input type="range" id="txtY" min="0" max="360" value="${Math.round(clip.y)}"><span class="val" id="txtYVal">${Math.round(clip.y)}</span></div>
+        <div class="eff-row"><label>البداية</label><input type="range" id="txtStart" min="0" max="300" step="0.1" value="${clip.start.toFixed(1)}"><span class="val" id="txtStartVal">${tc(clip.start)}</span></div>
+        <div class="eff-row"><label>المدة</label><input type="range" id="txtDur" min="0.5" max="60" step="0.5" value="${clip.duration.toFixed(1)}"><span class="val" id="txtDurVal">${clip.duration.toFixed(1)}s</span></div>
       </div>
     </div>`;
-
+}
+function bindTextControls(clip){
   const upd=()=>{clip.name=clip.text.slice(0,30)||'نص';renderTimeline();renderProgram();updateStatus();};
-
   $('#txtText').addEventListener('input',e=>{clip.text=e.target.value;upd();});
   $('#txtFont').addEventListener('change',e=>{clip.fontFamily=e.target.value;
-    document.fonts.load(`bold ${clip.fontSize}px ${clip.fontFamily}`).then(()=>renderProgram());
-    renderProgram();});
-  $('#txtSize').addEventListener('input',e=>{clip.fontSize=+e.target.value;
-    $('#txtSizeVal').textContent=e.target.value;renderProgram();});
+    document.fonts.load(`bold ${clip.fontSize}px ${clip.fontFamily}`).then(()=>renderProgram());renderProgram();});
+  $('#txtSize').addEventListener('input',e=>{clip.fontSize=+e.target.value;$('#txtSizeVal').textContent=e.target.value;renderProgram();});
   $('#txtColor').addEventListener('input',e=>{clip.color=e.target.value;renderProgram();});
   $('#txtBold').addEventListener('change',e=>{clip.bold=e.target.checked;renderProgram();});
   $('#txtShadow').addEventListener('change',e=>{clip.shadow=e.target.checked;renderProgram();});
-  $('#txtX').addEventListener('input',e=>{clip.x=+e.target.value;
-    $('#txtXVal').textContent=e.target.value;renderProgram();});
-  $('#txtY').addEventListener('input',e=>{clip.y=+e.target.value;
-    $('#txtYVal').textContent=e.target.value;renderProgram();});
-  $('#txtStart').addEventListener('input',e=>{clip.start=+e.target.value;
-    $('#txtStartVal').textContent=tc(clip.start);renderTimeline();renderProgram();});
-  $('#txtDur').addEventListener('input',e=>{clip.duration=+e.target.value;
-    $('#txtDurVal').textContent=(+e.target.value).toFixed(1)+'s';
-    renderTimeline();renderProgram();});
+  $('#txtX').addEventListener('input',e=>{clip.x=+e.target.value;$('#txtXVal').textContent=e.target.value;renderProgram();});
+  $('#txtY').addEventListener('input',e=>{clip.y=+e.target.value;$('#txtYVal').textContent=e.target.value;renderProgram();});
+  $('#txtStart').addEventListener('input',e=>{clip.start=+e.target.value;$('#txtStartVal').textContent=tc(clip.start);renderTimeline();renderProgram();});
+  $('#txtDur').addEventListener('input',e=>{clip.duration=+e.target.value;$('#txtDurVal').textContent=(+e.target.value).toFixed(1)+'s';renderTimeline();renderProgram();});
 }
 
-/* ---- Logo Controls ---- */
-function renderLogoControls(body,clip){
-  body.innerHTML=`
-    <div class="eff-item">
-      <div class="eff-title">🖼 لوغو <span class="badge">L1</span></div>
+function renderLogoControls(clip){
+  return `
+    <div class="eff-item"><div class="eff-title">🖼 لوغو <span class="badge">L1</span></div>
+      <div class="eff-ctrl"><div class="eff-row"><img src="${clip.src}" style="max-width:100%;max-height:60px;border-radius:3px;background:#111"></div></div>
+    </div>
+    <div class="eff-item"><div class="eff-title">الحجم والموقع</div>
       <div class="eff-ctrl">
-        <div class="eff-row"><img src="${clip.src}" style="max-width:100%;max-height:60px;border-radius:3px;background:#111"></div>
+        <div class="eff-row"><label>العرض</label><input type="range" id="lgoW" min="20" max="640" value="${Math.round(clip.width)}"><span class="val" id="lgoWVal">${Math.round(clip.width)}</span></div>
+        <div class="eff-row"><label>X</label><input type="range" id="lgoX" min="0" max="640" value="${Math.round(clip.x)}"><span class="val" id="lgoXVal">${Math.round(clip.x)}</span></div>
+        <div class="eff-row"><label>Y</label><input type="range" id="lgoY" min="0" max="360" value="${Math.round(clip.y)}"><span class="val" id="lgoYVal">${Math.round(clip.y)}</span></div>
+        <div class="eff-row"><label>الشفافية</label><input type="range" id="lgoOpacity" min="0" max="100" value="${clip.opacity??100}"><span class="val" id="lgoOpacityVal">${clip.opacity??100}%</span></div>
       </div>
     </div>
-    <div class="eff-item">
-      <div class="eff-title">الحجم والموقع</div>
+    <div class="eff-item"><div class="eff-title">المدة</div>
       <div class="eff-ctrl">
-        <div class="eff-row"><label>العرض</label>
-          <input type="range" id="lgoW" min="20" max="640" value="${Math.round(clip.width)}">
-          <span class="val" id="lgoWVal">${Math.round(clip.width)}</span>
-        </div>
-        <div class="eff-row"><label>الموضع X</label>
-          <input type="range" id="lgoX" min="0" max="640" value="${Math.round(clip.x)}">
-          <span class="val" id="lgoXVal">${Math.round(clip.x)}</span>
-        </div>
-        <div class="eff-row"><label>الموضع Y</label>
-          <input type="range" id="lgoY" min="0" max="360" value="${Math.round(clip.y)}">
-          <span class="val" id="lgoYVal">${Math.round(clip.y)}</span>
-        </div>
-        <div class="eff-row"><label>الشفافية</label>
-          <input type="range" id="lgoOpacity" min="0" max="100" value="${clip.opacity??100}">
-          <span class="val" id="lgoOpacityVal">${clip.opacity??100}%</span>
-        </div>
-      </div>
-    </div>
-    <div class="eff-item">
-      <div class="eff-title">المدة</div>
-      <div class="eff-ctrl">
-        <div class="eff-row"><label>البداية</label>
-          <input type="range" id="lgoStart" min="0" max="300" step="0.1" value="${clip.start.toFixed(1)}">
-          <span class="val" id="lgoStartVal">${tc(clip.start)}</span>
-        </div>
-        <div class="eff-row"><label>المدة</label>
-          <input type="range" id="lgoDur" min="0.5" max="60" step="0.5" value="${clip.duration.toFixed(1)}">
-          <span class="val" id="lgoDurVal">${clip.duration.toFixed(1)}s</span>
-        </div>
-        <div style="color:#666;font-size:10px;margin-top:2px;line-height:1.5">
-          💡 اسحب اللوغو بالماوس داخل شاشة المعاينة لتغيير مكانه.
-        </div>
+        <div class="eff-row"><label>البداية</label><input type="range" id="lgoStart" min="0" max="300" step="0.1" value="${clip.start.toFixed(1)}"><span class="val" id="lgoStartVal">${tc(clip.start)}</span></div>
+        <div class="eff-row"><label>المدة</label><input type="range" id="lgoDur" min="0.5" max="60" step="0.5" value="${clip.duration.toFixed(1)}"><span class="val" id="lgoDurVal">${clip.duration.toFixed(1)}s</span></div>
       </div>
     </div>`;
+}
+function bindLogoControls(clip){
+  $('#lgoW').addEventListener('input',e=>{const w=+e.target.value;const asp=(clip.img.width/clip.img.height)||1;
+    clip.width=w;clip.height=Math.round(w/asp);$('#lgoWVal').textContent=w;renderProgram();});
+  $('#lgoX').addEventListener('input',e=>{clip.x=+e.target.value;$('#lgoXVal').textContent=e.target.value;renderProgram();});
+  $('#lgoY').addEventListener('input',e=>{clip.y=+e.target.value;$('#lgoYVal').textContent=e.target.value;renderProgram();});
+  $('#lgoOpacity').addEventListener('input',e=>{clip.opacity=+e.target.value;$('#lgoOpacityVal').textContent=e.target.value+'%';renderProgram();});
+  $('#lgoStart').addEventListener('input',e=>{clip.start=+e.target.value;$('#lgoStartVal').textContent=tc(clip.start);renderTimeline();renderProgram();});
+  $('#lgoDur').addEventListener('input',e=>{clip.duration=+e.target.value;$('#lgoDurVal').textContent=(+e.target.value).toFixed(1)+'s';renderTimeline();renderProgram();});
+}
 
-  $('#lgoW').addEventListener('input',e=>{const w=+e.target.value;
-    const aspect=(clip.img.width/clip.img.height)||1;
-    clip.width=w;clip.height=Math.round(w/aspect);
-    $('#lgoWVal').textContent=w;renderProgram();});
-  $('#lgoX').addEventListener('input',e=>{clip.x=+e.target.value;
-    $('#lgoXVal').textContent=e.target.value;renderProgram();});
-  $('#lgoY').addEventListener('input',e=>{clip.y=+e.target.value;
-    $('#lgoYVal').textContent=e.target.value;renderProgram();});
-  $('#lgoOpacity').addEventListener('input',e=>{clip.opacity=+e.target.value;
-    $('#lgoOpacityVal').textContent=e.target.value+'%';renderProgram();});
-  $('#lgoStart').addEventListener('input',e=>{clip.start=+e.target.value;
-    $('#lgoStartVal').textContent=tc(clip.start);renderTimeline();renderProgram();});
-  $('#lgoDur').addEventListener('input',e=>{clip.duration=+e.target.value;
-    $('#lgoDurVal').textContent=(+e.target.value).toFixed(1)+'s';
-    renderTimeline();renderProgram();});
+/* ---- AUDIO CONTROLS (new) ---- */
+function renderAudioControls(clip){
+  return `
+    <div class="eff-item"><div class="eff-title">♫ صوت <span class="badge" style="background:#2dc46e">${clip.track}</span></div>
+      <div class="eff-ctrl">
+        <div style="color:#aaa;font-size:10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${clip.name}">${clip.name}</div>
+      </div>
+    </div>
+    <div class="eff-item"><div class="eff-title">مستوى الصوت</div>
+      <div class="eff-ctrl">
+        <div class="eff-row"><label>Volume</label>
+          <input type="range" class="vol-music" id="clipVol" min="0" max="200" value="${clip.volume??100}">
+          <span class="val music" id="clipVolVal">${clip.volume??100}%</span></div>
+        <div style="display:flex;gap:4px;margin-top:4px">
+          <button class="icon-btn" data-vol="0" type="button" style="flex:1;justify-content:center;background:#3a1c1c;color:#ff5a5a">🔇 كتم</button>
+          <button class="icon-btn" data-vol="100" type="button" style="flex:1;justify-content:center">100%</button>
+          <button class="icon-btn" data-vol="150" type="button" style="flex:1;justify-content:center;background:#1c3a2a;color:#2dc46e">رفع 150%</button>
+        </div>
+      </div>
+    </div>
+    <div class="eff-item"><div class="eff-title">المدة والموضع</div>
+      <div class="eff-ctrl">
+        <div class="eff-row"><label>البداية</label><input type="range" id="audStart" min="0" max="300" step="0.1" value="${clip.start.toFixed(1)}"><span class="val" id="audStartVal">${tc(clip.start)}</span></div>
+        <div class="eff-row"><label>المدة</label><input type="range" id="audDur" min="0.5" max="180" step="0.5" value="${clip.duration.toFixed(1)}"><span class="val" id="audDurVal">${clip.duration.toFixed(1)}s</span></div>
+      </div>
+    </div>`;
+}
+function bindAudioControls(clip){
+  $('#clipVol').addEventListener('input',e=>{clip.volume=+e.target.value;$('#clipVolVal').textContent=e.target.value+'%';
+    const a=getAudio(clip.src);a.volume=Math.min(1,(clip.volume||100)/100);});
+  $$('#effBody [data-vol]').forEach(b=>b.addEventListener('click',()=>{
+    clip.volume=+b.dataset.vol;$('#clipVol').value=clip.volume;$('#clipVolVal').textContent=clip.volume+'%';
+    const a=getAudio(clip.src);a.volume=Math.min(1,(clip.volume||100)/100);}));
+  $('#audStart').addEventListener('input',e=>{clip.start=+e.target.value;$('#audStartVal').textContent=tc(clip.start);renderTimeline();renderProgram();});
+  $('#audDur').addEventListener('input',e=>{clip.duration=+e.target.value;$('#audDurVal').textContent=(+e.target.value).toFixed(1)+'s';renderTimeline();renderProgram();});
 }
 
 /* ================ PROGRAM MONITOR ================ */
-const progCanvas=$('#programCanvas');
-const progCtx=progCanvas.getContext('2d');
-const chromaCanvas=document.createElement('canvas');
-const chromaCtx=chromaCanvas.getContext('2d',{willReadFrequently:true});
+const progCanvas=$('#programCanvas');const progCtx=progCanvas.getContext('2d');
+const chromaCanvas=document.createElement('canvas');const chromaCtx=chromaCanvas.getContext('2d',{willReadFrequently:true});
 
 function getActiveClips(trackName){
-  return state.tracks[trackName].filter(c=>
-    state.playhead>=c.start && state.playhead<=c.start+c.duration);
+  return state.tracks[trackName].filter(c=>state.playhead>=c.start&&state.playhead<=c.start+c.duration);
 }
-
 function renderProgram(){
   const W=progCanvas.width,H=progCanvas.height;
   progCtx.fillStyle='#000';progCtx.fillRect(0,0,W,H);
 
-  // 1. Video layers (V1 bottom, V2 top)
   progCtx.save();
   const fx=state.effects;
   progCtx.globalAlpha=fx.opacity/100;
   progCtx.filter=`brightness(${fx.brightness}%) contrast(${fx.contrast}%) saturate(${fx.saturation}%)`;
 
-  const videoClips=[];
-  if(state.visible.V1)state.tracks.V1.forEach(c=>videoClips.push({...c,_t:'V1'}));
-  if(state.visible.V2)state.tracks.V2.forEach(c=>videoClips.push({...c,_t:'V2'}));
-  const activeVideo=videoClips.filter(c=>
-    state.playhead>=c.start&&state.playhead<=c.start+c.duration);
-  activeVideo.forEach(active=>{
-    if(active.kind==='image'){
-      const img=getImage(active.src);
-      if(img.complete)drawContain(progCtx,img,W,H);
-      else img.onload=()=>drawContain(progCtx,img,W,H);
-    }else if(active.kind==='video'){
-      const v=getVideo(active.src);
-      const local=state.playhead-active.start;
-      if(v.readyState>=1&&Math.abs(v.currentTime-local)>0.15){
-        try{v.currentTime=local;}catch(_){}}
+  const vc=[];
+  if(state.visible.V1)state.tracks.V1.forEach(c=>vc.push({...c,_t:'V1'}));
+  if(state.visible.V2)state.tracks.V2.forEach(c=>vc.push({...c,_t:'V2'}));
+  vc.filter(c=>state.playhead>=c.start&&state.playhead<=c.start+c.duration).forEach(a=>{
+    if(a.kind==='image'){const img=getImage(a.src);
+      if(img.complete)drawContain(progCtx,img,W,H);else img.onload=()=>drawContain(progCtx,img,W,H);}
+    else if(a.kind==='video'){
+      const v=getVideo(a.src);const local=state.playhead-a.start;
+      if(v.readyState>=1&&Math.abs(v.currentTime-local)>0.15){try{v.currentTime=local;}catch(_){}}
       if(v.readyState>=2){
-        if(state.chroma.on)drawWithChroma(progCtx,v,W,H);
-        else drawContain(progCtx,v,W,H);
-      }
+        if(state.chroma.on)drawWithChroma(progCtx,v,W,H);else drawContain(progCtx,v,W,H);}
     }
   });
   progCtx.restore();
 
-  // 2. Logo layer
   if(state.visible.L1){
     getActiveClips('L1').forEach(clip=>{
       const img=clip.img||getImage(clip.src);
-      const draw=()=>{
-        progCtx.save();
-        progCtx.globalAlpha=(clip.opacity??100)/100;
-        progCtx.drawImage(img,clip.x,clip.y,clip.width,clip.height);
-        progCtx.restore();
-      };
+      const draw=()=>{progCtx.save();progCtx.globalAlpha=(clip.opacity??100)/100;
+        progCtx.drawImage(img,clip.x,clip.y,clip.width,clip.height);progCtx.restore();};
       if(img.complete)draw();else img.onload=draw;
     });
   }
-
-  // 3. Text layer (topmost)
   if(state.visible.T1){
     getActiveClips('T1').forEach(clip=>{
       progCtx.save();
       progCtx.font=`${clip.bold?'bold':'normal'} ${clip.fontSize}px ${clip.fontFamily}, Tahoma`;
-      progCtx.textAlign='center';
-      progCtx.textBaseline='middle';
-      if(clip.shadow){
-        progCtx.shadowColor='rgba(0,0,0,0.85)';
-        progCtx.shadowBlur=10;
-        progCtx.shadowOffsetX=2;
-        progCtx.shadowOffsetY=2;
-      }
-      progCtx.fillStyle=clip.color;
-      progCtx.fillText(clip.text,clip.x,clip.y);
-      // selection highlight
-      if(state.selection===clip.id){
-        const w=progCtx.measureText(clip.text).width;
-        progCtx.strokeStyle='#ffcc00';
-        progCtx.lineWidth=1.5;
-        progCtx.setLineDash([5,3]);
+      progCtx.textAlign='center';progCtx.textBaseline='middle';
+      if(clip.shadow){progCtx.shadowColor='rgba(0,0,0,.85)';progCtx.shadowBlur=10;progCtx.shadowOffsetX=2;progCtx.shadowOffsetY=2;}
+      progCtx.fillStyle=clip.color;progCtx.fillText(clip.text,clip.x,clip.y);
+      if(state.selection===clip.id){const w=progCtx.measureText(clip.text).width;
+        progCtx.strokeStyle='#ffcc00';progCtx.lineWidth=1.5;progCtx.setLineDash([5,3]);
         progCtx.shadowColor='transparent';
-        progCtx.strokeRect(clip.x-w/2-8,clip.y-clip.fontSize/2-6,w+16,clip.fontSize+12);
-      }
+        progCtx.strokeRect(clip.x-w/2-8,clip.y-clip.fontSize/2-6,w+16,clip.fontSize+12);}
       progCtx.restore();
     });
   }
 }
-
+function drawContain(ctx,src,W,H){
+  ctx.fillStyle='#000';ctx.fillRect(0,0,W,H);
+  const sw=src.videoWidth||src.width,sh=src.videoHeight||src.height;
+  if(!sw||!sh)return;const r=Math.min(W/sw,H/sh);const w=sw*r,h=sh*r;
+  ctx.drawImage(src,(W-w)/2,(H-h)/2,w,h);
+}
 function drawWithChroma(ctx,video,W,H){
-  chromaCanvas.width=W;chromaCanvas.height=H;
-  chromaCtx.drawImage(video,0,0,W,H);
-  const frame=chromaCtx.getImageData(0,0,W,H);
-  const d=frame.data;
-  const kr=parseInt(state.chroma.color.slice(1,3),16);
-  const kg=parseInt(state.chroma.color.slice(3,5),16);
-  const kb=parseInt(state.chroma.color.slice(5,7),16);
+  chromaCanvas.width=W;chromaCanvas.height=H;chromaCtx.drawImage(video,0,0,W,H);
+  const frame=chromaCtx.getImageData(0,0,W,H);const d=frame.data;
+  const kr=parseInt(state.chroma.color.slice(1,3),16),kg=parseInt(state.chroma.color.slice(3,5),16),kb=parseInt(state.chroma.color.slice(5,7),16);
   const tol=state.chroma.tol*2.55,tol2=tol*tol;
-  for(let i=0;i<d.length;i+=4){
-    const dr=d[i]-kr,dg=d[i+1]-kg,db=d[i+2]-kb;
-    if(dr*dr+dg*dg+db*db<tol2)d[i+3]=0;
-  }
-  chromaCtx.putImageData(frame,0,0);
-  ctx.drawImage(chromaCanvas,0,0,W,H);
+  for(let i=0;i<d.length;i+=4){const dr=d[i]-kr,dg=d[i+1]-kg,db=d[i+2]-kb;
+    if(dr*dr+dg*dg+db*db<tol2)d[i+3]=0;}
+  chromaCtx.putImageData(frame,0,0);ctx.drawImage(chromaCanvas,0,0,W,H);
 }
 
 /* ================ CANVAS DRAG (text/logo) ================ */
 let canvasDrag=null;
 progCanvas.addEventListener('mousedown',e=>{
   const rect=progCanvas.getBoundingClientRect();
-  const scaleX=progCanvas.width/rect.width;
-  const scaleY=progCanvas.height/rect.height;
-  const mx=(e.clientX-rect.left)*scaleX;
-  const my=(e.clientY-rect.top)*scaleY;
-
-  // Check text clips (topmost)
-  if(state.visible.T1){
-    const texts=getActiveClips('T1').slice().reverse();
-    for(const t of texts){
-      progCtx.save();
+  const sx=progCanvas.width/rect.width,sy=progCanvas.height/rect.height;
+  const mx=(e.clientX-rect.left)*sx,my=(e.clientY-rect.top)*sy;
+  if(state.visible.T1){const ts=getActiveClips('T1').slice().reverse();
+    for(const t of ts){progCtx.save();
       progCtx.font=`${t.bold?'bold':'normal'} ${t.fontSize}px ${t.fontFamily}, Tahoma`;
-      const w=progCtx.measureText(t.text).width;
-      progCtx.restore();
+      const w=progCtx.measureText(t.text).width;progCtx.restore();
       if(mx>=t.x-w/2-8&&mx<=t.x+w/2+8&&my>=t.y-t.fontSize/2-6&&my<=t.y+t.fontSize/2+6){
         canvasDrag={type:'text',clip:t,offX:mx-t.x,offY:my-t.y};
-        state.selection=t.id;state.targetTrack='T1';
-        $('#targetLabel').textContent='T1';
-        renderTimeline();renderEffectControls();
-        return;
-      }
-    }
-  }
-  // Check logo clips
-  if(state.visible.L1){
-    const logos=getActiveClips('L1').slice().reverse();
-    for(const l of logos){
-      if(mx>=l.x&&mx<=l.x+l.width&&my>=l.y&&my<=l.y+l.height){
-        canvasDrag={type:'logo',clip:l,offX:mx-l.x,offY:my-l.y};
-        state.selection=l.id;state.targetTrack='L1';
-        $('#targetLabel').textContent='L1';
-        renderTimeline();renderEffectControls();
-        return;
-      }
-    }
-  }
+        state.selection=t.id;state.targetTrack='T1';$('#targetLabel').textContent='T1';
+        renderTimeline();renderEffectControls();return;}}}
+  if(state.visible.L1){const ls=getActiveClips('L1').slice().reverse();
+    for(const l of ls){if(mx>=l.x&&mx<=l.x+l.width&&my>=l.y&&my<=l.y+l.height){
+      canvasDrag={type:'logo',clip:l,offX:mx-l.x,offY:my-l.y};
+      state.selection=l.id;state.targetTrack='L1';$('#targetLabel').textContent='L1';
+      renderTimeline();renderEffectControls();return;}}}
 });
-
 progCanvas.addEventListener('mousemove',e=>{
   if(!canvasDrag)return;
   const rect=progCanvas.getBoundingClientRect();
-  const scaleX=progCanvas.width/rect.width;
-  const scaleY=progCanvas.height/rect.height;
-  const mx=(e.clientX-rect.left)*scaleX;
-  const my=(e.clientY-rect.top)*scaleY;
+  const sx=progCanvas.width/rect.width,sy=progCanvas.height/rect.height;
+  const mx=(e.clientX-rect.left)*sx,my=(e.clientY-rect.top)*sy;
   canvasDrag.clip.x=Math.round(mx-canvasDrag.offX);
   canvasDrag.clip.y=Math.round(my-canvasDrag.offY);
   renderProgram();
-  // live update Effect Controls sliders
-  if(canvasDrag.type==='text'){
-    const xEl=$('#txtX'),yEl=$('#txtY');
-    if(xEl){xEl.value=canvasDrag.clip.x;$('#txtXVal').textContent=canvasDrag.clip.x;}
-    if(yEl){yEl.value=canvasDrag.clip.y;$('#txtYVal').textContent=canvasDrag.clip.y;}
-  }else{
-    const xEl=$('#lgoX'),yEl=$('#lgoY');
-    if(xEl){xEl.value=canvasDrag.clip.x;$('#lgoXVal').textContent=canvasDrag.clip.x;}
-    if(yEl){yEl.value=canvasDrag.clip.y;$('#lgoYVal').textContent=canvasDrag.clip.y;}
-  }
+  if(canvasDrag.type==='text'){const x=$('#txtX'),y=$('#txtY');
+    if(x){x.value=canvasDrag.clip.x;$('#txtXVal').textContent=canvasDrag.clip.x;}
+    if(y){y.value=canvasDrag.clip.y;$('#txtYVal').textContent=canvasDrag.clip.y;}}
+  else{const x=$('#lgoX'),y=$('#lgoY');
+    if(x){x.value=canvasDrag.clip.x;$('#lgoXVal').textContent=canvasDrag.clip.x;}
+    if(y){y.value=canvasDrag.clip.y;$('#lgoYVal').textContent=canvasDrag.clip.y;}}
 });
 progCanvas.addEventListener('mouseup',()=>{canvasDrag=null;});
 progCanvas.addEventListener('mouseleave',()=>{canvasDrag=null;});
 
+/* ================ AUDIO PLAYBACK SYNC ================ */
+function syncAudioPlayback(){
+  // Video tracks (V1 unmuted, V2 muted as overlay)
+  TRACKS.filter(t=>TRACK_INFO[t].type==='video').forEach(trackName=>{
+    state.tracks[trackName].forEach(clip=>{
+      if(clip.kind!=='video')return;
+      const v=getVideo(clip.src);
+      const isActive=state.playhead>=clip.start&&state.playhead<=clip.start+clip.duration;
+      const isMain=trackName==='V1';
+      v.muted=!isMain||state.muted[trackName];
+      const local=state.playhead-clip.start;
+      if(isActive){
+        if(Math.abs(v.currentTime-local)>0.25){try{v.currentTime=local;}catch(_){}}
+        if(state.playing&&v.paused)v.play().catch(()=>{});
+        if(!state.playing&&!v.paused)v.pause();
+      }else{
+        if(!v.paused)v.pause();
+      }
+    });
+  });
+  // Audio tracks
+  TRACKS.filter(t=>TRACK_INFO[t].type==='audio').forEach(trackName=>{
+    state.tracks[trackName].forEach(clip=>{
+      const a=getAudio(clip.src);
+      a.volume=Math.min(1,(clip.volume??100)/100);
+      a.muted=state.muted[trackName];
+      const isActive=state.playhead>=clip.start&&state.playhead<=clip.start+clip.duration;
+      const local=state.playhead-clip.start;
+      if(isActive){
+        if(Math.abs(a.currentTime-local)>0.25){try{a.currentTime=local;}catch(_){}}
+        if(state.playing&&a.paused)a.play().catch(()=>{});
+        if(!state.playing&&!a.paused)a.pause();
+      }else{
+        if(!a.paused)a.pause();
+      }
+    });
+  });
+}
+
 /* ================ PLAYBACK ================ */
 let rafId=null,lastT=0;
 function togglePlay(){
+  ensureAudioGraph();
+  if(audioCtx&&audioCtx.state==='suspended')audioCtx.resume();
   state.playing=!state.playing;
   $('#progPlay').textContent=state.playing?'⏸':'▶';
   if(state.playing){
-    const all=state.tracks.V1.concat(state.tracks.V2);
-    all.forEach(c=>{if(c.kind==='video')getVideo(c.src).play().catch(()=>{});});
+    syncAudioPlayback();
     lastT=performance.now();
     rafId=requestAnimationFrame(loop);
   }else{
     Object.values(videoPool).forEach(v=>v.pause());
+    Object.values(audioPool).forEach(a=>a.pause());
     if(rafId)cancelAnimationFrame(rafId);
   }
 }
 function loop(t){
   if(!state.playing)return;
-  const dt=(t-lastT)/1000;lastT=t;
-  state.playhead+=dt;
-  updatePlayhead();updateTC();renderProgram();updateStatus();
-  const maxEnd=TRACKS.flatMap(n=>state.tracks[n].map(c=>c.start+c.duration))
-    .reduce((a,b)=>Math.max(a,b),0);
+  const dt=(t-lastT)/1000;lastT=t;state.playhead+=dt;
+  updatePlayhead();updateTC();renderProgram();syncAudioPlayback();updateStatus();
+  const maxEnd=TRACKS.flatMap(n=>state.tracks[n].map(c=>c.start+c.duration)).reduce((a,b)=>Math.max(a,b),0);
   if(maxEnd&&state.playhead>=maxEnd){togglePlay();return;}
   rafId=requestAnimationFrame(loop);
 }
@@ -1107,14 +963,84 @@ $('#deleteBtn').addEventListener('click',()=>{
   state.selectedAsset=null;renderProject();updateStatus();
 });
 
+/* ================ EXPORT ================ */
+$('#exportBtn').addEventListener('click',exportFinalProject);
+
+async function exportFinalProject(){
+  const totalDuration=TRACKS.flatMap(n=>state.tracks[n].map(c=>c.start+c.duration)).reduce((a,b)=>Math.max(a,b),0);
+  if(!totalDuration){showError('أضف مقاطع أولًا قبل التصدير');return;}
+  if(!confirm(`سيتم تصدير فيديو مدته ${tc(totalDuration)} بصيغة WebM.\n(يبدأ من الصفر وينتهي عند آخر مقطع)\n\nهل تريد المتابعة؟`))return;
+
+  ensureAudioGraph();
+  if(audioCtx&&audioCtx.state==='suspended')await audioCtx.resume();
+
+  // Reset to start
+  state.playhead=0;
+  updatePlayhead();updateTC();
+  syncAudioPlayback();
+
+  showProgress('جاري التصدير… 0%',0);
+
+  const FPS=30;
+  const stream=progCanvas.captureStream(FPS);
+  // Add audio
+  if(exportDest){
+    try{exportDest.stream.getAudioTracks().forEach(t=>stream.addTrack(t));}catch(_){}
+  }
+  let mime='video/webm;codecs=vp9,opus';
+  if(!MediaRecorder.isTypeSupported(mime))mime='video/webm;codecs=vp8,opus';
+  if(!MediaRecorder.isTypeSupported(mime))mime='video/webm';
+  const rec=new MediaRecorder(stream,{mimeType:mime,videoBitsPerSecond:4_000_000,audioBitsPerSecond:128_000});
+  const chunks=[];
+  rec.ondataavailable=e=>{if(e.data.size)chunks.push(e.data);};
+
+  // Start playing from 0
+  state.playing=true;
+  $('#progPlay').textContent='⏸';
+  lastT=performance.now();
+  syncAudioPlayback();
+  rafId=requestAnimationFrame(loop);
+
+  rec.start(200);
+
+  // Track progress
+  const progressInterval=setInterval(()=>{
+    const pct=Math.min(100,Math.round((state.playhead/totalDuration)*100));
+    showProgress(`جاري التصدير… ${pct}%`,pct);
+  },200);
+
+  // Stop after duration
+  setTimeout(()=>{
+    clearInterval(progressInterval);
+    state.playing=false;
+    $('#progPlay').textContent='▶';
+    if(rafId)cancelAnimationFrame(rafId);
+    Object.values(videoPool).forEach(v=>v.pause());
+    Object.values(audioPool).forEach(a=>a.pause());
+    rec.stop();
+  },(totalDuration*1000)+400);
+
+  rec.onstop=()=>{
+    showProgress('جاري تجهيز الملف…',100);
+    setTimeout(()=>{
+      const blob=new Blob(chunks,{type:'video/webm'});
+      const url=URL.createObjectURL(blob);
+      const a=document.createElement('a');
+      a.href=url;
+      a.download=`Hanta_Project_${new Date().toISOString().slice(0,19).replace(/[:T]/g,'-')}.webm`;
+      document.body.appendChild(a);a.click();a.remove();
+      setTimeout(()=>URL.revokeObjectURL(url),10000);
+      hideProgress();
+      showInfo('✅ تم التصدير بنجاح — تحقق من مجلد التنزيلات');
+    },600);
+  };
+}
+
 /* ================ DESKTOP DROP ================ */
 const projPanel=$('#projectPanel');
-['dragenter','dragover'].forEach(ev=>projPanel.addEventListener(ev,e=>{
-  e.preventDefault();e.stopPropagation();projPanel.classList.add('drop-active');}));
-['dragleave','dragend'].forEach(ev=>projPanel.addEventListener(ev,e=>{
-  if(e.target===projPanel)projPanel.classList.remove('drop-active');}));
-projPanel.addEventListener('drop',e=>{
-  e.preventDefault();e.stopPropagation();projPanel.classList.remove('drop-active');
+['dragenter','dragover'].forEach(ev=>projPanel.addEventListener(ev,e=>{e.preventDefault();e.stopPropagation();projPanel.classList.add('drop-active');}));
+['dragleave','dragend'].forEach(ev=>projPanel.addEventListener(ev,e=>{if(e.target===projPanel)projPanel.classList.remove('drop-active');}));
+projPanel.addEventListener('drop',e=>{e.preventDefault();e.stopPropagation();projPanel.classList.remove('drop-active');
   importFiles([...e.dataTransfer.files]);});
 document.addEventListener('dragover',e=>e.preventDefault());
 document.addEventListener('drop',e=>e.preventDefault());
@@ -1122,27 +1048,18 @@ document.addEventListener('drop',e=>e.preventDefault());
 /* ================ STATUS ================ */
 function updateStatus(){
   const total=TRACKS.reduce((s,n)=>s+state.tracks[n].length,0);
-  $('#statusBar').textContent=
-    `Project: ${state.project.length} | Clips: ${total} | Target: ${state.targetTrack} | ${tc(state.playhead)}`;
+  $('#statusBar').textContent=`Project: ${state.project.length} | Clips: ${total} | Target: ${state.targetTrack} | ${tc(state.playhead)}`;
 }
 
 /* ================ INIT ================ */
 function init(){
-  LOG('init v2.0');
+  LOG('init v2.2');
   $('#targetLabel').textContent=state.targetTrack;
-  renderProject();
-  renderTimeline();
-  renderProgram();
-  renderEffectControls();
-  updateStatus();
-  if(document.fonts&&document.fonts.ready){
-    document.fonts.ready.then(()=>{LOG('fonts ready');renderProgram();});
-  }
-  LOG('ready ✓ — جرّب: ＋ نص لإضافة نص، أو ＋ لوغو لإضافة شعار');
+  renderProject();renderTimeline();renderProgram();renderEffectControls();updateStatus();
+  if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>renderProgram());
+  LOG('ready ✓');
 }
-document.readyState==='loading'
-  ? document.addEventListener('DOMContentLoaded',init)
-  : init();
+document.readyState==='loading'?document.addEventListener('DOMContentLoaded',init):init();
 </script>
 </body>
 </html>
